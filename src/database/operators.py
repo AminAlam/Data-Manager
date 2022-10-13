@@ -21,8 +21,8 @@ def create_table(conn, create_table_sql):
         c = conn.cursor()
         c.execute(create_table_sql)
     except Error as e:
-        print(e)
-# genereate random hash
+        utils.error_log(e)
+
 def generate_hash(conn):
     hash_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
     cursor = conn.cursor()
@@ -33,8 +33,11 @@ def generate_hash(conn):
     else:
         return generate_hash(conn)
 
+### Experiments
 def insert_experiment(conn, Author, date, Tags, File_Path, Notes):
     try:
+        Tags_parsed = utils.parse_tags(Tags)
+        insert_tag(conn, Tags_parsed)
         cursor = conn.cursor()
         hash_id = generate_hash(conn)
         rows = [(hash_id, Tags, Notes, File_Path, date, Author, None)]
@@ -42,9 +45,53 @@ def insert_experiment(conn, Author, date, Tags, File_Path, Notes):
         conn.commit()
         success_bool = 1
     except Error as e:
-        print(e)
+        utils.error_log(e)
         success_bool = 0
     return success_bool
+
+def edit_experiment(conn, id, Author, date, Tags, File_Path, Notes):
+    try:
+        cursor = conn.cursor()
+        rows = [(Tags, Notes, File_Path, date, Author, id)]
+        cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, author=? where id=?', rows)
+        conn.commit()
+        success_bool = 1
+    except Error as e:
+        utils.error_log(e)
+        success_bool = 0
+    return success_bool
+### Experiments
+
+
+
+### Tags
+def insert_tag(conn, Tags_parsed):
+    try:
+        for tag in Tags_parsed:
+            if not check_existence_tag(conn, tag):
+                cursor = conn.cursor()
+                rows = [(tag, None)]
+                cursor.executemany('insert into tags values (?, ?)', rows)
+                conn.commit()
+        success_bool = 1
+    except Error as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
+        success_bool = 0
+    return success_bool
+
+def check_existence_tag(conn, tag):
+    cursor = conn.cursor()
+    cursor.execute('select * from tags where tag=?', (tag,))
+    tags = cursor.fetchall()
+    if len(tags)==0:
+        return False
+    else:
+        return True
+### Tags
+
+
 
 def edit_supervisor(conn, name, university, email, country, position_type, emailed, answer, interview, notes, id, email_date=None, rank=None, webpage=None):
     cursor = conn.cursor()

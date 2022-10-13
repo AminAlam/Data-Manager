@@ -6,6 +6,12 @@ import operators
 
 from datetime import datetime, date
 
+def error_log(error):
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(exc_type, fname, exc_tb.tb_lineno)
+
+
 def init_db(db_configs):
     print('Initilizing the databse')
     for table in db_configs.table_lists:
@@ -22,6 +28,13 @@ def check_existence_table(db_configs):
     else:
         open_bool = 0
     return open_bool
+
+def parse_tags(Tags):
+    Tags = Tags.split(',')
+    Tags = [tag.strip() for tag in Tags]
+    return Tags
+
+
 
 def check_existence_university_in_universities(conn, name):
     cursor = conn.cursor()
