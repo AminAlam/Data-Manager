@@ -2,6 +2,8 @@ import sys
 sys.path.append('../utils')
 
 import utils
+import random
+import string
 import sqlite3
 from sqlite3 import Error
 
@@ -20,21 +22,27 @@ def create_table(conn, create_table_sql):
         c.execute(create_table_sql)
     except Error as e:
         print(e)
-
-def insert_supervisor(conn, name, university, email, country, position_type, emailed, answer, interview, notes, email_date=None, rank=None, webpage=None):
+# genereate random hash
+def generate_hash(conn):
+    hash_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
     cursor = conn.cursor()
-    existence_bool_supervisor = utils.check_existence_supervisor_in_supervisors(conn, email)
-    if not existence_bool_supervisor:
-        if emailed=='No':
-            email_date = None
-        rows = [(name, university, email, country, emailed, answer, interview, position_type, webpage, rank, notes, None, email_date)]
-        cursor.executemany('insert into supervisors values (?,?,?,?,?,?,?,?,?,?,?,?,?)', rows)
-        conn.commit()
-        existence_bool_university = utils.check_existence_university_in_universities(conn, university)
-        if not existence_bool_university:
-            insert_university(conn, university, country, rank=rank)
-        success_bool = 1
+    cursor.execute('select * from experiments where id_hash=?', (hash_id,))
+    experiments = cursor.fetchall()
+    if len(experiments)==0:
+        return hash_id
     else:
+        return generate_hash(conn)
+
+def insert_experiment(conn, Author, date, Tags, File_Path, Notes):
+    try:
+        cursor = conn.cursor()
+        hash_id = generate_hash(conn)
+        rows = [(hash_id, Tags, Notes, File_Path, date, Author, None)]
+        cursor.executemany('insert into experiments values (?,?,?,?,?,?,?)', rows)
+        conn.commit()
+        success_bool = 1
+    except Error as e:
+        print(e)
         success_bool = 0
     return success_bool
 

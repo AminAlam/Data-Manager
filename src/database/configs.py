@@ -12,11 +12,11 @@ class database_configs():
                                         file_path text,
                                         date text NOT NULL,
                                         author text NOT NULL,
-                                        id integer primary key
+                                        id integer primary key autoincrement
                                     ); """, 
         """ CREATE TABLE IF NOT EXISTS tags (
                                         tag text NOT NULL,
-                                        id integer primary key
+                                        id integer primary key autoincrement
                                     ); """
         ]
     def make_conn(self):

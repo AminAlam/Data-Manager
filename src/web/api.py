@@ -114,38 +114,28 @@ class WebApp():
         def search_for_experiment():
             return flask.render_template('search_for_experiment.html')
 
-        @app.route('/insert_supervisor_to_db', methods=['GET', 'POST'])
-        def insert_supervisor_to_db():
+        @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
+        def insert_experiment_to_db():
             if flask.request.method == 'POST':
                 try:
-                    name = flask.request.form['name']
-                    university = flask.request.form['university']
-                    email = flask.request.form['email']
-                    country = flask.request.form['country']
-                    webpage = flask.request.form['webpage']
-                    position_type = flask.request.form['position_type']
-                    university_rank = flask.request.form['university_rank']
-                    emailed = flask.request.form['emailed']
-                    answer = flask.request.form['answer']
-                    interview = flask.request.form['interview']
-                    notes = flask.request.form['notes']
-                    email_date = flask.request.form['email_date_value']
+                    Author = flask.request.form['Author']
+                    date = flask.request.form['date']
+                    Tags = flask.request.form['Tags']
+                    File_Path = flask.request.form['File_Path']
+                    Notes = flask.request.form['Notes']
                 except:
-                    flask.flash('Please Fill all the Forms')
-                    return flask.redirect(flask.url_for('insert_supervisor'))
+                    flask.flash('Please fill all the forms')
+                    return flask.redirect(flask.url_for('insert_experiment'))
 
-                if name == '' or university == '' or email == '' or country == '':
-                    flask.flash('Please Fill all the Forms')
-                    return flask.redirect(flask.url_for('insert_supervisor'))
-                success_bool = operators.insert_supervisor(self.db_configs.conn, name, university, email, country,
-                                webpage=webpage, position_type=position_type, rank=university_rank, 
-                                emailed=emailed, answer=answer, interview=interview, notes=notes,
-                                email_date=email_date)
+                if Author == '' or university == '' or Tags == '' or date == '':
+                    flask.flash('Please fill all the forms')
+                    return flask.redirect(flask.url_for('insert_experiment'))
+                success_bool = operators.insert_experiment(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes)
 
                 if success_bool:
-                    message = 'Supervisor is added successfully'
+                    message = 'Experiment is added successfully'
                 else:
-                    message = 'Supervisor already exists'
+                    message = 'Something went wrong'
 
                 flask.flash(message)
                 return flask.redirect(flask.url_for('index'))
