@@ -2,8 +2,6 @@ import sys
 sys.path.append('../utils')
 
 import utils
-import random
-import string
 import sqlite3
 from sqlite3 import Error
 
@@ -23,15 +21,6 @@ def create_table(conn, create_table_sql):
     except Error as e:
         utils.error_log(e)
 
-def generate_hash(conn):
-    hash_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-    cursor = conn.cursor()
-    cursor.execute('select * from experiments where id_hash=?', (hash_id,))
-    experiments = cursor.fetchall()
-    if len(experiments)==0:
-        return hash_id
-    else:
-        return generate_hash(conn)
 
 ### Experiments
 def insert_experiment(conn, Author, date, Tags, File_Path, Notes):
@@ -39,7 +28,7 @@ def insert_experiment(conn, Author, date, Tags, File_Path, Notes):
         Tags_parsed = utils.parse_tags(Tags)
         insert_tag(conn, Tags_parsed)
         cursor = conn.cursor()
-        hash_id = generate_hash(conn)
+        hash_id = utils.generate_hash(conn)
         rows = [(hash_id, Tags, Notes, File_Path, date, Author, None)]
         cursor.executemany('insert into experiments values (?,?,?,?,?,?,?)', rows)
         conn.commit()
@@ -68,27 +57,18 @@ def edit_experiment(conn, id, Author, date, Tags, File_Path, Notes):
 def insert_tag(conn, Tags_parsed):
     try:
         for tag in Tags_parsed:
-            if not check_existence_tag(conn, tag):
+            if not utils.check_existence_tag(conn, tag):
                 cursor = conn.cursor()
                 rows = [(tag, None)]
                 cursor.executemany('insert into tags values (?, ?)', rows)
                 conn.commit()
         success_bool = 1
     except Error as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(exc_type, fname, exc_tb.tb_lineno)
+        utils.error_log(e)
         success_bool = 0
     return success_bool
 
-def check_existence_tag(conn, tag):
-    cursor = conn.cursor()
-    cursor.execute('select * from tags where tag=?', (tag,))
-    tags = cursor.fetchall()
-    if len(tags)==0:
-        return False
-    else:
-        return True
+
 ### Tags
 
 

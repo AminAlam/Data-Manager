@@ -31,42 +31,9 @@ class WebApp():
             # info = utils.info(supervisors, universities)
             return flask.render_template('index.html', post=None)
 
-        @app.route('/universities')
-        def universities():
-            cursor = self.db_configs.conn.cursor()
-            cursor.execute('SELECT * FROM universities')
-            universities = cursor.fetchall()
-            for university_no in range(0,len(universities)):
-                cursor.execute("SELECT rowid FROM supervisors WHERE university = ?", (universities[university_no][0],))
-                num_supervisors = len(cursor.fetchall())
-                universities[university_no] = universities[university_no]+(num_supervisors, )
-            filters = ['Default']
-            return flask.render_template('universities.html', posts=universities, filters=filters)
-
-        @app.route('/<int:id>/university')
-        def university(id):
-            cursor = self.db_configs.conn.cursor()
-            cursor.execute('SELECT * FROM universities WHERE id = ?', (id,))
-            university = cursor.fetchone()
-            university_name = university[0]
-            cursor.execute('SELECT * FROM supervisors WHERE university = ?', (university_name,))
-            supervisors = cursor.fetchall()
-            for supervisor_no, supervisor in enumerate(supervisors):
-                if supervisor[4] == 'Yes':
-                    diff = utils.calc_difference_dates(supervisor[12])
-                    supervisor = list(supervisor)
-                    supervisor[4] = '{0} Days ago'.format(diff)
-                    supervisors[supervisor_no] = tuple(supervisor)
-            return flask.render_template('university.html', posts=supervisors)
-
-        @app.route('/supervisors')
-        def supervisors():
-            cursor = self.db_configs.conn.cursor()
-            cursor.execute('SELECT * FROM supervisors')
-            supervisors = cursor.fetchall()
-            supervisors = utils.email_date_check(supervisors)
-            filters = ['All', 'All', 'All', 'All']
-            return flask.render_template('supervisors.html', posts=supervisors, filters=filters)
+        @app.route('/experiments')
+        def experiments():
+            return flask.render_template('experiments.html', experiments_list=None)
 
         @app.route('/supervisors_format', methods=['GET', 'POST'])
         def supervisors_format():

@@ -1,6 +1,8 @@
 import sys
 import requests
 import os
+import random
+import string
 sys.path.append('../database')
 import operators
 
@@ -34,6 +36,27 @@ def parse_tags(Tags):
     Tags = [tag.strip() for tag in Tags]
     return Tags
 
+
+
+def check_existence_tag(conn, tag):
+    cursor = conn.cursor()
+    cursor.execute('select * from tags where tag=?', (tag,))
+    tags = cursor.fetchall()
+    if len(tags)==0:
+        return False
+    else:
+        return True
+
+
+def generate_hash(conn):
+    hash_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    cursor = conn.cursor()
+    cursor.execute('select * from experiments where id_hash=?', (hash_id,))
+    experiments = cursor.fetchall()
+    if len(experiments)==0:
+        return hash_id
+    else:
+        return generate_hash(conn)
 
 
 def check_existence_university_in_universities(conn, name):
