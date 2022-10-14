@@ -2,37 +2,42 @@
 
 {% block content %}
 <div class="container">
-    <h1>{% block title %} Supervisors {% endblock %}</h1> 
+    <h1>{% block title %} Experiments {% endblock %}</h1> 
     
-    <form action="/experiments_format" method=post enctype=multipart/form-data>
+    <form action="/experiments" method=post enctype=multipart/form-data>
         <div class="row" style="padding-top: 2rem;text-align: center;">
 
             <div class="form-group col-md-6">
-                <label for="Author">Author</label>
+                <label for="Author">Author: </label>
                 <input class="form-control" name="Author"> 
             </div>
 
+            <div class="form-group col-md-6">
+                <label for="Hash_ID">Hash ID: </label>
+                <input class="form-control" name="Hash_ID"> 
+            </div>
+
             <div class="form-group col-md-3">
-                <div class="row" style="padding-top: 1rem;" id="Date_html_id">
-                  <label for="start">Date start: </label>
-                  <input type="date" id="date" name="date_start" min="2000-01-01" max="2099-12-31" value="2022-07-01">
+                <div class="row" style="padding-top: 1rem;" id="Date_html_id_start">
+                  <label for="date_start">Date start: </label>
+                  <input type="date" id="date_start" name="date_start" min="2000-01-01" max="2099-12-31" value="2022-07-01">
                 </div>
             </div>
 
             <div class="form-group col-md-3">
-                <div class="row" style="padding-top: 1rem;" id="Date_html_id">
-                  <label for="start">Date End: </label>
-                  <input type="date" id="date" name="date_start" min="2000-01-01" max="2099-12-31" value="2022-07-01">
+                <div class="row" style="padding-top: 1rem;" id="Date_html_id_end">
+                  <label for="date_end">Date End: </label>
+                  <input type="date" id="date_end" name="date_end" min="2000-01-01" max="2099-12-31" value="2022-07-01">
                 </div>
             </div>
 
             <div class="form-group col-md-12">
-                <label for="Tags">Tags</label>
+                <label for="Tags">Tags: </label>
                 <input class="form-control" name="Tags"> 
             </div>
             
             <div class="form-group col-md-12">
-                <label for="Text">Text</label>
+                <label for="Text">Text: </label>
                 <input class="form-control" name="Text"> 
             </div>
 
@@ -45,49 +50,31 @@
             
     </form>
 
-    <!-- <div class="card-deck">
-    
-    {% for post in posts %}
+    <div class="card-deck">
+    {% if experiments_list is not none %}
+        {% for experiment in experiments_list %}
 
-        <div class="card-block" style="margin: .5rem; margin-bottom: 1em; margin-top: 1em">
-            <div class="CardMain card text-center" style="width: 18rem;">
-                <a href="{{ url_for('supervisor', id=post[11]) }}">
-                    <h4 class="CardMain">{{post[0]}}</h4>
-                </a>
-                    <h5 class="CardMain">{{ post[1] }} - {{ post[3] }}</h5>
-                    <h6 class="CardMain">{{ post[2] }}</h6>
-            <div class="card-footer" style="width: 18rem;">
-                {% if post[4]=="No" %}
-                    <span class="badge badge-danger" >emailed: {{ post[4] }}</span>
-                {% else %}
-                    <span class="badge badge-success" >emailed: {{ post[4] }}</span>
-                {% endif %}
+            <div class="card-block" style="margin: .5rem; margin-bottom: 1em; margin-top: 1em">
+                <div class="CardMain card text-center" style="width: 18rem;">
+                 
+                        <h4 class="CardMain">{{experiment[0]}}</h4>
+       
+                        <h5 class="CardMain">{{ experiment[5] }}</h5>
+                        <h6 class="CardMain">{{ experiment[4] }}</h6>
+                <div class="card-footer" style="width: 18rem;">
 
-                {% if post[5]=="Not Yet" %}
-                    <span class="badge badge-secondary" >answered: {{ post[5] }}</span>
-                {% elif post[5]=="Bad"  %}
-                    <span class="badge badge-danger" >answered: {{ post[5] }}</span>
-                {% elif post[5]=="Good"  %}
-                    <span class="badge badge-success" >answered: {{ post[5] }}</span>
-                {% endif %}
+                    {% for tag in experiment[1] %}
+                        <span class="badge badge-info" >{{ tag }}</span>
+                    {% endfor %}
 
-                {% if post[6]=="Not Yet" %}
-                    <span class="badge badge-secondary" >interview: {{ post[6] }}</span>
-                {% elif post[6]=="Scheduled"  %}
-                    <span class="badge badge-info" >interview: {{ post[6] }}</span>
-                {% elif post[6]=="Bad"  %}
-                    <span class="badge badge-danger" >interview: {{ post[6] }}</span>
-                {% elif post[6]=="Good"  %}
-                    <span class="badge badge-success" >interview: {{ post[6] }}</span>
-                {% endif %}
-                <span class="badge badge-dark">Type: {{ post[7] }}</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        
-    {% endfor %}
-</div> -->
+            
+            
+        {% endfor %}
+    {% endif %}
+</div>
     </div>
 </div>
 {% endblock %}

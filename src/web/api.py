@@ -21,19 +21,51 @@ class WebApp():
         app = self.app
         @app.route('/')
         def index():
-            # cursor = self.db_configs.conn.cursor()
-            # cursor.execute('SELECT * FROM universities')
-            # universities = cursor.fetchall()
-
-            # cursor.execute('SELECT * FROM supervisors')
-            # supervisors = cursor.fetchall()
-
-            # info = utils.info(supervisors, universities)
             return flask.render_template('index.html', post=None)
 
-        @app.route('/experiments')
+        @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
-            return flask.render_template('experiments.html', experiments_list=None)
+            if flask.request.method == 'POST' and len(flask.request.form):
+                Authors = flask.request.form['Author']
+                Hash_ID = flask.request.form['Hash_ID']
+                Text = flask.request.form['Text']
+                date_start = flask.request.form['date_start']
+                date_end = flask.request.form['date_end']
+                Tags = flask.request.form['Tags']
+                rows = []
+                if Hash_ID != '':
+                    sql_command = 'SELECT * FROM experiments WHERE id_hash == ? AND ' 
+                    rows.append(Hash_ID)
+                else:
+                    sql_command = 'SELECT * FROM experiments WHERE '
+                    if Authors != '':
+                        sql_command += 'author == ? AND '
+                        rows.append(Authors)
+                    if Text != '':
+                        sql_command += 'text like %?% AND '
+                        rows.append(Text)
+                    if date_start != '':
+                        sql_command += 'date >= ? AND '
+                        rows.append(date_start)
+                    if date_end != '':
+                        sql_command += 'date <= ? AND '
+                        rows.append(date_end)
+                    if Tags != '':
+                        sql_command += 'tags like ? AND '
+                        rows.append(f'%{Tags}%')
+                sql_command = sql_command + '1'
+                rows = tuple(rows)
+                cursor = self.db_configs.conn.cursor()
+                cursor.execute(sql_command, rows)
+                experiments_list = cursor.fetchall()
+                experiments_list = list(experiments_list)
+                for i, experiment in enumerate(experiments_list):
+                    experiment = list(experiment)
+                    experiment[1] = utils.parse_tags(experiment[1])
+                    experiments_list[i] = experiment
+                return flask.render_template('experiments.html', experiments_list=experiments_list)
+            else:
+                return flask.render_template('experiments.html', experiments_list=None)
 
         @app.route('/supervisors_format', methods=['GET', 'POST'])
         def supervisors_format():
@@ -94,7 +126,7 @@ class WebApp():
                     flask.flash('Please fill all the forms')
                     return flask.redirect(flask.url_for('insert_experiment'))
 
-                if Author == '' or university == '' or Tags == '' or date == '':
+                if Author == '' or Tags == '' or date == '':
                     flask.flash('Please fill all the forms')
                     return flask.redirect(flask.url_for('insert_experiment'))
                 success_bool = operators.insert_experiment(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes)

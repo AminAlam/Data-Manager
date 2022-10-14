@@ -10,7 +10,7 @@ class database_configs():
                                         tags text,
                                         extra_txt text,
                                         file_path text,
-                                        date text NOT NULL,
+                                        date DATETIME NOT NULL,
                                         author text NOT NULL,
                                         id integer primary key autoincrement
                                     ); """, 
