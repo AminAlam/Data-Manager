@@ -17,6 +17,11 @@ class database_configs():
         """ CREATE TABLE IF NOT EXISTS tags (
                                         tag text NOT NULL,
                                         id integer primary key autoincrement
+                                    ); """,
+
+        """ CREATE TABLE IF NOT EXISTS authors (
+                                        author text NOT NULL,
+                                        id integer primary key autoincrement
                                     ); """
         ]
     def make_conn(self):

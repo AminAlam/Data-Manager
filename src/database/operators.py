@@ -27,6 +27,7 @@ def insert_experiment(conn, Author, date, Tags, File_Path, Notes):
     try:
         Tags_parsed = utils.parse_tags(Tags)
         insert_tag(conn, Tags_parsed)
+        insert_author(conn, Author)
         cursor = conn.cursor()
         hash_id = utils.generate_hash(conn)
         rows = [(hash_id, Tags, Notes, File_Path, date, Author, None)]
@@ -67,11 +68,23 @@ def insert_tag(conn, Tags_parsed):
         utils.error_log(e)
         success_bool = 0
     return success_bool
-
-
 ### Tags
 
 
+### Authors
+def insert_author(conn, Author):
+    try:
+        if not utils.check_existence_author(conn, Author):
+            cursor = conn.cursor()
+            rows = [(Author, None)]
+            cursor.executemany('insert into authors values (?, ?)', rows)
+            conn.commit()
+        success_bool = 1
+    except Error as e:
+        utils.error_log(e)
+        success_bool = 0
+    return success_bool
+### Authors
 
 def edit_supervisor(conn, name, university, email, country, position_type, emailed, answer, interview, notes, id, email_date=None, rank=None, webpage=None):
     cursor = conn.cursor()

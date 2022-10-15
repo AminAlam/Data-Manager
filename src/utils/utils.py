@@ -31,6 +31,15 @@ def check_existence_table(db_configs):
         open_bool = 0
     return open_bool
 
+def check_existence_author(conn, author):
+    cursor = conn.cursor()
+    cursor.execute('select * from authors where author=?', (author,))
+    authors = cursor.fetchall()
+    if len(authors)==0:
+        return False
+    else:
+        return True
+
 def parse_tags(Tags):
     Tags = Tags.split(',')
     Tags = [tag.strip() for tag in Tags]
@@ -58,78 +67,6 @@ def generate_hash(conn):
     else:
         return generate_hash(conn)
 
-
-def check_existence_university_in_universities(conn, name):
-    cursor = conn.cursor()
-    cursor.execute("SELECT rowid FROM universities WHERE name = ?", (name,))
-    data=cursor.fetchall()
-    if len(data)==0:
-        print('There is no university named %s'%name)
-        existence_bool = 0
-    else:
-        print('University %s found with rowids %s'%(name,','.join(map(str, next(zip(*data))))))
-        existence_bool = 1
-    return existence_bool
-
-def check_existence_supervisor_in_supervisors(conn, email):
-    cursor = conn.cursor()
-    cursor.execute("SELECT rowid FROM supervisors WHERE email = ?", (email,))
-    data=cursor.fetchall()
-    if len(data)==0:
-        print('There is no supervisor with email =  %s'%email)
-        existence_bool = 0
-    else:
-        print('Supervisors with email %s found with rowids %s'%(email,','.join(map(str, next(zip(*data))))))
-        existence_bool = 1
-    return existence_bool
-
-
-def info(supervisors, universities):
-    num_of_supervisors = len(supervisors)
-    num_of_universities = len(universities)
-    num_email_sent = 0
-    num_good_answers = 0
-    num_bad_answers = 0
-    num_scheduled_interviews = 0
-    num_bad_interviews = 0
-    num_good_interviews = 0
-    num_msc_positions = 0
-    num_phd_positions = 0
-
-    for supervisor in supervisors:
-        if supervisor[4] == 'Yes':
-            num_email_sent += 1
-        if supervisor[5] == 'Good':
-            num_good_answers += 1
-        elif supervisor[5] == 'Bad':
-            num_bad_answers += 1
-        
-        if supervisor[6] == 'Scheduled':
-            num_scheduled_interviews += 1
-        elif supervisor[6] == 'Bad':
-            num_bad_interviews += 1
-        elif supervisor[6] == 'Good':
-            num_good_interviews += 1
-
-        if supervisor[7] == 'MSc':
-            num_msc_positions = num_msc_positions + 1
-        elif supervisor[7] == 'PHD':
-            num_phd_positions = num_phd_positions + 1
-
-    return [num_of_supervisors, num_of_universities, num_email_sent, 
-            num_good_answers, num_bad_answers, num_scheduled_interviews, 
-            num_bad_interviews, num_good_interviews, num_msc_positions, 
-            num_phd_positions]
-
-def calc_difference_dates(date_email):
-    if date_email != '':
-        date1 = date.today()
-        # conver str to datetime
-        date2 = datetime.strptime(date_email, "%Y-%m-%d").date()
-        diff =  date1 - date2
-        return diff.days
-    else:
-        return 'Date is not indicated'
 
 def apply_updates2db(db_configs):
     # add email_date to the database

@@ -42,8 +42,8 @@ class WebApp():
                         sql_command += 'author == ? AND '
                         rows.append(Authors)
                     if Text != '':
-                        sql_command += 'text like %?% AND '
-                        rows.append(Text)
+                        sql_command += 'text like ? AND '
+                        rows.append(f'%{Text}%')
                     if date_start != '':
                         sql_command += 'date >= ? AND '
                         rows.append(date_start)
@@ -67,51 +67,11 @@ class WebApp():
             else:
                 return flask.render_template('experiments.html', experiments_list=None)
 
-        @app.route('/supervisors_format', methods=['GET', 'POST'])
-        def supervisors_format():
-            if flask.request.method == 'POST':
-                emailed = flask.request.form['emailed']
-                answered = flask.request.form['answered']
-                interview = flask.request.form['interview']
-                position_type = flask.request.form['position_type']
-
-                sql_command = 'SELECT * FROM supervisors WHERE ' 
-                infos = []
-                if emailed != 'All':
-                    sql_command = sql_command + 'emailed=? AND '
-                    infos.append(emailed)
-                if answered != 'All':
-                    sql_command = sql_command + 'answer=? AND '
-                    infos.append(answered)
-                if interview != 'All':
-                    sql_command = sql_command + 'interview=? AND '
-                    infos.append(interview)
-                if position_type != 'All':
-                    sql_command = sql_command + 'position_type=? AND '
-                    infos.append(position_type)
-                sql_command = sql_command + '1'
-                cursor = self.db_configs.conn.cursor()
-                infos = tuple(infos)
-                cursor.execute(sql_command, infos)
-                supervisors = cursor.fetchall()
-                supervisors = utils.email_date_check(supervisors)
-                filters = [emailed, answered, interview, position_type]
-                return flask.render_template('supervisors.html', posts=supervisors, filters=filters)
-
-        @app.route('/<int:id>/supervisor')
-        def supervisor(id):
-            cursor = self.db_configs.conn.cursor()
-            cursor.execute('SELECT * FROM supervisors where id = ?', (id,))
-            supervisors = cursor.fetchall()
-            return flask.render_template('supervisor.html', posts=supervisors)
+        
 
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         def insert_experiment():
             return flask.render_template('insert_experiment.html')
-
-        @app.route('/search_for_experiment', methods=('GET', 'POST'))
-        def search_for_experiment():
-            return flask.render_template('search_for_experiment.html')
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         def insert_experiment_to_db():
@@ -138,6 +98,40 @@ class WebApp():
 
                 flask.flash(message)
                 return flask.redirect(flask.url_for('index'))
+
+
+
+        @app.route("/author_search", methods=["POST", "GET"])
+        def author_search():
+            searchbox = flask.request.form.get("text")
+            if searchbox != '' and searchbox != ' ':
+                try:
+                    cursor = self.db_configs.conn.cursor()
+                    cursor.execute("select *  FROM authors WHERE author LIKE ?", (f"%{searchbox}%",))
+                    result = cursor.fetchall()
+                except:
+                    result = None
+            else:
+                result = None
+            return flask.jsonify(result)
+        
+        @app.route("/tags_search", methods=["POST", "GET"])
+        def tags_search():
+            searchbox = flask.request.form.get("text")
+            if searchbox != '' and searchbox != ' ':
+                try:
+                    cursor = self.db_configs.conn.cursor()
+                    cursor.execute("select *  FROM tags WHERE tag LIKE ?", (f"%{searchbox}%",))
+                    result = cursor.fetchall()
+                except:
+                    result = None
+            else:
+                result = None
+            return flask.jsonify(result)
+
+
+
+
 
         @app.route('/<int:id>/edit_supervisor_in_db', methods=['GET', 'POST'])
         def edit_supervisor_in_db(id):

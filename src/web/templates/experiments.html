@@ -7,10 +7,15 @@
     <form action="/experiments" method=post enctype=multipart/form-data>
         <div class="row" style="padding-top: 2rem;text-align: center;">
 
-            <div class="form-group col-md-6">
+        <div class="form-group col-md-12 SearchBarBody">
+            <div class="dropdown show SearchBarMain">
+            <div class="dropdown-menu show SearchBarMainBox" id="SearchBarMainBox">
                 <label for="Author">Author: </label>
-                <input class="form-control" name="Author"> 
+                <input  class="SearchBarBox dropdown-header" type="search" id="author_search" placeholder="Search..." name="Author">
+                <div class="SearchBarBox" id="author_search_datalist"></div>
+            </div> 
             </div>
+        </div>
 
             <div class="form-group col-md-6">
                 <label for="Hash_ID">Hash ID: </label>
@@ -31,11 +36,19 @@
                 </div>
             </div>
 
-            <div class="form-group col-md-12">
-                <label for="Tags">Tags: </label>
-                <input class="form-control" name="Tags"> 
+            
+            <div class="form-group col-md-12 SearchBarBody">
+                    <div class="dropdown show SearchBarMain">
+                    <div class="dropdown-menu show SearchBarMainBox" id="SearchBarMainBox">
+                        <label for="Tags">Tags: </label>
+                        <input  class="SearchBarBox dropdown-header" type="search" id="tags_search" placeholder="Search..." name="Tags">
+                        <div class="SearchBarBox" id="tags_search_datalist"></div>
+                    </div> 
+                    </div>
             </div>
             
+
+    
             <div class="form-group col-md-12">
                 <label for="Text">Text: </label>
                 <input class="form-control" name="Text"> 
