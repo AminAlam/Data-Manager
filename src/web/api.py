@@ -3,6 +3,7 @@ sys.path.append('../database')
 sys.path.append('../utils')
 
 import utils
+import search_engine
 import operators
 import flask
 from threading import Thread
@@ -26,43 +27,7 @@ class WebApp():
         @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
             if flask.request.method == 'POST' and len(flask.request.form):
-                Authors = flask.request.form['Author']
-                Hash_ID = flask.request.form['Hash_ID']
-                Text = flask.request.form['Text']
-                date_start = flask.request.form['date_start']
-                date_end = flask.request.form['date_end']
-                Tags = flask.request.form['Tags']
-                rows = []
-                if Hash_ID != '':
-                    sql_command = 'SELECT * FROM experiments WHERE id_hash == ? AND ' 
-                    rows.append(Hash_ID)
-                else:
-                    sql_command = 'SELECT * FROM experiments WHERE '
-                    if Authors != '':
-                        sql_command += 'author == ? AND '
-                        rows.append(Authors)
-                    if Text != '':
-                        sql_command += 'text like ? AND '
-                        rows.append(f'%{Text}%')
-                    if date_start != '':
-                        sql_command += 'date >= ? AND '
-                        rows.append(date_start)
-                    if date_end != '':
-                        sql_command += 'date <= ? AND '
-                        rows.append(date_end)
-                    if Tags != '':
-                        sql_command += 'tags like ? AND '
-                        rows.append(f'%{Tags}%')
-                sql_command = sql_command + '1'
-                rows = tuple(rows)
-                cursor = self.db_configs.conn.cursor()
-                cursor.execute(sql_command, rows)
-                experiments_list = cursor.fetchall()
-                experiments_list = list(experiments_list)
-                for i, experiment in enumerate(experiments_list):
-                    experiment = list(experiment)
-                    experiment[1] = utils.parse_tags(experiment[1])
-                    experiments_list[i] = experiment
+                experiments_list = search_engine.filter_experiments(self.db_configs.conn, flask.request.form)
                 return flask.render_template('experiments.html', experiments_list=experiments_list)
             else:
                 return flask.render_template('experiments.html', experiments_list=None)
@@ -104,30 +69,17 @@ class WebApp():
         @app.route("/author_search", methods=["POST", "GET"])
         def author_search():
             searchbox = flask.request.form.get("text")
-            if searchbox != '' and searchbox != ' ':
-                try:
-                    cursor = self.db_configs.conn.cursor()
-                    cursor.execute("select *  FROM authors WHERE author LIKE ?", (f"%{searchbox}%",))
-                    result = cursor.fetchall()
-                except:
-                    result = None
-            else:
-                result = None
-            return flask.jsonify(result)
+            return search_engine.author_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
         
         @app.route("/tags_search", methods=["POST", "GET"])
         def tags_search():
             searchbox = flask.request.form.get("text")
-            if searchbox != '' and searchbox != ' ':
-                try:
-                    cursor = self.db_configs.conn.cursor()
-                    cursor.execute("select *  FROM tags WHERE tag LIKE ?", (f"%{searchbox}%",))
-                    result = cursor.fetchall()
-                except:
-                    result = None
-            else:
-                result = None
-            return flask.jsonify(result)
+            return search_engine.tags_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+
+        @app.route("/text_search", methods=["POST", "GET"])
+        def text_search():
+            searchbox = flask.request.form.get("Text")
+            return search_engine.text_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
 
 
 
