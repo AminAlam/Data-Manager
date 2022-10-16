@@ -37,7 +37,7 @@
             </div>
 
             
-            <div class="form-group col-md-12 SearchBarBody">
+            <div class="form-group col-md-6 SearchBarBody">
                     <div class="dropdown show SearchBarMain">
                     <div class="dropdown-menu show SearchBarMainBox" id="SearchBarMainBox">
                         <label for="Tags">Tags: </label>
@@ -46,13 +46,18 @@
                     </div> 
                     </div>
             </div>
-            
 
-    
-            <div class="form-group col-md-12">
-                <label for="Text">Text: </label>
-                <input class="form-control" name="Text"> 
-            </div>
+
+            <div class="form-group col-md-6 SearchBarBody">
+                <div class="dropdown show SearchBarMain">
+                <div class="dropdown-menu show SearchBarMainBox" id="SearchBarMainBox">
+                    <label for="Text">Text: </label>
+                    <input  class="SearchBarBox dropdown-header" type="search" id="text_search" placeholder="Search..." name="Text" autocomplete="off">
+                    <div class="SearchBarBox" id="text_search_datalist"></div>
+                </div> 
+                </div>
+        </div>
+
 
             <div class="form-group col">
                 <button class="btn btn-primary" type=submit Course> Filter</button>
