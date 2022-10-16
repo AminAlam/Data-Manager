@@ -28,6 +28,7 @@ def tags_search_in_db(conn, keyword):
     return jsonify(result)
 
 def text_search_in_db(conn, keyword):
+    print(keyword)
     if keyword != '' and keyword != ' ':
         try:
             cursor = conn.cursor()
@@ -37,6 +38,12 @@ def text_search_in_db(conn, keyword):
             result = None
     else:
         result = None
+    for i,r in enumerate(result):
+        r = list(r)
+        index = r[2].find(keyword)
+        r[2] = r[2][index-20:index+20]
+        r = [r[2], r[-1]]
+        result[i] = tuple(r)
     return jsonify(result)
 
 def filter_experiments(conn, post_request_form):
@@ -48,15 +55,15 @@ def filter_experiments(conn, post_request_form):
     Tags = post_request_form['Tags']
     rows = []
     if Hash_ID != '':
-        sql_command = 'SELECT * FROM experiments WHERE id_hash == ? AND ' 
-        rows.append(Hash_ID)
+        sql_command = 'SELECT * FROM experiments WHERE id_hash like ? AND ' 
+        rows.append(f'%{Hash_ID}%')
     else:
         sql_command = 'SELECT * FROM experiments WHERE '
         if Authors != '':
             sql_command += 'author == ? AND '
             rows.append(Authors)
         if Text != '':
-            sql_command += 'text like ? AND '
+            sql_command += 'extra_txt like ? AND '
             rows.append(f'%{Text}%')
         if date_start != '':
             sql_command += 'date >= ? AND '
