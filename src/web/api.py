@@ -99,73 +99,20 @@ class WebApp():
             flask.flash(message)
             return flask.redirect(flask.url_for('index'))
             
-
-
-
-
-
-        @app.route('/<int:id>/edit_supervisor_in_db', methods=['GET', 'POST'])
-        def edit_supervisor_in_db(id):
-            if flask.request.method == 'POST':
-                try:
-                    name = flask.request.form['name']
-                    university = flask.request.form['university']
-                    email = flask.request.form['email']
-                    country = flask.request.form['country']
-                    webpage = flask.request.form['webpage']
-                    position_type = flask.request.form['position_type']
-                    university_rank = flask.request.form['university_rank']
-                    emailed = flask.request.form['emailed']
-                    answer = flask.request.form['answer']
-                    interview = flask.request.form['interview']
-                    notes = flask.request.form['notes']
-                    email_date = flask.request.form['email_date_value']
-                except:
-                    flask.flash('Please Fill all the Forms')
-                    return flask.redirect(flask.url_for('supervisor', id=id))
-
-                if name == '' or university == '' or email == '' or country == '':
-                    flask.flash('Please Fill all the Forms')
-                    return flask.redirect(flask.url_for('supervisor', id=id))
-                operators.edit_supervisor(self.db_configs.conn, name, university, email, country,
-                                webpage=webpage, position_type=position_type, rank=university_rank, 
-                                emailed=emailed, answer=answer, interview=interview, notes=notes, id=id,
-                                email_date=email_date)
-            
-                message = 'Supervisor is updated successfully'
-                flask.flash(message)
-                return flask.redirect(flask.url_for('supervisor', id=id))
-
-        @app.route('/<int:id>/delete_supervisor_in_db', methods=['GET', 'POST'])
-        def delete_supervisor_in_db(id):
-            operators.delete_supervisor(self.db_configs.conn, id)
-            message = 'Supervisor is deleted successfully'
-            flask.flash(message)
-            return flask.redirect(flask.url_for('supervisors'))
-
-        @app.route('/universities_format', methods=['GET', 'POST'])
-        def universities_format():
-            rank = flask.request.form['rank']
-            if rank == 'Default':
-                cursor = self.db_configs.conn.cursor()
-                cursor.execute('SELECT * FROM universities')
-                filters = ['Default']
-            elif rank == 'Ascending':
-                cursor = self.db_configs.conn.cursor()
-                cursor.execute('SELECT * FROM universities ORDER BY rank ASC')
-                filters = ['Ascending']
+        @app.route("/experiment/<int:id>/delete_experiment", methods=["POST", "GET"])
+        def delete_experiment(id):
+            success_bool = operators.delete_experiment_from_db(self.db_configs.conn, id)
+            if success_bool:
+                message = 'Experiment is deleted successfully'
             else:
-                cursor = self.db_configs.conn.cursor()
-                cursor.execute('SELECT * FROM universities ORDER BY rank DESC')
-                filters = ['Descending']
-            universities = cursor.fetchall()
+                message = 'Something went wrong'
+            flask.flash(message)
+            return flask.redirect(flask.url_for('index'))
 
-            for university_no in range(0,len(universities)):
-                cursor.execute("SELECT rowid FROM supervisors WHERE university = ?", (universities[university_no][0],))
-                num_supervisors = len(cursor.fetchall())
-                universities[university_no] = universities[university_no]+(num_supervisors, )
 
-            return flask.render_template('universities.html', posts=universities, filters=filters)
+
+
+        
 
         @app.route('/export_csv')
         def export_csv():
