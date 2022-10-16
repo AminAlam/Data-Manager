@@ -2,38 +2,42 @@
 
 {% block content %}
 
- <title>Add experiment</title>
- <h1>Add new experiment</h1>
+ <title>Experiment {{experiment[0]}}</title>
+ <h1>Experiment {{experiment[0]}}</h1>
  <div class="container border rounded addpage">
- <form action="/insert_experiment_to_db" method=post enctype=multipart/form-data>
+ <form action="{{ url_for('update_experiment', id=experiment[-1]) }}" method=post enctype=multipart/form-data>
     <div class="form-row uploadrows">
         <div class="form-group col-md-6">
+          <label for="ID_Hash">ID Hash*</label>
+          <p class="form-control" name="ID_Hash"> {{experiment[0]}} </p>
+      </div>
+        <div class="form-group col-md-6">
             <label for="Author">Author*</label>
-            <input class="form-control" name="Author"> 
+            <input class="form-control" name="Author" value="{{experiment[5]}}"> 
         </div>
 
         <div class="form-group col-md-6">
           <div class="row" style="padding-top: 1rem;" id="Date_html_id">
             <label for="start">Date:</label>
-            <input type="date" id="date" name="date" min="2000-01-01" max="2099-12-31" value="2022-07-01">
+            <input type="date" id="date" name="date" min="2000-01-01" max="2099-12-31" value="{{experiment[4]}}">
           </div>
         </div>
 
         <div class="form-group col-md-12">
             <label for="Tags">Tags*</label>
-            <input class="form-control" name="Tags"> 
+            <input class="form-control" name="Tags" value="{{experiment[1]}}"> 
         </div>
 
         <div class="form-group col-md-12">
           <label for="File_Path">File Path</label>
-          <input class="form-control" name="File_Path"> 
+          <input class="form-control" name="File_Path" value="{{experiment[3]}}"> 
       </div>
 
 
 
         <div class="form-group col-md-12">
           <label for="Notes">Notes</label>
-          <textarea class="form-control" id="Notes" rows="3" name="Notes"></textarea>
+          <textarea class="form-control" id="Notes" rows="3" name="Notes" >{{experiment[2]}}</textarea>
         </div>
     </div>    
 
@@ -43,7 +47,7 @@
 <div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
 
   <div class="col-md-4">
-    <button class="btn btn-primary" type=submit Course> Insert Experiment</button>
+    <button class="btn btn-primary" type=submit Course> Update Experiment</button>
   </div>
 
 </div>

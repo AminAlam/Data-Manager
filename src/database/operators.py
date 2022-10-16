@@ -23,7 +23,7 @@ def create_table(conn, create_table_sql):
 
 
 ### Experiments
-def insert_experiment(conn, Author, date, Tags, File_Path, Notes):
+def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes):
     try:
         Tags_parsed = utils.parse_tags(Tags)
         insert_tag(conn, Tags_parsed)
@@ -39,8 +39,13 @@ def insert_experiment(conn, Author, date, Tags, File_Path, Notes):
         success_bool = 0
     return success_bool
 
-def edit_experiment(conn, id, Author, date, Tags, File_Path, Notes):
+def update_experiment_in_db(conn, id, post_form):
     try:
+        Author = post_form['Author']
+        date = post_form['date']
+        Tags = post_form['Tags']
+        File_Path = post_form['File_Path']
+        Notes = post_form['Notes']
         cursor = conn.cursor()
         rows = [(Tags, Notes, File_Path, date, Author, id)]
         cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, author=? where id=?', rows)

@@ -54,7 +54,7 @@ class WebApp():
                 if Author == '' or Tags == '' or date == '':
                     flask.flash('Please fill all the forms')
                     return flask.redirect(flask.url_for('insert_experiment'))
-                success_bool = operators.insert_experiment(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes)
+                success_bool = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes)
 
                 if success_bool:
                     message = 'Experiment is added successfully'
@@ -80,6 +80,25 @@ class WebApp():
         def text_search():
             searchbox = flask.request.form.get("text")
             return search_engine.text_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+
+        @app.route("/experiment/<int:id>", methods=["POST", "GET"])
+        def experiment(id):
+            cursor = self.db_configs.conn.cursor()
+            cursor.execute("SELECT * FROM experiments WHERE id=?", (id,))
+            experiment = cursor.fetchone()
+            return flask.render_template('experiment.html', experiment=experiment)
+        
+        @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
+        def update_experiment(id):
+            post_form = flask.request.form
+            success_bool = operators.update_experiment_in_db(self.db_configs.conn, id, post_form)
+            if success_bool:
+                message = 'Experiment is updated successfully'
+            else:
+                message = 'Something went wrong'
+            flask.flash(message)
+            return flask.redirect(flask.url_for('index'))
+            
 
 
 

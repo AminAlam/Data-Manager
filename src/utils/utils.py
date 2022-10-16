@@ -22,9 +22,7 @@ def init_db(db_configs):
 def check_existence_table(db_configs):
     conn = db_configs.conn
     cursor = conn.cursor()
-    #get the count of tables with the name
     cursor.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name=? ''', ['universities'])
-    #if the count is 1, then table exists
     if cursor.fetchone()[0]==1:
         open_bool = 1
     else:
