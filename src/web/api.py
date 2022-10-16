@@ -78,7 +78,7 @@ class WebApp():
 
         @app.route("/text_search", methods=["POST", "GET"])
         def text_search():
-            searchbox = flask.request.form.get("Text")
+            searchbox = flask.request.form.get("text")
             return search_engine.text_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
 
 

@@ -94,7 +94,7 @@ $(document).ready(function(){
 
 
 $(document).ready(function(){
-    
+
   $("#text_search").on("input",function(e){
     document.getElementById('text_search_datalist').style.display = "block";
       $("#text_search_datalist").empty();
@@ -105,7 +105,7 @@ $(document).ready(function(){
           success:function(res){
               var data = "";
               $.each(res,function(index,value){
-                  data += "<a class='search dropdown-item ' href=/"+value[-1]+">";
+                  data += "<a class='search dropdown-item' onclick='put_text(`text_search_datalist`, `text_search`, `"+value[0]+"`)'>";
                   data += value[0]+"</a>";
               });
               data += "</ul>";
