@@ -7,16 +7,6 @@
     <form action="/experiments" method=post enctype=multipart/form-data>
         <div class="row" style="padding-top: 2rem;text-align: center;">
 
-        <div class="form-group col-md-12 SearchBarBody">
-            <div class="dropdown show SearchBarMain">
-            <div class="dropdown-menu show SearchBarMainBox" id="SearchBarMainBox">
-                <label for="Author">Author: </label>
-                <input  class="SearchBarBox dropdown-header" type="search" id="author_search" placeholder="Search..." name="Author" autocomplete="off">
-                <div class="SearchBarBox" id="author_search_datalist"></div>
-            </div> 
-            </div>
-        </div>
-
             <div class="form-group col-md-6">
                 <label for="Hash_ID">Hash ID: </label>
                 <input class="form-control" name="Hash_ID"> 
@@ -36,8 +26,18 @@
                 </div>
             </div>
 
+            <div class="form-group col-md-4 SearchBarBody">
+                <div class="dropdown show SearchBarMain">
+                <div class="dropdown-menu show SearchBarMainBox" id="SearchBarMainBox">
+                    <label for="Author">Author: </label>
+                    <input  class="SearchBarBox dropdown-header" type="search" id="author_search" placeholder="Search..." name="Author" autocomplete="off">
+                    <div class="SearchBarBox" id="author_search_datalist"></div>
+                </div> 
+                </div>
+            </div>
+
             
-            <div class="form-group col-md-6 SearchBarBody">
+            <div class="form-group col-md-4 SearchBarBody">
                     <div class="dropdown show SearchBarMain">
                     <div class="dropdown-menu show SearchBarMainBox" id="SearchBarMainBox">
                         <label for="Tags">Tags: </label>
@@ -48,7 +48,7 @@
             </div>
 
 
-            <div class="form-group col-md-6 SearchBarBody">
+            <div class="form-group col-md-4 SearchBarBody">
                 <div class="dropdown show SearchBarMain">
                 <div class="dropdown-menu show SearchBarMainBox" id="SearchBarMainBox">
                     <label for="Text">Text: </label>
@@ -75,8 +75,10 @@
             <div class="card-block" style="margin: .5rem; margin-bottom: 1em; margin-top: 1em">
                 <div class="CardMain card text-center" style="width: 18rem;">
                  
-                        <h4 class="CardMain">{{experiment[0]}}</h4>
-       
+                        <a href="{{ url_for('experiment', id=experiment[-1]) }}">
+                            <h4 class="CardMain">{{experiment[0]}}</h4>
+                        </a>
+
                         <h5 class="CardMain">{{ experiment[5] }}</h5>
                         <h6 class="CardMain">{{ experiment[4] }}</h6>
                 <div class="card-footer" style="width: 18rem;">
