@@ -37,7 +37,8 @@ def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes):
     except Error as e:
         utils.error_log(e)
         success_bool = 0
-    return success_bool
+        hash_id = None
+    return success_bool, hash_id
 
 def update_experiment_in_db(conn, id, post_form):
     try:
