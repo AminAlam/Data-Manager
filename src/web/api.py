@@ -8,6 +8,7 @@ import operators
 import flask
 from threading import Thread
 import csv
+import os
 
 class WebApp():
     def __init__(self, db_configs, ip, port, static_folder): 
@@ -16,7 +17,7 @@ class WebApp():
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
         self.app.config['SECRET_KEY'] = 'evmermrefmwrf92i4=#RKM-!#$Km343FIJ!$Ifofi3fj2q4fj2M943f-02f40-F-132-4fk!#$fi91f-'
-
+        self.app.config['UPLOAD_FOLDER'] = 'src/database/uploaded_files'
 
     def run(self):    
         app = self.app
@@ -41,21 +42,29 @@ class WebApp():
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         def insert_experiment_to_db():
             if flask.request.method == 'POST':
-                try:
-                    Author = flask.request.form['Author']
-                    date = flask.request.form['date']
-                    Tags = flask.request.form['Tags']
-                    File_Path = flask.request.form['File_Path']
-                    Notes = flask.request.form['Notes']
-                except:
-                    flask.flash('Please fill all the forms')
-                    return flask.redirect(flask.url_for('insert_experiment'))
+                # try:
+                print(flask.request.form)
+                Author = flask.request.form['Author']
+                date = flask.request.form['date']
+                Tags = flask.request.form['Tags']
+                File_Path = flask.request.form['File_Path']
+                Notes = flask.request.form['Notes']
+                Files = flask.request.files.getlist('Files')
+                # except:
+                #     flask.flash('Please fill all the forms')
+                #     return flask.redirect(flask.url_for('insert_experiment'))
 
                 if Author == '' or Tags == '' or date == '':
                     flask.flash('Please fill all the forms')
                     return flask.redirect(flask.url_for('insert_experiment'))
-                success_bool = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes)
-
+                success_bool, hash_id = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes)
+                cwd = os.getcwd()
+                folder_path = os.path.join(cwd, app.config['UPLOAD_FOLDER'], hash_id)
+                os.mkdir(folder_path)
+                if hash_id:
+                    for file in Files:
+                        if file.filename != '':
+                            file.save(os.path.join(app.config['UPLOAD_FOLDER'], folder_path, file.filename))
                 if success_bool:
                     message = 'Experiment is added successfully'
                 else:
@@ -86,7 +95,14 @@ class WebApp():
             cursor = self.db_configs.conn.cursor()
             cursor.execute("SELECT * FROM experiments WHERE id=?", (id,))
             experiment = cursor.fetchone()
-            return flask.render_template('experiment.html', experiment=experiment)
+            hash_id = experiment[0]
+            dirName = os.path.join(app.config['UPLOAD_FOLDER'], hash_id)
+            List = os.listdir(dirName)
+            for count, filename in enumerate(List):
+                List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), filename]
+            Files = List
+            print(len(Files), Files[0])
+            return flask.render_template('experiment.html', experiment=experiment, Files=Files)
         
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
         def update_experiment(id):
@@ -112,7 +128,7 @@ class WebApp():
 
 
 
-        
+
 
         @app.route('/export_csv')
         def export_csv():
