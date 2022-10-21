@@ -150,10 +150,11 @@ class WebApp():
             return flask.send_from_directory(app.root_path, filename)
 
         # flask send file for download
-        @app.route('/<path:path>')
+        @app.route('/send_file/<path:path>')
         def send_file(path):
-            # flask send file to browser for download
-            return flask.send_from_directory(app.root_path, path, as_attachment=True)
+            cwd = os.getcwd()
+            
+            return flask.send_from_directory(cwd, path, as_attachment=True)#flask.redirect(flask.url_for('index'))
 
 
 
