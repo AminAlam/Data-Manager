@@ -17,6 +17,7 @@ class WebApp():
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
         self.app.config['SECRET_KEY'] = 'evmermrefmwrf92i4=#RKM-!#$Km343FIJ!$Ifofi3fj2q4fj2M943f-02f40-F-132-4fk!#$fi91f-'
+        self.app.config['DATABASE_FOLDER'] = 'src/database'
         self.app.config['UPLOAD_FOLDER'] = 'src/database/uploaded_files'
 
     def run(self):    
@@ -101,7 +102,6 @@ class WebApp():
             for count, filename in enumerate(List):
                 List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), filename]
             Files = List
-            print(len(Files), Files[0])
             return flask.render_template('experiment.html', experiment=experiment, Files=Files)
         
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
@@ -124,6 +124,16 @@ class WebApp():
                 message = 'Something went wrong'
             flask.flash(message)
             return flask.redirect(flask.url_for('index'))
+        
+        @app.route("/protocols", methods=["POST", "GET"])
+        def protocols():
+            # list all files in the protocols folder
+            dirName = os.path.join(app.config['DATABASE_FOLDER'], 'protocols')
+            List = os.listdir(dirName)
+            for count, filename in enumerate(List):
+                List[count] = [os.path.join(app.config['DATABASE_FOLDER'], 'protocols', filename), filename]
+            protocols_file_list = List
+            return flask.render_template('protocols.html', Files=protocols_file_list)
 
 
 
