@@ -20,6 +20,8 @@ if not utils.check_existence_table(db_configs):
 # apply updates to the database (if exists)
 utils.apply_updates2db(db_configs)
 
+
+
 # Args parser from command line
 @click.command()
 @click.option('--server_ip', default='localhost', help='Server address')
@@ -27,6 +29,7 @@ utils.apply_updates2db(db_configs)
 @click.option('--static_folder', default='web', help='Folder with static files')
 def setup_all(server_ip, port, static_folder):
     webapp = api.WebApp(db_configs, server_ip, port, static_folder)
+    utils.init_directories(webapp.app.config['DATABASE_FOLDER'])
     webapp.run()
 
 if __name__ == '__main__':
