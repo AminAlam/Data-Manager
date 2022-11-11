@@ -39,7 +39,6 @@ class WebApp():
         def insert_experiment():
             json_file_path = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
             conditions = utils.read_json_file(json_file_path)
-            print(conditions)
             return flask.render_template('insert_experiment.html', conditions=conditions)
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
