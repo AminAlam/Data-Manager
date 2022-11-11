@@ -3,6 +3,7 @@ import requests
 import os
 import random
 import string
+import json
 sys.path.append('../database')
 import operators
 
@@ -13,7 +14,17 @@ def error_log(error):
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(exc_type, fname, exc_tb.tb_lineno)
 
-
+def init_directories(DATABASE_FOLDER):
+    dir2make = os.path.join(DATABASE_FOLDER, 'uploaded_files')
+    if not os.path.exists(dir2make):
+        os.makedirs(dir2make)
+    dir2make = os.path.join(DATABASE_FOLDER, 'protocols')
+    if not os.path.exists(dir2make):
+        os.makedirs(dir2make)
+    dir2make = os.path.join(DATABASE_FOLDER, 'conditions')
+    if not os.path.exists(dir2make):
+        os.makedirs(dir2make)
+    
 def init_db(db_configs):
     print('Initilizing the databse')
     for table in db_configs.table_lists:
@@ -43,8 +54,6 @@ def parse_tags(Tags):
     Tags = [tag.strip() for tag in Tags]
     return Tags
 
-
-
 def check_existence_tag(conn, tag):
     cursor = conn.cursor()
     cursor.execute('select * from tags where tag=?', (tag,))
@@ -53,7 +62,6 @@ def check_existence_tag(conn, tag):
         return False
     else:
         return True
-
 
 def generate_hash(conn):
     hash_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
@@ -65,6 +73,20 @@ def generate_hash(conn):
     else:
         return generate_hash(conn)
 
+def experiment_list_maker(experiments_list):
+    experiments_list = list(experiments_list)
+    for i, experiment in enumerate(experiments_list):
+        experiment = list(experiment)
+        experiment[1] = parse_tags(experiment[1])
+        experiments_list[i] = experiment
+    return experiments_list
+
+def check_for_internet_connection():
+    try:
+        requests.get('http://www.google.com')
+        return True
+    except requests.ConnectionError:
+        return False
 
 def apply_updates2db(db_configs):
     # add email_date to the database
@@ -76,43 +98,7 @@ def apply_updates2db(db_configs):
     #     cursor.execute('ALTER TABLE supervisors ADD COLUMN email_date timestamp')
     pass
 
-def check_for_update():
-    if check_for_internet_connection():
-        file_url = 'https://github.com/MohammadAminAlamalhoda/Apply-Doc-Manager/blob/main/apply_doc_manager.py'
-        readme_response = requests.get(file_url)
-        text_repo = readme_response.text                   
-        text_local = os.popen('cat apply_doc_manager.py').read()
-        text_local = text_local.split('\n')[0]
-        if text_local not in text_repo:
-            return True
-        else:
-            return False
-    else:
-        return False
-
-def check_for_internet_connection():
-    try:
-        requests.get('http://www.google.com')
-        return True
-    except requests.ConnectionError:
-        return False
-
-def email_date_check(supervisors):
-    for supervisor_no, supervisor in enumerate(supervisors):
-        if supervisor[4] == 'Yes':
-            diff = calc_difference_dates(supervisor[12])
-            supervisor = list(supervisor)
-            if type(diff) == int:
-                if diff == 0:
-                    passed_days = 'Today'
-                elif diff == 1:
-                    passed_days = 'Yesterday'
-                elif diff < 0:
-                    passed_days = 'In the future!!'
-                else:
-                    passed_days = f'{diff} days ago'
-            else:
-                passed_days = diff
-            supervisor[4] = passed_days
-            supervisors[supervisor_no] = tuple(supervisor)
-    return supervisors
+def read_json_file(json_file):
+    with open(json_file) as f:
+        data = json.load(f)
+    return data

@@ -83,9 +83,14 @@ def filter_experiments(conn, post_request_form):
     cursor = conn.cursor()
     cursor.execute(sql_command, rows)
     experiments_list = cursor.fetchall()
-    experiments_list = list(experiments_list)
-    for i, experiment in enumerate(experiments_list):
-        experiment = list(experiment)
-        experiment[1] = utils.parse_tags(experiment[1])
-        experiments_list[i] = experiment
+    experiments_list=  utils.experiment_list_maker(experiments_list)
     return experiments_list
+
+def experiments_time_line(conn):
+    # select last 10 experiments
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM experiments ORDER BY date DESC LIMIT 10")
+    experiments_list = cursor.fetchall()
+    experiments_list=  utils.experiment_list_maker(experiments_list)
+    return experiments_list
+    

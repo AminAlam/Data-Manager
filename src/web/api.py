@@ -17,14 +17,15 @@ class WebApp():
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
         self.app.config['SECRET_KEY'] = 'evmermrefmwrf92i4=#RKM-!#$Km343FIJ!$Ifofi3fj2q4fj2M943f-02f40-F-132-4fk!#$fi91f-'
-        self.app.config['DATABASE_FOLDER'] = 'src/database'
-        self.app.config['UPLOAD_FOLDER'] = 'src/database/uploaded_files'
+        self.app.config['DATABASE_FOLDER'] = './src/database'
+        self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
 
     def run(self):    
         app = self.app
-        @app.route('/')
+        @app.route('/', methods=['GET', 'POST'])
         def index():
-            return flask.render_template('index.html', post=None)
+            experiments_list = search_engine.experiments_time_line(self.db_configs.conn)
+            return flask.render_template('index.html', experiments_list=experiments_list)
 
         @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
@@ -33,12 +34,13 @@ class WebApp():
                 return flask.render_template('experiments.html', experiments_list=experiments_list)
             else:
                 return flask.render_template('experiments.html', experiments_list=None)
-
         
-
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         def insert_experiment():
-            return flask.render_template('insert_experiment.html')
+            json_file_path = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
+            conditions = utils.read_json_file(json_file_path)
+            print(conditions)
+            return flask.render_template('insert_experiment.html', conditions=conditions)
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         def insert_experiment_to_db():
@@ -73,8 +75,6 @@ class WebApp():
 
                 flask.flash(message)
                 return flask.redirect(flask.url_for('index'))
-
-
 
         @app.route("/author_search", methods=["POST", "GET"])
         def author_search():
@@ -134,26 +134,6 @@ class WebApp():
                 List[count] = [os.path.join(app.config['DATABASE_FOLDER'], 'protocols', filename), filename]
             protocols_file_list = List
             return flask.render_template('protocols.html', Files=protocols_file_list)
-
-
-
-
-
-
-        @app.route('/export_csv')
-        def export_csv():
-            cursor = self.db_configs.conn.cursor()
-            cursor.execute('SELECT * FROM supervisors')
-            supervisors = cursor.fetchall()
-            file_name = 'supervisors.csv'
-            with open('web/'+file_name, 'w') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(['Name', 'University', 'Email', 'Country', 'Emailed?', 'Answered?', 'Interviewed?', 'Position Type', 'Webpage', 'Univerity Rank', 'Notes', 'ID', 'Email Date'])
-                for supervisor in supervisors:
-                    writer.writerow(supervisor)
-            send_file(file_name)
-            flask.flash(flask.Markup("CSV file is exported successfully! File is located at: <a href='"+file_name+"' download class='alert-link'>here </a>"))
-            return flask.redirect(flask.url_for('index'))
 
         @app.route("/<path:filename>")
         def static_dir(filename):
