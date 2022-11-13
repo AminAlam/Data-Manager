@@ -27,7 +27,9 @@ class WebApp():
         @app.route('/', methods=['GET', 'POST'])
         def index():
             experiments_list = search_engine.experiments_time_line(self.db_configs.conn)
-            return flask.render_template('index.html', experiments_list=experiments_list)
+            experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
+            experiments_html = flask.Markup(experiments_html)
+            return flask.render_template('index.html', experiments_html=experiments_html)
 
         @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
@@ -36,9 +38,11 @@ class WebApp():
             conditions_html = flask.Markup(conditions_html)
             if flask.request.method == 'POST' and len(flask.request.form):
                 experiments_list = search_engine.filter_experiments(self.db_configs.conn, flask.request.form)
-                return flask.render_template('experiments.html', experiments_list=experiments_list, conditions_html=conditions_html)
+                experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
+                experiments_html = flask.Markup(experiments_html)
+                return flask.render_template('experiments.html', experiments_html=experiments_html, conditions_html=conditions_html)
             else:
-                return flask.render_template('experiments.html', experiments_list=None, conditions_html=conditions_html)
+                return flask.render_template('experiments.html', experiments_html=None, conditions_html=conditions_html)
         
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         def insert_experiment():
@@ -111,7 +115,13 @@ class WebApp():
             for count, filename in enumerate(List):
                 List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), filename]
             Files = List
-            return flask.render_template('experiment.html', experiment=experiment, Files=Files)
+
+            conditions = utils.read_json_file(self.app.config['CONDITOINS_JSON'])
+            target_conditions = experiment[6].split(',')
+            conditions = utils.modify_conditions_json(conditions, target_conditions)
+            conditions_html = flask.render_template('conditions.html', conditions=conditions)
+            conditions_html = flask.Markup(conditions_html)
+            return flask.render_template('experiment.html', experiment=experiment, Files=Files, conditions_html=conditions_html)
         
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
         def update_experiment(id):
