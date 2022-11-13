@@ -117,3 +117,13 @@ def read_json_file(json_file):
     with open(json_file) as f:
         data = json.load(f)
     return data    
+
+def modify_conditions_json(conditions, target_conditions):
+    for condition in conditions.keys():
+        for condition_nested in conditions[condition].keys():
+            for indx, single_condition in enumerate(conditions[condition][condition_nested]):
+                if f'{condition}&{condition_nested}&{single_condition}' in target_conditions:
+                    conditions[condition][condition_nested][indx] = [single_condition, "checked"]
+                else:
+                    conditions[condition][condition_nested][indx] = [single_condition, ""]
+    return conditions
