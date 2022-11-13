@@ -87,9 +87,9 @@ def filter_experiments(conn, post_request_form):
     return experiments_list
 
 def experiments_time_line(conn):
-    # select last 10 experiments
+    # select last 12 experiments
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM experiments ORDER BY date DESC LIMIT 10")
+    cursor.execute("SELECT * FROM experiments ORDER BY date DESC LIMIT 12")
     experiments_list = cursor.fetchall()
     experiments_list=  utils.experiment_list_maker(experiments_list)
     return experiments_list

@@ -23,15 +23,17 @@ def create_table(conn, create_table_sql):
 
 
 ### Experiments
-def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes):
+def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditions):
     try:
+        conditions_parsed = utils.parse_conditions(conditions)
         Tags_parsed = utils.parse_tags(Tags)
         insert_tag(conn, Tags_parsed)
+        insert_conditions(conn, conditions_parsed)
         insert_author(conn, Author)
         cursor = conn.cursor()
         hash_id = utils.generate_hash(conn)
-        rows = [(hash_id, Tags, Notes, File_Path, date, Author, None)]
-        cursor.executemany('insert into experiments values (?,?,?,?,?,?,?)', rows)
+        rows = [(hash_id, Tags, Notes, File_Path, date, Author, conditions, None)]
+        cursor.executemany('insert into experiments values (?,?,?,?,?,?,?,?)', rows)
         conn.commit()
         success_bool = 1
     except Error as e:
@@ -113,5 +115,18 @@ def delete_author(conn, id):
         conn.commit()
 ### Authors
 
-
-
+### Conditions
+def insert_conditions(conn, conditions):
+    try:
+        for condition in conditions:
+            if not utils.check_existence_condition(conn, condition):
+                cursor = conn.cursor()
+                rows = [(condition, None)]
+                cursor.executemany('insert into conditions values (?, ?)', rows)
+                conn.commit()
+        success_bool = 1
+    except Error as e:
+        utils.error_log(e)
+        success_bool = 0
+    return success_bool
+### Conditions
