@@ -12,13 +12,17 @@ class database_configs():
                                         file_path text,
                                         date DATETIME NOT NULL,
                                         author text NOT NULL,
+                                        conditions text,
                                         id integer primary key autoincrement
                                     ); """, 
         """ CREATE TABLE IF NOT EXISTS tags (
                                         tag text NOT NULL,
                                         id integer primary key autoincrement
                                     ); """,
-
+        """ CREATE TABLE IF NOT EXISTS conditions (
+                                        condition text NOT NULL,
+                                        id integer primary key autoincrement
+                                    ); """,
         """ CREATE TABLE IF NOT EXISTS authors (
                                         author text NOT NULL,
                                         id integer primary key autoincrement

@@ -54,11 +54,24 @@ def parse_tags(Tags):
     Tags = [tag.strip() for tag in Tags]
     return Tags
 
+def parse_conditions(conditions):
+    conditions = conditions.split(',')
+    conditions = [condition.strip() for condition in conditions]
+    return conditions
+
 def check_existence_tag(conn, tag):
     cursor = conn.cursor()
     cursor.execute('select * from tags where tag=?', (tag,))
     tags = cursor.fetchall()
     if len(tags)==0:
+        return False
+    else:
+        return True
+def check_existence_condition(conn, condition):
+    cursor = conn.cursor()
+    cursor.execute('select * from conditions where condition=?', (condition,))
+    conditions = cursor.fetchall()
+    if len(conditions)==0:
         return False
     else:
         return True
@@ -78,6 +91,7 @@ def experiment_list_maker(experiments_list):
     for i, experiment in enumerate(experiments_list):
         experiment = list(experiment)
         experiment[1] = parse_tags(experiment[1])
+        experiment[6] = parse_conditions(experiment[6])
         experiments_list[i] = experiment
     return experiments_list
 

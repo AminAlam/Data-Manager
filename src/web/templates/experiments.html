@@ -86,8 +86,16 @@
                     {% for tag in experiment[1] %}
                         <span class="badge badge-info" >{{ tag }}</span>
                     {% endfor %}
-
+                </div>
+                    <div class="card-footer" style="width: 18rem;">
+    
+                        {% for condition in experiment[6] %}
+                            <span class="badge badge-warning" >{{ condition }}</span>
+                        {% endfor %}
+    
                     </div>
+
+                    
                 </div>
             </div>
             
