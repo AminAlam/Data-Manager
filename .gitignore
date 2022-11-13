@@ -4,3 +4,5 @@ __pycache__
 venv/
 *.csv
 .vscode
+src/database/conditions/
+src/database/uploaded_files/
