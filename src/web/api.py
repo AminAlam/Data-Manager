@@ -19,6 +19,8 @@ class WebApp():
         self.app.config['SECRET_KEY'] = 'evmermrefmwrf92i4=#RKM-!#$Km343FIJ!$Ifofi3fj2q4fj2M943f-02f40-F-132-4fk!#$fi91f-'
         self.app.config['DATABASE_FOLDER'] = './src/database'
         self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
+        self.app.config['CONDITOINS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
+        self.app.config['TEMPLATES_FOLDER'] = './src/web/templates'
 
     def run(self):    
         app = self.app
@@ -29,17 +31,21 @@ class WebApp():
 
         @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
+            conditions = utils.read_json_file(self.app.config['CONDITOINS_JSON'])
+            conditions_html = flask.render_template('conditions.html', conditions=conditions)
+            conditions_html = flask.Markup(conditions_html)
             if flask.request.method == 'POST' and len(flask.request.form):
                 experiments_list = search_engine.filter_experiments(self.db_configs.conn, flask.request.form)
-                return flask.render_template('experiments.html', experiments_list=experiments_list)
+                return flask.render_template('experiments.html', experiments_list=experiments_list, conditions_html=conditions_html)
             else:
-                return flask.render_template('experiments.html', experiments_list=None)
+                return flask.render_template('experiments.html', experiments_list=None, conditions_html=conditions_html)
         
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         def insert_experiment():
-            json_file_path = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
-            conditions = utils.read_json_file(json_file_path)
-            return flask.render_template('insert_experiment.html', conditions=conditions)
+            conditions = utils.read_json_file(self.app.config['CONDITOINS_JSON'])
+            conditions_html = flask.render_template('conditions.html', conditions=conditions)
+            conditions_html = flask.Markup(conditions_html)
+            return flask.render_template('insert_experiment.html', conditions_html=conditions_html)
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         def insert_experiment_to_db():

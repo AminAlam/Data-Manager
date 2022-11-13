@@ -53,6 +53,11 @@ def filter_experiments(conn, post_request_form):
     date_start = post_request_form['date_start']
     date_end = post_request_form['date_end']
     Tags = post_request_form['Tags']
+    conditions = []
+    for form_input in post_request_form:
+        if form_input.split('&')[0] == 'condition':
+            conditions.append('&'.join(form_input.split('&')[1:]))
+    conditions = ','.join(conditions)
     rows = []
     if Hash_ID != '':
         sql_command = 'SELECT * FROM experiments WHERE id_hash like ? AND ' 
@@ -73,11 +78,16 @@ def filter_experiments(conn, post_request_form):
             rows.append(date_end)
         if Tags != '':
             Tags = Tags.split(',')
-            print(Tags)
             for tag in Tags:
                 if tag != '':
                     sql_command += 'tags like ? AND '
                     rows.append(f'%{tag}%')
+        if conditions != '':
+            conditions = conditions.split(',')
+            for condition in conditions:
+                if condition != '':
+                    sql_command += 'conditions like ? AND '
+                    rows.append(f'%{condition}%')
     sql_command = sql_command + '1'
     rows = tuple(rows)
     cursor = conn.cursor()

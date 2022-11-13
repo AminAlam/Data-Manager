@@ -4,6 +4,7 @@ import os
 import random
 import string
 import json
+import flask
 sys.path.append('../database')
 import operators
 
@@ -115,4 +116,4 @@ def apply_updates2db(db_configs):
 def read_json_file(json_file):
     with open(json_file) as f:
         data = json.load(f)
-    return data
+    return data    
