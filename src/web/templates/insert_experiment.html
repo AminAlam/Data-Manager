@@ -37,90 +37,7 @@
           </div>
         </div>
 
-
-
-  <div class="form-group col-md-12" style="margin-top: 1rem;">
-
-        <nav>
-            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-              {% if conditions is not none %}
-                {% for condition, condition_dict in conditions.items() %}
-                  {% if loop.index == 1 %}
-                    <a class="nav-item nav-link active show" id="nav-{{condition}}-tab" data-toggle="tab" href="#nav-{{condition}}" role="tab" aria-controls="nav-{{condition}}" aria-selected="true">{{condition}}</a>
-                  {% else %}
-                    <a class="nav-item nav-link" id="nav-{{condition}}-tab" data-toggle="tab" href="#nav-{{condition}}" role="tab" aria-controls="nav-{{condition}}" aria-selected="false">{{condition}}</a>
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-            </div>
-        </nav>
-
-        <div class="tab-content" id="nav-tabContent" style="margin-top: 0.5rem;">
-
-        {% if conditions is not none %}
-          {% for condition, condition_dict in conditions.items() %}
-            {% if loop.index == 1 %}
-              <div class="tab-pane fade active show" id="nav-{{condition}}" role="tabpanel" aria-labelledby="nav-{{condition}}-tab">
-            {% else %}
-                <div class="tab-pane fade" id="nav-{{condition}}" role="tabpanel" aria-labelledby="nav-{{condition}}-tab">
-            {% endif %}
-
-            <div class="row">
-
-              <div class="col-3">
-                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                  {% if condition_dict is not none %}
-                    {% for condition_nested, condition_dict_nested in condition_dict.items() %}
-                      {% if loop.index == 1 %}
-                        <a class="nav-link active show" id="v-pills-{{condition_nested}}-tab" data-toggle="pill" href="#v-pills-{{condition_nested}}" role="tab" aria-controls="v-pills-{{condition_nested}}" aria-selected="true">{{condition_nested}}</a>
-                      {% else %}
-                        <a class="nav-link" id="v-pills-{{condition_nested}}-tab" data-toggle="pill" href="#v-pills-{{condition_nested}}" role="tab" aria-controls="v-pills-{{condition_nested}}" aria-selected="false">{{condition_nested}}</a>
-                      {% endif %}
-                    {% endfor %}
-                  {% endif %}
-                </div>
-              </div>
-
-              <div class="col-9">
-
-                <div class="tab-content" id="v-pills-tabContent">
-                  {% if condition_dict is not none %}
-                    {% for condition_nested, condition_dict_nested in condition_dict.items() %}
-                      {% if loop.index == 1 %}
-                        <div class="tab-pane fade active show" id="v-pills-{{condition_nested}}" role="tabpanel" aria-labelledby="v-pills-{{condition_nested}}-tab">
-                      {% else %}
-                        <div class="tab-pane fade" id="v-pills-{{condition_nested}}" role="tabpanel" aria-labelledby="v-pills-{{condition_nested}}-tab">
-                      {% endif %}
-                      <div class="row">
-                      {% for condition_single in condition_dict_nested %}
-                      
-                      <div class="col-md-2">
-                            <input class="form-check-input" type="checkbox" value="0" id="condition&{{condition}}&{{condition_nested}}&{{condition_single}}" name="condition&{{condition}}&{{condition_nested}}&{{condition_single}}">
-                            <label class="form-check-label" for="condition&{{condition}}&{{condition_nested}}&{{condition_single}}">
-                              {{condition_single}}
-                            </label>
-                      </div>
-                    
-                      {% endfor %}
-                    </div>
-                    </div>
-                  {% endfor %}
-                {% endif %}
-
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-          </div>
-          {% endfor %}
-        {% endif %}
-      </div>
-  </div>
-
+      {{conditions_html}}
       
 
         <div class="form-group col-md-12">
@@ -143,32 +60,7 @@
               <input type="file" class="form-control" id="Files_id" name="Files" aria-describedby="Files" multiple>
               <label class="custom-file-label" for="Files_id">Data File/Files</label>
         </div>
-        <!-- <div class="tab-pane fade active show" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
 
-          <div class="form-group row">
-
-            <div class="form-group col-md-1">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="0" id="defaultCheck1" name="_126786233_mediaitem126786229.jpg">
-                    <label class="form-check-label" for="defaultCheck1">
-                      remove
-                    </label>
-                  </div>
-            </div>
-
-            <div class="form-group col-md-1">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="0" id="defaultCheck1" name="_126786233_mediaitem126786229.jpg">
-                    <label class="form-check-label" for="defaultCheck1">
-                      remove
-                    </label>
-                  </div>
-            </div>
-
-          </div>
-        </div>
-          <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">...</div>
-          <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">...</div> -->
 
   
 </div>
