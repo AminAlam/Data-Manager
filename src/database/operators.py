@@ -49,9 +49,14 @@ def update_experiment_in_db(conn, id, post_form):
         Tags = post_form['Tags']
         File_Path = post_form['File_Path']
         Notes = post_form['Notes']
+        conditions = []
+        for form_input in post_form:
+            if form_input.split('&')[0] == 'condition':
+                conditions.append('&'.join(form_input.split('&')[1:]))
+        conditions = ','.join(conditions)
         cursor = conn.cursor()
-        rows = [(Tags, Notes, File_Path, date, Author, id)]
-        cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, author=? where id=?', rows)
+        rows = [(Tags, Notes, File_Path, date, Author, conditions, id)]
+        cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, author=?, conditions=? where id=?', rows)
         conn.commit()
 
         if not utils.check_existence_author(conn, Author):

@@ -73,41 +73,8 @@
             
     </form>
 
-    <div class="card-deck">
-    {% if experiments_list is not none %}
-        {% for experiment in experiments_list %}
-
-            <div class="card-block" style="margin: .5rem; margin-bottom: 1em; margin-top: 1em">
-                <div class="CardMain card text-center" style="width: 18rem;">
-                 
-                        <a href="{{ url_for('experiment', id=experiment[-1]) }}">
-                            <h4 class="CardMain">{{experiment[0]}}</h4>
-                        </a>
-
-                        <h5 class="CardMain">{{ experiment[5] }}</h5>
-                        <h6 class="CardMain">{{ experiment[4] }}</h6>
-                <div class="card-footer" style="width: 18rem;">
-
-                    {% for tag in experiment[1] %}
-                        <span class="badge badge-info" >{{ tag }}</span>
-                    {% endfor %}
-                </div>
-                    <div class="card-footer" style="width: 18rem;">
+    {{experiments_html}}
     
-                        {% for condition in experiment[6] %}
-                            <span class="badge badge-warning" >{{ condition }}</span>
-                        {% endfor %}
-    
-                    </div>
-
-                    
-                </div>
-            </div>
-            
-            
-        {% endfor %}
-    {% endif %}
-</div>
     </div>
 </div>
 {% endblock %}
