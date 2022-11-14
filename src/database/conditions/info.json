@@ -1,0 +1,25 @@
+{
+    "age":{
+        "hours":["1", "4", "24", "48"],
+        "days":["1", "3", "5"],
+        "age":["asult(pa)", "patnatalday(po)"]
+    },
+
+    "treatment":{
+        "drug":["ketamine", "buprenorphine"],
+        "surgery":["optic nerv crash", "liver crash"],
+        "virus":["AAV2", "EFI", "HSyn"]
+    },
+
+    "region_of_interest":{
+        "brain":["vi", "sn", "cn", "ret"],
+        "cells":["glia", "microglia"],
+        "eye":["ipsilateral", "contraaletral"]
+    },
+    
+    "test":{
+        "a":["1", "11", "2", "ret"],
+        "b":["glia", "microglia"],
+        "v":["78", "contraaletral"]
+    }
+}
