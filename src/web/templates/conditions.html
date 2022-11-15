@@ -1,6 +1,5 @@
 
-
-  <div class="form-group col-md-12" style="margin-top: 1rem;border-style: groove;border-color: white;border-radius: 1rem;border-top: medium;">
+  <div class="form-group col-md-12" style="margin-top: 1rem;border-style: groove;border-color: white;border-top: medium;border-right: none;">
 
     <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
@@ -29,7 +28,7 @@
 
         <div class="row">
 
-          <div class="col-3">
+          <div class="col-3" style="overflow: scroll;padding: 1rem;height: 12rem; overflow-x: hidden;">
             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
               {% if condition_dict is not none %}
                 {% for condition_nested, condition_dict_nested in condition_dict.items() %}
@@ -43,7 +42,7 @@
             </div>
           </div>
 
-          <div class="col-9">
+          <div class="col-9" style="overflow: scroll;padding: 2rem;height: 12rem; overflow-x: hidden;"> 
 
             <div class="tab-content" id="v-pills-tabContent">
               {% if condition_dict is not none %}
@@ -56,7 +55,7 @@
                   <div class="row">
                   {% for condition_single in condition_dict_nested %}
                   
-                  <div class="col-md-2">
+                  <div class="col-md-4" style="margin: 0.21rem;">
                         <input class="form-check-input" type="checkbox" {{condition_single[1]}} id="condition&{{condition}}&{{condition_nested}}&{{condition_single}}" name="condition&{{condition}}&{{condition_nested}}&{{condition_single[0]}}">
                         <label class="form-check-label" for="condition&{{condition}}&{{condition_nested}}&{{condition_single[0]}}">
                           {{condition_single[0]}}
