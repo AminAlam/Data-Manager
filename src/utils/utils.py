@@ -127,3 +127,9 @@ def modify_conditions_json(conditions, target_conditions):
                 else:
                     conditions[condition][condition_nested][indx] = [single_condition, ""]
     return conditions
+
+def init_user(app_config, db_configs, user_name):
+        conn = db_configs.conn
+        cursor = conn.cursor()
+        cursor.execute('insert into conditions_templates values (?, ?, ?, ?)', (user_name, 'default', '', None))
+        conn.commit()

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<title>Add User</title>
+<h1>Add new username</h1>
+<div class="container border rounded addpage">
+<form action="/add_user_to_db" method=post enctype=multipart/form-data>
+   <div class="form-row uploadrows">
+       
+
+    <div class="form-group col-md-3 ">
+           <label for="username">*username: </label>
+           <input  class=" dropdown-header" id="username" name="username" autocomplete="off">
+    </div>
+
+   
+    <div class="form-group col-md-3 ">
+        <label for="password">*password: </label>
+        <input  class=" dropdown-header" id="password" name="password" autocomplete="off">
+    </div>
+    <div class="form-group col-md-3 ">
+        <label for="repeat_password">*repeat password: </label>
+        <input  class=" dropdown-header" id="repeat_password" name="repeat_password" autocomplete="off">
+    </div>
+
+    <div class="form-group col-md-3">
+        <label for="emailed">*admin:</label>
+        <select class="form-select" name="admin" id="admin" aria-label="Default select example">
+                <option selected="False">No</option>
+                <option value="True">Yes</option>
+        </select>
+    </div>
+
+
+    <div class="form-group col-md-6 ">
+        <label for="password">name: </label>
+        <input  class=" dropdown-header" id="name" name="name" autocomplete="off">
+    </div>
+
+    <div class="form-group col-md-6">
+        <label for="password">email: </label>
+        <input  class=" dropdown-header" id="email" name="email" autocomplete="off">
+    </div>
+
+
+     
+
+
+ 
+</div>
+<div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
+
+ <div class="col-md-4">
+   <button class="btn btn-primary" type=submit Course> add user</button>
+ </div>
+
+</div>
+</div>
+
+
+
+
+</form>
+</div>
+{% endblock %}
+
