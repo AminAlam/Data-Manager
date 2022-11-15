@@ -10,6 +10,17 @@ from threading import Thread
 import csv
 import os
 
+def add_admin(db_configs, app_configs):
+    conn = db_configs.conn
+    cursor = conn.cursor()
+    cursor.execute('select * from users where username=?', ('admin',))
+    users = cursor.fetchall()
+    if len(users)==0:
+        cursor.execute('insert into users values (?,?,?,?,?,?)', ('admin', 'admin', 1, None, None, None))
+        conn.commit()
+        utils.init_user(app_configs, db_configs, 'admin')
+
+
 class WebApp():
     def __init__(self, db_configs, ip, port, static_folder): 
         self.ip = ip
@@ -19,21 +30,87 @@ class WebApp():
         self.app.config['SECRET_KEY'] = 'evmermrefmwrf92i4=#RKM-!#$Km343FIJ!$Ifofi3fj2q4fj2M943f-02f40-F-132-4fk!#$fi91f-'
         self.app.config['DATABASE_FOLDER'] = './src/database'
         self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
-        self.app.config['CONDITOINS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
+        self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
         self.app.config['TEMPLATES_FOLDER'] = './src/web/templates'
+        add_admin(self.db_configs, self.app.config)
 
-    def run(self):    
+    def run(self):
         app = self.app
+
+        @app.route('/login', methods=['GET', 'POST'])
+        def login():
+            if flask.request.method == 'POST':
+                username = flask.request.form['username']
+                password = flask.request.form['password']
+                conn = self.db_configs.conn
+                cursor = conn.cursor()
+                cursor.execute('select * from users where username=? and password=?', (username, password))
+                users = cursor.fetchall()
+                if len(users)==0:
+                    return flask.render_template('login.html', error='Invalid username or password')
+                else:
+                    flask.session['username'] = username
+                    flask.session['password'] = password
+                    flask.session['logged_in'] = True
+                    flask.session['admin'] = users[0][2]
+                    utils.init_user(app.config, self.db_configs, username)
+                    return flask.redirect(flask.url_for('index'))
+            else:
+                return flask.render_template('login.html')
+
         @app.route('/', methods=['GET', 'POST'])
         def index():
-            experiments_list = search_engine.experiments_time_line(self.db_configs.conn)
-            experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
-            experiments_html = flask.Markup(experiments_html)
-            return flask.render_template('index.html', experiments_html=experiments_html)
+            # check if the user is logged in
+            if 'logged_in' in flask.session:
+                experiments_list = search_engine.experiments_time_line(self.db_configs.conn)
+                experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
+                experiments_html = flask.Markup(experiments_html)
+                return flask.render_template('index.html', experiments_html=experiments_html)
+            else:
+                return flask.redirect(flask.url_for('login'))
+
+        @app.route('/logout')
+        def logout():
+            flask.session.pop('logged_in', None)
+            flask.session.pop('username', None)
+            flask.session.pop('password', None)
+            flask.session.pop('admin', None)
+            return flask.redirect(flask.url_for('login'))
+
+        @app.route('/add_user', methods=['GET', 'POST'])
+        def add_user():
+            return flask.render_template('add_user.html')
+
+        @app.route('/add_user_to_db', methods=['GET', 'POST'])
+        def add_user_to_db():
+            username = flask.request.form['username']
+            password = flask.request.form['password']
+            repeat_password = flask.request.form['repeat_password']
+            admin = flask.request.form['admin'] == 'True'
+            name = flask.request.form['name']
+            email = flask.request.form['email']
+            if username == '' or password == '' or admin == '':
+                flask.flash('Please fill all the fields')
+                return flask.render_template('add_user.html')
+            if password != repeat_password:
+                flask.flash('Passwords do not match')
+                return flask.render_template('add_user.html')
+            conn = self.db_configs.conn
+            cursor = conn.cursor()
+            cursor.execute('select * from users where username=?', (username,))
+            users = cursor.fetchall()
+            if len(users)>0:
+                flask.flash('Username already exists')
+                return flask.render_template('add_user.html')
+            else:
+                cursor.execute('insert into users (username, password, admin, name, email) values (?,?,?,?,?)', (username, password, admin, name, email))
+                conn.commit()
+                return flask.redirect(flask.url_for('index'))
 
         @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
-            conditions = utils.read_json_file(self.app.config['CONDITOINS_JSON'])
+            conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
+            conditions = utils.modify_conditions_json(conditions, target_conditions=[])
             conditions_html = flask.render_template('conditions.html', conditions=conditions)
             conditions_html = flask.Markup(conditions_html)
             if flask.request.method == 'POST' and len(flask.request.form):
@@ -46,10 +123,11 @@ class WebApp():
         
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         def insert_experiment():
-            conditions = utils.read_json_file(self.app.config['CONDITOINS_JSON'])
+            conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
+            conditions = utils.modify_conditions_json(conditions, target_conditions=[])
             conditions_html = flask.render_template('conditions.html', conditions=conditions)
             conditions_html = flask.Markup(conditions_html)
-            return flask.render_template('insert_experiment.html', conditions_html=conditions_html)
+            return flask.render_template('insert_experiment.html', session=flask.session, conditions_html=conditions_html)
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         def insert_experiment_to_db():
@@ -87,13 +165,13 @@ class WebApp():
                     message = 'Something went wrong'
 
                 flask.flash(message)
-                return flask.redirect(flask.url_for('index'))
+                return flask.redirect(flask.url_for('index', session=flask.session))
 
         @app.route("/author_search", methods=["POST", "GET"])
         def author_search():
             searchbox = flask.request.form.get("text")
             return search_engine.author_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
-        
+
         @app.route("/tags_search", methods=["POST", "GET"])
         def tags_search():
             searchbox = flask.request.form.get("text")
@@ -116,13 +194,13 @@ class WebApp():
                 List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), filename]
             Files = List
 
-            conditions = utils.read_json_file(self.app.config['CONDITOINS_JSON'])
+            conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
             target_conditions = experiment[6].split(',')
             conditions = utils.modify_conditions_json(conditions, target_conditions)
             conditions_html = flask.render_template('conditions.html', conditions=conditions)
             conditions_html = flask.Markup(conditions_html)
             return flask.render_template('experiment.html', experiment=experiment, Files=Files, conditions_html=conditions_html)
-        
+
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
         def update_experiment(id):
             post_form = flask.request.form
@@ -133,7 +211,7 @@ class WebApp():
                 message = 'Something went wrong'
             flask.flash(message)
             return flask.redirect(flask.url_for('index'))
-            
+
         @app.route("/experiment/<int:id>/delete_experiment", methods=["POST", "GET"])
         def delete_experiment(id):
             success_bool = operators.delete_experiment_from_db(self.db_configs.conn, id)
@@ -154,11 +232,27 @@ class WebApp():
             protocols_file_list = List
             return flask.render_template('protocols.html', Files=protocols_file_list)
 
+        @app.route("/conditions_user", methods=["POST", "GET"])
+        def conditions_user():
+            # list all condition templates of the user
+            cursor = self.db_configs.conn.cursor()
+            cursor.execute("SELECT * FROM conditions_templates WHERE author=?", (flask.session['username'],))
+            conditions_templates = cursor.fetchall()
+            conditions_list = []
+            for condition_template in conditions_templates:
+                template_name = condition_template[1]
+                condition = condition_template[2]
+                condition_template = list(condition_template)
+                condition_json = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
+                condition_json = utils.modify_conditions_json(condition_json, condition)
+                conditions_html = flask.render_template('conditions.html', conditions=condition_json)
+                conditions_html = flask.Markup(conditions_html)
+                conditions_list.append([conditions_html, template_name])
+            return flask.render_template('user_condition_templates.html', conditions_list=conditions_list)
         @app.route("/<path:filename>")
         def static_dir(filename):
             return flask.send_from_directory(app.root_path, filename)
 
-        # flask send file for download
         @app.route('/send_file/<path:path>')
         def send_file(path):
             cwd = os.getcwd()

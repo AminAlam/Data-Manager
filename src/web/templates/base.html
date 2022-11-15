@@ -35,6 +35,27 @@
                   <a class="nav-link" href="{{url_for('protocols')}}">protocols</a>
               </li>
             </ul>
+            {% if session['logged_in'] %}
+            <ul class="navbar-nav">          
+              <li class="nav-item">
+                  <a class="nav-link" href="{{url_for('conditions_user')}}">conditions templates</a>
+              </li>
+            </ul>
+            {% endif %}
+            {% if session['admin'] %}
+            <ul class="navbar-nav">          
+              <li class="nav-item">
+                  <a class="nav-link" href="{{url_for('add_user')}}">add user</a>
+              </li>
+            </ul>
+            {% endif %}
+            {% if session['logged_in'] %}
+            <ul class="navbar-nav">          
+              <li class="nav-item">
+                  <a class="nav-link" href="{{url_for('logout')}}">logout</a>
+              </li>
+            </ul>
+            {% endif %}
       </div>
   </nav>
   <div class="container">

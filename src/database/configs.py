@@ -26,7 +26,21 @@ class database_configs():
         """ CREATE TABLE IF NOT EXISTS authors (
                                         author text NOT NULL,
                                         id integer primary key autoincrement
-                                    ); """
+                                    ); """,
+        """ CREATE TABLE IF NOT EXISTS users (
+                                        username text NOT NULL,
+                                        password text NOT NULL,
+                                        admin bool NOT NULL,
+                                        name text,
+                                        email text,
+                                        id integer primary key autoincrement
+                                    ); """,
+        """ CREATE TABLE IF NOT EXISTS conditions_templates (
+                                        author text NOT NULL,
+                                        template_name text NOT NULL,
+                                        conditions text NOT NULL,
+                                        id integer primary key autoincrement
+                                    ); """,
         ]
     def make_conn(self):
         self.conn = operators.create_connection(self.dbName)
