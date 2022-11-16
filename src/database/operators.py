@@ -4,6 +4,7 @@ sys.path.append('../utils')
 import utils
 import sqlite3
 from sqlite3 import Error
+import itertools
 
 def create_connection(db_file):
     conn = None
@@ -134,4 +135,28 @@ def insert_conditions(conn, conditions):
         utils.error_log(e)
         success_bool = 0
     return success_bool
+
+def update_conditions_templates(conn, post_form, username):
+    post_form = post_form.to_dict()
+    new_template_name = post_form['new_template_name']
+    conditions = []
+    for key, form_input in post_form.items():
+        if 'condition' == key.split('&')[0]:
+            conditions.append(key.split('&')[1:])
+    conditions_dict = {}
+    for key, group in itertools.groupby(conditions, lambda x: x[0]):
+        conditions_dict[key] = list(group)
+    for template_name in conditions_dict.keys():
+        condition_this_template_list = conditions_dict[template_name]
+        for indx, condition_this_template in enumerate(condition_this_template_list):
+            condition_this_template_list[indx] = '&'.join(condition_this_template[1:])
+        condition_this_template_list = ','.join(condition_this_template_list)
+        cursor = conn.cursor()
+        if template_name == 'default':
+            cursor.execute('insert into conditions_templates values (?, ?, ?, ?)', (username, new_template_name, condition_this_template_list, None))
+        else:
+            cursor.execute('update conditions_templates set conditions=? where author=? and template_name=?', (condition_this_template_list, username, template_name))
+
+            
+    return True
 ### Conditions
