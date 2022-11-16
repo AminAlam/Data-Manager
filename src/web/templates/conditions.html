@@ -1,4 +1,12 @@
 
+{% if template_name is not defined %}
+  {% set template_name = '' %}
+{% endif %}
+
+{% if conditoin_no is not defined %}
+  {% set conditoin_no = 0 %}
+{% endif %}
+  
   <div class="form-group col-md-12" style="margin-top: 1rem;border-style: groove;border-color: white;border-top: medium;border-right: none;">
 
     <nav>
@@ -7,9 +15,9 @@
           <p class="nav-item nav-link disabled" data-toggle="tab"role="tab" aria-selected="false">Conditions</p>
             {% for condition, condition_dict in conditions.items() %}
               {% if loop.index == 1 %}
-                <a class="nav-item nav-link active show" id="nav-{{condition}}-tab" data-toggle="tab" href="#nav-{{condition}}" role="tab" aria-controls="nav-{{condition}}" aria-selected="true">{{condition}}</a>
+                <a class="nav-item nav-link active show" id="nav-conditoin{{conditoin_no}}_{{loop.index}}-tab" data-toggle="tab" href="#nav-conditoin{{conditoin_no}}_{{loop.index}}" role="tab" aria-controls="nav-conditoin{{conditoin_no}}_{{loop.index}}" aria-selected="true">{{condition}}</a>
               {% else %}
-                <a class="nav-item nav-link" id="nav-{{condition}}-tab" data-toggle="tab" href="#nav-{{condition}}" role="tab" aria-controls="nav-{{condition}}" aria-selected="false">{{condition}}</a>
+                <a class="nav-item nav-link" id="nav-conditoin{{conditoin_no}}_{{loop.index}}-tab" data-toggle="tab" href="#nav-conditoin{{conditoin_no}}_{{loop.index}}" role="tab" aria-controls="nav-conditoin{{conditoin_no}}_{{loop.index}}" aria-selected="false">{{condition}}</a>
               {% endif %}
             {% endfor %}
           {% endif %}
@@ -20,10 +28,11 @@
 
     {% if conditions is not none %}
       {% for condition, condition_dict in conditions.items() %}
+      {% set outer_loop = loop %}
         {% if loop.index == 1 %}
-          <div class="tab-pane fade active show" id="nav-{{condition}}" role="tabpanel" aria-labelledby="nav-{{condition}}-tab">
+          <div class="tab-pane fade active show" id="nav-conditoin{{conditoin_no}}_{{outer_loop.index}}" role="tabpanel" aria-labelledby="nav-conditoin{{conditoin_no}}_{{outer_loop.index}}-tab">
         {% else %}
-            <div class="tab-pane fade" id="nav-{{condition}}" role="tabpanel" aria-labelledby="nav-{{condition}}-tab">
+            <div class="tab-pane fade" id="nav-conditoin{{conditoin_no}}_{{outer_loop.index}}" role="tabpanel" aria-labelledby="nav-conditoin{{conditoin_no}}_{{outer_loop.index}}-tab">
         {% endif %}
 
         <div class="row">
@@ -33,9 +42,9 @@
               {% if condition_dict is not none %}
                 {% for condition_nested, condition_dict_nested in condition_dict.items() %}
                   {% if loop.index == 1 %}
-                    <a class="nav-link active show" id="v-pills-{{condition_nested}}-tab" data-toggle="pill" href="#v-pills-{{condition_nested}}" role="tab" aria-controls="v-pills-{{condition_nested}}" aria-selected="true">{{condition_nested}}</a>
+                    <a class="nav-link active show" id="v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}-tab" data-toggle="pill" href="#v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}" role="tab" aria-controls="v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}" aria-selected="true">{{condition_nested}}</a>
                   {% else %}
-                    <a class="nav-link" id="v-pills-{{condition_nested}}-tab" data-toggle="pill" href="#v-pills-{{condition_nested}}" role="tab" aria-controls="v-pills-{{condition_nested}}" aria-selected="false">{{condition_nested}}</a>
+                    <a class="nav-link" id="v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}-tab" data-toggle="pill" href="#v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}" role="tab" aria-controls="v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}" aria-selected="false">{{condition_nested}}</a>
                   {% endif %}
                 {% endfor %}
               {% endif %}
@@ -48,16 +57,16 @@
               {% if condition_dict is not none %}
                 {% for condition_nested, condition_dict_nested in condition_dict.items() %}
                   {% if loop.index == 1 %}
-                    <div class="tab-pane fade active show" id="v-pills-{{condition_nested}}" role="tabpanel" aria-labelledby="v-pills-{{condition_nested}}-tab">
+                    <div class="tab-pane fade active show" id="v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}" role="tabpanel" aria-labelledby="v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}-tab">
                   {% else %}
-                    <div class="tab-pane fade" id="v-pills-{{condition_nested}}" role="tabpanel" aria-labelledby="v-pills-{{condition_nested}}-tab">
+                    <div class="tab-pane fade" id="v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}" role="tabpanel" aria-labelledby="v-pills-condition{{conditoin_no}}_nested_{{outer_loop.index}}_{{loop.index}}-tab">
                   {% endif %}
                   <div class="row">
                   {% for condition_single in condition_dict_nested %}
                   
                   <div class="col-md-3" style="margin: 0.21rem;">
-                        <input class="form-check-input" type="checkbox" {{condition_single[1]}} id="condition&{{condition}}&{{condition_nested}}&{{condition_single}}" name="condition&{{condition}}&{{condition_nested}}&{{condition_single[0]}}">
-                        <label class="form-check-label" for="condition&{{condition}}&{{condition_nested}}&{{condition_single[0]}}">
+                        <input class="form-check-input" type="checkbox" {{condition_single[1]}} id="condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{condition_single}}" name="condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{condition_single[0]}}">
+                        <label class="form-check-label" for="condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{condition_single[0]}}">
                           {{condition_single[0]}}
                         </label>
                   </div>

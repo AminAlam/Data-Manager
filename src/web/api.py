@@ -132,17 +132,16 @@ class WebApp():
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         def insert_experiment_to_db():
             if flask.request.method == 'POST':
-                # try:
-                print(flask.request.form)
-                Author = flask.request.form['Author']
-                date = flask.request.form['date']
-                Tags = flask.request.form['Tags']
-                File_Path = flask.request.form['File_Path']
-                Notes = flask.request.form['Notes']
-                Files = flask.request.files.getlist('Files')
-                # except:
-                #     flask.flash('Please fill all the forms')
-                #     return flask.redirect(flask.url_for('insert_experiment'))
+                try:
+                    Author = flask.session['username']
+                    date = flask.request.form['date']
+                    Tags = flask.request.form['Tags']
+                    File_Path = flask.request.form['File_Path']
+                    Notes = flask.request.form['Notes']
+                    Files = flask.request.files.getlist('Files')
+                except:
+                    flask.flash('Please fill all the forms')
+                    return flask.redirect(flask.url_for('insert_experiment'))
 
                 if Author == '' or Tags == '' or date == '':
                     flask.flash('Please fill all the forms')
@@ -232,23 +231,37 @@ class WebApp():
             protocols_file_list = List
             return flask.render_template('protocols.html', Files=protocols_file_list)
 
-        @app.route("/conditions_user", methods=["POST", "GET"])
-        def conditions_user():
+        @app.route("/conditions_templates", methods=["POST", "GET"])
+        def conditions_templates():
             # list all condition templates of the user
             cursor = self.db_configs.conn.cursor()
             cursor.execute("SELECT * FROM conditions_templates WHERE author=?", (flask.session['username'],))
             conditions_templates = cursor.fetchall()
             conditions_list = []
-            for condition_template in conditions_templates:
+            for conditoin_no, condition_template in enumerate(conditions_templates):
                 template_name = condition_template[1]
                 condition = condition_template[2]
                 condition_template = list(condition_template)
                 condition_json = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
                 condition_json = utils.modify_conditions_json(condition_json, condition)
-                conditions_html = flask.render_template('conditions.html', conditions=condition_json)
+                conditions_html = flask.render_template('conditions.html', conditions=condition_json, template_name=template_name, conditoin_no=conditoin_no)
                 conditions_html = flask.Markup(conditions_html)
                 conditions_list.append([conditions_html, template_name])
             return flask.render_template('user_condition_templates.html', conditions_list=conditions_list)
+
+        @app.route("/update_conditions_templates_in_db", methods=["POST", "GET"])
+        def update_conditions_templates_in_db():
+            post_form = flask.request.form
+            success_bool = operators.update_conditions_templates(self.db_configs.conn, post_form, flask.session['username'])
+            if success_bool:
+                message = 'Conditions template is updated successfully'
+            else:
+                message = 'Something went wrong'
+            flask.flash(message)
+            return flask.redirect(flask.url_for('conditions_templates'))
+
+
+
         @app.route("/<path:filename>")
         def static_dir(filename):
             return flask.send_from_directory(app.root_path, filename)
