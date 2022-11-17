@@ -133,3 +133,31 @@ def init_user(app_config, db_configs, user_name):
         cursor = conn.cursor()
         cursor.execute('insert into conditions_templates values (?, ?, ?, ?)', (user_name, 'default', '', None))
         conn.commit()
+def list_user_conditoins_templates(conn, app_config, session):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM conditions_templates WHERE author=?", (session['username'],))
+    conditions_templates = cursor.fetchall()
+    conditions_list = []
+    for conditoin_no, condition_template in enumerate(conditions_templates):
+        template_name = condition_template[1]
+        condition = condition_template[2]
+        condition_template = list(condition_template)
+        condition_json = read_json_file(app_config['CONDITIONS_JSON'])
+        condition_json = modify_conditions_json(condition_json, condition)
+        conditions_html = flask.render_template('conditions.html', conditions=condition_json, template_name=template_name, conditoin_no=conditoin_no)
+        conditions_html = flask.Markup(conditions_html)
+        conditions_list.append([conditions_html, template_name])
+    return conditions_list
+
+
+def get_conditions_by_template_name(conn, app_config, username, templatename):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM conditions_templates WHERE author=? AND template_name=?", (username, templatename))
+    conditions_template = cursor.fetchall()    
+    template_name = conditions_template[0][1]
+    condition = conditions_template[0][2]
+    condition_json = read_json_file(app_config['CONDITIONS_JSON'])
+    condition_json = modify_conditions_json(condition_json, condition)
+    conditions_html = flask.render_template('conditions.html', conditions=condition_json, template_name=template_name)
+    conditions_html = flask.Markup(conditions_html)
+    return conditions_html

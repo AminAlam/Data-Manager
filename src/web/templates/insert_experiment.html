@@ -32,10 +32,22 @@
           </div>
         </div>
 
-      {{conditions_html}}
-      
+      <div class="dropdown">
+        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Choose template
+        </a>
+        <ul class="dropdown-menu">
+          {%for condition_template in conditions_list%}
+            <li><a class="dropdown-item" onclick="replace_condition('#condition_selected', '{{condition_template[1]}}')" href="javascript:void(0);">{{condition_template[1]}}</a></li>
+          {%endfor%}
+        </ul>
+      </div>
 
-        <div class="form-group col-md-12">
+     <div id="condition_selected">
+      {{conditions_list[0][0]}}
+     </div>
+
+      <div class="form-group col-md-12">
           <label for="File_Path">File Path</label>
           <input class="form-control" name="File_Path" autocomplete="off"> 
       </div>
