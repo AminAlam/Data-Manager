@@ -140,13 +140,13 @@ class WebApp():
                     flask.flash('Please fill all the forms')
                     return flask.redirect(flask.url_for('insert_experiment'))
 
-                if Author == '' or Tags == '' or date == '':
+                if Author == '' or date == '':
                     flask.flash('Please fill all the forms')
                     return flask.redirect(flask.url_for('insert_experiment'))
                 conditions = []
                 for form_input in flask.request.form:
                     if form_input.split('&')[0] == 'condition':
-                        conditions.append('&'.join(form_input.split('&')[1:]))
+                        conditions.append('&'.join(form_input.split('&')[2:]))
                 conditions = ','.join(conditions)
                 success_bool, hash_id = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes, conditions=conditions)
                 if hash_id:
