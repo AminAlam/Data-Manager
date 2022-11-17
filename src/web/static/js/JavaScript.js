@@ -47,6 +47,25 @@ function put_text(id_parent, id, txt) {
  };
 
 
+ function replace_condition(id, template_name) {
+
+      $.ajax({
+          method:"post",
+          url:"/get_conditoin_by_templatename",
+          data:{template_name:template_name},
+          success:function(res){
+              $(id).empty();
+              condition_html = res;
+              $(id).html(condition_html);
+          },
+          error:function(err){
+              console.log(err);
+          }
+      });
+ };
+
+
+
 $(document).ready(function(){
     
   $("#author_search").on("input",function(e){

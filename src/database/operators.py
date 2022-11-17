@@ -140,7 +140,7 @@ def update_conditions_templates(conn, post_form, username):
     post_form = post_form.to_dict()
     new_template_name = post_form['new_template_name']
     conditions = []
-    for key, form_input in post_form.items():
+    for key, _ in post_form.items():
         if 'condition' == key.split('&')[0]:
             conditions.append(key.split('&')[1:])
     conditions_dict = {}
@@ -151,12 +151,21 @@ def update_conditions_templates(conn, post_form, username):
         for indx, condition_this_template in enumerate(condition_this_template_list):
             condition_this_template_list[indx] = '&'.join(condition_this_template[1:])
         condition_this_template_list = ','.join(condition_this_template_list)
+        print(template_name, condition_this_template_list)
         cursor = conn.cursor()
         if template_name == 'default':
             cursor.execute('insert into conditions_templates values (?, ?, ?, ?)', (username, new_template_name, condition_this_template_list, None))
         else:
             cursor.execute('update conditions_templates set conditions=? where author=? and template_name=?', (condition_this_template_list, username, template_name))
-
+        conn.commit()
+    
+    for key, _ in post_form.items():
+        if 'delete' == key.split('&')[0]:
+            # remove template
+            template_name = key.split('&')[1]
+            cursor = conn.cursor()
+            cursor.execute('delete from conditions_templates where author=? and template_name=?', (username, template_name))
+            conn.commit()
             
     return True
 ### Conditions

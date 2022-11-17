@@ -53,7 +53,6 @@ class WebApp():
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
                     flask.session['admin'] = users[0][2]
-                    utils.init_user(app.config, self.db_configs, username)
                     return flask.redirect(flask.url_for('index'))
             else:
                 return flask.render_template('login.html')
@@ -104,6 +103,7 @@ class WebApp():
                 return flask.render_template('add_user.html')
             else:
                 cursor.execute('insert into users (username, password, admin, name, email) values (?,?,?,?,?)', (username, password, admin, name, email))
+                utils.init_user(app.config, self.db_configs, username)
                 conn.commit()
                 return flask.redirect(flask.url_for('index'))
 
@@ -123,11 +123,8 @@ class WebApp():
         
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         def insert_experiment():
-            conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
-            conditions = utils.modify_conditions_json(conditions, target_conditions=[])
-            conditions_html = flask.render_template('conditions.html', conditions=conditions)
-            conditions_html = flask.Markup(conditions_html)
-            return flask.render_template('insert_experiment.html', session=flask.session, conditions_html=conditions_html)
+            conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
+            return flask.render_template('insert_experiment.html', conditions_list=conditions_list)
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         def insert_experiment_to_db():
@@ -233,20 +230,7 @@ class WebApp():
 
         @app.route("/conditions_templates", methods=["POST", "GET"])
         def conditions_templates():
-            # list all condition templates of the user
-            cursor = self.db_configs.conn.cursor()
-            cursor.execute("SELECT * FROM conditions_templates WHERE author=?", (flask.session['username'],))
-            conditions_templates = cursor.fetchall()
-            conditions_list = []
-            for conditoin_no, condition_template in enumerate(conditions_templates):
-                template_name = condition_template[1]
-                condition = condition_template[2]
-                condition_template = list(condition_template)
-                condition_json = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
-                condition_json = utils.modify_conditions_json(condition_json, condition)
-                conditions_html = flask.render_template('conditions.html', conditions=condition_json, template_name=template_name, conditoin_no=conditoin_no)
-                conditions_html = flask.Markup(conditions_html)
-                conditions_list.append([conditions_html, template_name])
+            conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
             return flask.render_template('user_condition_templates.html', conditions_list=conditions_list)
 
         @app.route("/update_conditions_templates_in_db", methods=["POST", "GET"])
@@ -272,7 +256,13 @@ class WebApp():
             
             return flask.send_from_directory(cwd, path, as_attachment=True)#flask.redirect(flask.url_for('index'))
 
-
+        @app.route('/get_conditoin_by_templatename', methods=["POST", "GET"])
+        def get_conditoin_by_templatename():
+            username = flask.session['username']
+            template_name = flask.request.form.get("template_name")
+            print(template_name)
+            condition_html = utils.get_conditions_by_template_name(self.db_configs.conn, app.config, username, template_name)
+            return condition_html
 
 
         t = Thread(target=self.app.run, args=(self.ip,self.port,False))
