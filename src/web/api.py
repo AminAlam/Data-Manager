@@ -244,8 +244,6 @@ class WebApp():
             flask.flash(message)
             return flask.redirect(flask.url_for('conditions_templates'))
 
-
-
         @app.route("/<path:filename>")
         def static_dir(filename):
             return flask.send_from_directory(app.root_path, filename)
