@@ -133,3 +133,20 @@ $(document).ready(function(){
       });
   });
 });
+
+
+document.getElementById('Files_id').onchange = function() {
+  // code to change the label text
+  var fullName = getFileName(document.getElementById('Files_id').value);
+  console.log(fullName);
+  document.getElementById("Files_name_id").innerHTML= fullName;
+};
+var getFileName = function(fullPath) {
+  if (!fullPath) return null;
+  var startIndex = (fullPath.indexOf('\\') >= 0 ? fullPath.lastIndexOf('\\') : fullPath.lastIndexOf('/'));
+  var filename = fullPath.substring(startIndex);
+  if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+    return filename.substring(1);
+  }
+  return null;
+}
