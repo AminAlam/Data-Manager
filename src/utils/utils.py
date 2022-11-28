@@ -162,3 +162,18 @@ def get_conditions_by_template_name(conn, app_config, username, templatename):
     conditions_html = flask.render_template('conditions.html', conditions=condition_json, template_name=template_name)
     conditions_html = flask.Markup(conditions_html)
     return conditions_html
+
+
+def upload_files(app_config, hash_id, Files):
+    folder_path = os.path.join(app_config['UPLOAD_FOLDER'], hash_id)
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+    for file in Files:
+        print(Files)
+        if file.filename != '':
+            file.save(os.path.join(folder_path, file.filename))
+
+def remove_files(app_config, hash_id, file_names):
+    for file_name in file_names:
+        file_path = os.path.join(app_config['UPLOAD_FOLDER'], hash_id, file_name)
+        os.remove(file_path)

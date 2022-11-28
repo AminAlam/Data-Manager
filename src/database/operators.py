@@ -2,6 +2,7 @@ import sys
 sys.path.append('../utils')
 
 import utils
+from dictianory import slef_made_codes
 import sqlite3
 from sqlite3 import Error
 import itertools
@@ -21,7 +22,6 @@ def create_table(conn, create_table_sql):
         c.execute(create_table_sql)
     except Error as e:
         utils.error_log(e)
-
 
 ### Experiments
 def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditions):
@@ -43,13 +43,31 @@ def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditio
         hash_id = None
     return success_bool, hash_id
 
-def update_experiment_in_db(conn, id, post_form):
+def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
     try:
         print(post_form)
         date = post_form['date']
         Tags = post_form['Tags']
         File_Path = post_form['File_Path']
         Notes = post_form['Notes']
+
+        # add new files to experiment folder if exist
+        if len(Files) > 0:
+            utils.upload_files(app_config, hash_id, Files)
+
+        Files2remove = []
+        for form_input in post_form:
+            try:
+                if slef_made_codes[form_input.split('&')[0]] == 'remove':
+                    Files2remove.append(form_input.split('&')[1])
+            except:
+                pass
+        print(Files2remove)
+        # remove file in Files2remove
+        if len(Files2remove) > 0:
+            utils.remove_files(app_config, hash_id, Files2remove)
+
+
         conditions = []
         for form_input in post_form:
             if form_input.split('&')[0] == 'condition':
