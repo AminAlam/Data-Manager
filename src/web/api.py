@@ -5,6 +5,7 @@ sys.path.append('../utils')
 import utils
 import search_engine
 import operators
+from dictianory import slef_made_codes, slef_made_codes_inv_map
 import flask
 from threading import Thread
 import csv
@@ -150,11 +151,7 @@ class WebApp():
                 conditions = ','.join(conditions)
                 success_bool, hash_id = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes, conditions=conditions)
                 if hash_id:
-                    folder_path = os.path.join(app.config['UPLOAD_FOLDER'], hash_id)
-                    os.mkdir(folder_path)
-                    for file in Files:
-                        if file.filename != '':
-                            file.save(os.path.join(folder_path, file.filename))
+                    utils.upload_files(self.app.config, hash_id, Files)
                 if success_bool:
                     message = flask.Markup(f'Experiment is added successfully! hash_id: {hash_id}')
                 else:
@@ -187,9 +184,8 @@ class WebApp():
             dirName = os.path.join(app.config['UPLOAD_FOLDER'], hash_id)
             List = os.listdir(dirName)
             for count, filename in enumerate(List):
-                List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), filename]
+                List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), f"{slef_made_codes_inv_map['remove']}&{filename}", filename]
             Files = List
-
             conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
             target_conditions = experiment[6].split(',')
             conditions = utils.modify_conditions_json(conditions, target_conditions)
@@ -200,7 +196,11 @@ class WebApp():
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
         def update_experiment(id):
             post_form = flask.request.form
-            success_bool = operators.update_experiment_in_db(self.db_configs.conn, id, post_form)
+            # get hash_id from id
+            cursor = self.db_configs.conn.cursor()
+            cursor.execute("SELECT id_hash FROM experiments WHERE id=?", (id,))
+            hash_id = cursor.fetchone()[0]
+            success_bool = operators.update_experiment_in_db(self.db_configs.conn, id, post_form, app.config, hash_id, flask.request.files.getlist('Files'))
             if success_bool:
                 message = 'Experiment is updated successfully'
             else:
