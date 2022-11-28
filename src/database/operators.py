@@ -45,7 +45,7 @@ def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditio
 
 def update_experiment_in_db(conn, id, post_form):
     try:
-        Author = post_form['Author']
+        print(post_form)
         date = post_form['date']
         Tags = post_form['Tags']
         File_Path = post_form['File_Path']
@@ -56,12 +56,9 @@ def update_experiment_in_db(conn, id, post_form):
                 conditions.append('&'.join(form_input.split('&')[1:]))
         conditions = ','.join(conditions)
         cursor = conn.cursor()
-        rows = [(Tags, Notes, File_Path, date, Author, conditions, id)]
-        cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, author=?, conditions=? where id=?', rows)
+        rows = [(Tags, Notes, File_Path, date, conditions, id)]
+        cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, conditions=? where id=?', rows)
         conn.commit()
-
-        if not utils.check_existence_author(conn, Author):
-            insert_author(conn, Author)
         success_bool = 1
     except Error as e:
         utils.error_log(e)
@@ -80,7 +77,6 @@ def delete_experiment_from_db(conn, id):
         success_bool = 0
     return success_bool
 ### Experiments
-
 
 
 ### Tags
@@ -120,6 +116,7 @@ def delete_author(conn, id):
         cursor.execute('delete from authors where id=?', (id,))
         conn.commit()
 ### Authors
+
 
 ### Conditions
 def insert_conditions(conn, conditions):

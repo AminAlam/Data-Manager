@@ -68,6 +68,7 @@ def check_existence_tag(conn, tag):
         return False
     else:
         return True
+
 def check_existence_condition(conn, condition):
     cursor = conn.cursor()
     cursor.execute('select * from conditions where condition=?', (condition,))
@@ -133,6 +134,7 @@ def init_user(app_config, db_configs, user_name):
         cursor = conn.cursor()
         cursor.execute('insert into conditions_templates values (?, ?, ?, ?)', (user_name, 'default', '', None))
         conn.commit()
+
 def list_user_conditoins_templates(conn, app_config, session):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM conditions_templates WHERE author=?", (session['username'],))
@@ -148,7 +150,6 @@ def list_user_conditoins_templates(conn, app_config, session):
         conditions_html = flask.Markup(conditions_html)
         conditions_list.append([conditions_html, template_name])
     return conditions_list
-
 
 def get_conditions_by_template_name(conn, app_config, username, templatename):
     cursor = conn.cursor()

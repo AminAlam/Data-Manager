@@ -154,7 +154,7 @@ class WebApp():
                     os.mkdir(folder_path)
                     for file in Files:
                         if file.filename != '':
-                            file.save(os.path.join(app.config['UPLOAD_FOLDER'], folder_path, file.filename))
+                            file.save(os.path.join(folder_path, file.filename))
                 if success_bool:
                     message = flask.Markup(f'Experiment is added successfully! hash_id: {hash_id}')
                 else:
