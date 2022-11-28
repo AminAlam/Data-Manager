@@ -53,7 +53,7 @@ def update_experiment_in_db(conn, id, post_form):
         conditions = []
         for form_input in post_form:
             if form_input.split('&')[0] == 'condition':
-                conditions.append('&'.join(form_input.split('&')[1:]))
+                conditions.append('&'.join(form_input.split('&')[2:]))
         conditions = ','.join(conditions)
         cursor = conn.cursor()
         rows = [(Tags, Notes, File_Path, date, conditions, id)]
