@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
+<div class="container" style="margin: 1rem;">
     <form action="/update_conditions_templates_in_db" method=post enctype=multipart/form-data>
         <div class="accordion" id="accordionExample">
             {% for condition in conditions_list %}
@@ -9,12 +9,12 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading{{loop.index}}">
                             <div class="row">
-                                <div class="col-md-3">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{loop.index}}" aria-expanded="true" aria-controls="collapse{{loop.index}}">
+                                <div class="col-md-2">
+                                    <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{loop.index}}" aria-expanded="true" aria-controls="collapse{{loop.index}}">
                                         New template
                                     </button>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <input type="text" class="form-control" name="new_template_name" placeholder="Template name">
                                 </div>
 
@@ -30,14 +30,9 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading{{loop.index}}">
                         <div class="row"></div>
-                            <div class="col-md-1">
-                                    <input class="form-check-input" type="checkbox" value="0" id="delete&{{loop.index}}" name="delete&{{condition[1]}}">
-                                    <label class="form-check-label" for="delete&{{loop.index}}">
-                                        delete
-                                    </label>
-                            </div>
+                            
                             <div class="'col-md-3">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{loop.index}}" aria-expanded="false" aria-controls="collapse{{loop.index}}">
+                                <button class="btn btn-secondary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{loop.index}}" aria-expanded="false" aria-controls="collapse{{loop.index}}">
                                     {{condition[1]}}
                                 </button>
                             </div>
@@ -45,6 +40,12 @@
                         </h2>
                         <div id="collapse{{loop.index}}" class="accordion-collapse collapse" aria-labelledby="heading{{loop.index}}" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
+                                <div class="col-md-1">
+                                    <input class="form-check-input" type="checkbox" value="0" id="delete&{{loop.index}}" name="delete&{{condition[1]}}">
+                                    <label for="delete&{{condition[1]}}" style="font-size: 1rem;">
+                                        delete
+                                    </label>
+                                </div>
                                 {{condition[0]}}
                             </div>
                         </div>
