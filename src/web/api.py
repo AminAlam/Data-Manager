@@ -2,7 +2,10 @@ import sys
 sys.path.append('../database')
 sys.path.append('../utils')
 
+import logging
+
 import utils
+import uuid
 import search_engine
 import operators
 from dictianory import slef_made_codes, slef_made_codes_inv_map
@@ -10,6 +13,9 @@ import flask
 from threading import Thread
 import csv
 import os
+
+from flask_sessionstore import Session
+from flask_session_captcha import FlaskSessionCaptcha
 
 def add_admin(db_configs, app_configs):
     conn = db_configs.conn
@@ -33,9 +39,26 @@ class WebApp():
         self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
         self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
         self.app.config['TEMPLATES_FOLDER'] = './src/web/templates'
+
+        self.app.config["SECRET_KEY"] = uuid.uuid4()
+        self.app.config['CAPTCHA_ENABLE'] = True
+        self.app.config['CAPTCHA_LENGTH'] = 5
+        self.app.config['CAPTCHA_WIDTH'] = 160
+        self.app.config['CAPTCHA_HEIGHT'] = 60
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        self.app.config['CAPTCHA_SESSION_KEY'] = 'captcha_image'
+        self.app.config['SESSION_TYPE'] = 'sqlalchemy'
+        with self.app.app_context():
+            Session(self.app)
+            self.captcha = FlaskSessionCaptcha(self.app)
+
+        
+
         add_admin(self.db_configs, self.app.config)
 
     def run(self):
+
+        
         app = self.app
 
         @app.route('/login', methods=['GET', 'POST'])
@@ -49,7 +72,7 @@ class WebApp():
                 users = cursor.fetchall()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password')
-                else:
+                elif self.captcha.validate():
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
