@@ -25,6 +25,11 @@
               request.form.password }}">
           </div>
 
+          <div style="padding:0.2rem;" class="col-md-4">
+            {{ captcha() }} <!-- This renders an <img> tag with the captcha img. -->
+            <input type="text" name="captcha">
+          </div>
+
           <div class="col-md-4">
             <input class="btn btn-primary" type="submit" value="Login">
           </div>
