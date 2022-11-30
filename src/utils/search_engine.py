@@ -56,8 +56,9 @@ def filter_experiments(conn, post_request_form):
     conditions = []
     for form_input in post_request_form:
         if form_input.split('&')[0] == 'condition':
-            conditions.append('&'.join(form_input.split('&')[1:]))
+            conditions.append('&'.join(form_input.split('&')[2:]))
     conditions = ','.join(conditions)
+
     rows = []
     if Hash_ID != '':
         sql_command = 'SELECT * FROM experiments WHERE id_hash like ? AND ' 
