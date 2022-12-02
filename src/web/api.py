@@ -78,6 +78,9 @@ class WebApp():
                     flask.session['logged_in'] = True
                     flask.session['admin'] = users[0][2]
                     return flask.redirect(flask.url_for('index'))
+                else:
+                    return flask.render_template('login.html', error='Invalid Captcha')
+
             else:
                 return flask.render_template('login.html')
 
