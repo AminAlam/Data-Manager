@@ -5,6 +5,7 @@ sys.path.append('../utils')
 import logging
 
 import utils
+import security
 import uuid
 import search_engine
 import operators
@@ -86,32 +87,37 @@ class WebApp():
         @app.route('/', methods=['GET', 'POST'])
         def index():
 
-            if 'logged_in' in flask.session:
-                if flask.session['logged_in']:
-                    experiments_list = search_engine.experiments_time_line(self.db_configs.conn)
-                    experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
-                    experiments_html = flask.Markup(experiments_html)
-                    return flask.render_template('index.html', experiments_html=experiments_html)
+            if security.check_logged_in(flask.session):
+                experiments_list = search_engine.experiments_time_line(self.db_configs.conn)
+                experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
+                experiments_html = flask.Markup(experiments_html)
+                return flask.render_template('index.html', experiments_html=experiments_html)
             else:
                 return flask.redirect(flask.url_for('login'))
 
         @app.route('/logout')
         def logout():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 flask.session.pop('logged_in', None)
                 flask.session.pop('username', None)
                 flask.session.pop('password', None)
                 flask.session.pop('admin', None)
+                return flask.redirect(flask.url_for('login'))
+            else:
+                flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
 
         @app.route('/add_user', methods=['GET', 'POST'])
         def add_user():
             if flask.session['admin']:
                 return flask.render_template('add_user.html')
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route('/add_user_to_db', methods=['GET', 'POST'])
         def add_user_to_db():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 username = flask.request.form['username']
                 password = flask.request.form['password']
                 repeat_password = flask.request.form['repeat_password']
@@ -141,10 +147,13 @@ class WebApp():
                     utils.init_user(app.config, self.db_configs, username)
                     conn.commit()
                     return flask.redirect(flask.url_for('index'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
                 conditions = utils.modify_conditions_json(conditions, target_conditions=[])
                 conditions_html = flask.render_template('conditions.html', conditions=conditions)
@@ -158,16 +167,22 @@ class WebApp():
 
                 else:
                     return flask.render_template('experiments.html', experiments_html=None, conditions_html=conditions_html)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
         
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         def insert_experiment():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
                 return flask.render_template('insert_experiment.html', conditions_list=conditions_list)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         def insert_experiment_to_db():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 if flask.request.method == 'POST':
                     try:
                         Author = flask.session['username']
@@ -206,28 +221,40 @@ class WebApp():
 
                     flask.flash(message)
                     return flask.redirect(flask.url_for('index', session=flask.session))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/author_search", methods=["POST", "GET"])
         def author_search():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 searchbox = flask.request.form.get("text")
                 return search_engine.author_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/tags_search", methods=["POST", "GET"])
         def tags_search():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 searchbox = flask.request.form.get("text")
                 return search_engine.tags_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/text_search", methods=["POST", "GET"])
         def text_search():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 searchbox = flask.request.form.get("text")
                 return search_engine.text_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/experiment/<int:id>", methods=["POST", "GET"])
         def experiment(id):
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 cursor = self.db_configs.conn.cursor()
                 cursor.execute("SELECT * FROM experiments WHERE id=?", (id,))
                 experiment = cursor.fetchone()
@@ -246,10 +273,13 @@ class WebApp():
                 conditions_html = flask.render_template('conditions.html', conditions=conditions)
                 conditions_html = flask.Markup(conditions_html)
                 return flask.render_template('experiment.html', experiment=experiment, Files=Files, conditions_html=conditions_html)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
         def update_experiment(id):
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 post_form = flask.request.form
                 # get hash_id from id
                 cursor = self.db_configs.conn.cursor()
@@ -265,10 +295,13 @@ class WebApp():
 
                 flask.flash(message)
                 return flask.redirect(flask.url_for('index'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/experiment/<int:id>/delete_experiment", methods=["POST", "GET"])
         def delete_experiment(id):
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 success_bool = operators.delete_experiment_from_db(self.db_configs.conn, id)
 
                 if success_bool:
@@ -279,29 +312,38 @@ class WebApp():
 
                 flask.flash(message)
                 return flask.redirect(flask.url_for('index'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
         
         @app.route("/protocols", methods=["POST", "GET"])
         def protocols():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 # list all files in the protocols folder
                 dirName = os.path.join(app.config['DATABASE_FOLDER'], 'protocols')
                 List = os.listdir(dirName)
 
                 for count, filename in enumerate(List):
-                    List[count] = [os.path.join(app.config['DATABASE_FOLDER'], 'protocols', filename), filename]
+                    List[count] = filename
 
                 protocols_file_list = List
                 return flask.render_template('protocols.html', Files=protocols_file_list)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/conditions_templates", methods=["POST", "GET"])
         def conditions_templates():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
                 return flask.render_template('user_condition_templates.html', conditions_list=conditions_list)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/update_conditions_templates_in_db", methods=["POST", "GET"])
         def update_conditions_templates_in_db():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 post_form = flask.request.form
                 success_bool = operators.update_conditions_templates(self.db_configs.conn, post_form, flask.session['username'])
 
@@ -313,16 +355,22 @@ class WebApp():
 
                 flask.flash(message)
                 return flask.redirect(flask.url_for('conditions_templates'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route("/<path:filename>")
         def static_dir(filename):
             allowed_files = ['static/js/JavaScript.js', 'static/css/style.css', 'static/bootstrap.min.css', '/static/css/style.css', '/static/js/JavaScript.js', '/static/bootstrap.min.css']
             if filename in allowed_files:
                 return flask.send_from_directory(app.root_path, filename)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route('/send_experiment_file/<int:experiment_id>/<path:path>')
         def send_experiment_file(experiment_id, path):
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 if '/' not in path:
                     cwd = os.getcwd()
                     cwd = os.path.join(cwd, app.config['UPLOAD_FOLDER'])
@@ -330,15 +378,36 @@ class WebApp():
                     path = os.path.join(hash_id, path)
                     print(cwd, path)
                     return flask.send_from_directory(cwd, path, as_attachment=True)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+
+        @app.route('/send_protocol_file/<path:path>')
+        def send_protocol_file(path):
+            if security.check_logged_in(flask.session):
+                if '/' not in path:
+                    cwd = os.getcwd()
+                    cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'protocols')
+                    print(cwd, path)
+                    return flask.send_from_directory(cwd, path, as_attachment=True)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         @app.route('/get_conditoin_by_templatename', methods=["POST", "GET"])
         def get_conditoin_by_templatename():
-            if flask.session['logged_in']:
+            if security.check_logged_in(flask.session):
                 username = flask.session['username']
                 template_name = flask.request.form.get("template_name")
                 print(template_name)
                 condition_html = utils.get_conditions_by_template_name(self.db_configs.conn, app.config, username, template_name)
                 return condition_html
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
 
         t = Thread(target=self.app.run, args=(self.ip,self.port,False))
         t.start()        
+
+
+                
