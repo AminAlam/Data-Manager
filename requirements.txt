@@ -4,3 +4,6 @@ click
 Flask-Sessionstore
 captcha
 flask-session-captcha
+flask_sqlalchemy
+flask_wtf
+wtforms

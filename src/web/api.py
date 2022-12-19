@@ -16,8 +16,14 @@ import csv
 import os
 import datetime as dt
 from flask_sessionstore import Session
-from flask_session_captcha import FlaskSessionCaptcha
 from flask_sqlalchemy import SQLAlchemy
+
+from wtforms import StringField, PasswordField
+from wtforms.validators import DataRequired
+
+from flask_wtf import FlaskForm
+from flask_wtf.recaptcha import RecaptchaField
+
 
 def add_admin(db_configs, app_configs):
     conn = db_configs.conn
@@ -29,7 +35,6 @@ def add_admin(db_configs, app_configs):
         conn.commit()
         utils.init_user(app_configs, db_configs, 'admin')
 
-
 class WebApp():
     def __init__(self, db_configs, ip, port, static_folder): 
         self.ip = ip
@@ -40,23 +45,21 @@ class WebApp():
         self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
         self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
         self.app.config['TEMPLATES_FOLDER'] = './src/web/templates'
-
-        self.app.config["SECRET_KEY"] = uuid.uuid4()
-        self.app.config['CAPTCHA_ENABLE'] = True
-        self.app.config['CAPTCHA_LENGTH'] = 5
-        self.app.config['CAPTCHA_WIDTH'] = 160
-        self.app.config['CAPTCHA_HEIGHT'] = 60
-
         self.app.session_db = SQLAlchemy()
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
-        self.app.config['CAPTCHA_SESSION_KEY'] = 'captcha_image'
         self.app.config['SESSION_TYPE'] = 'sqlalchemy'
+        self.app.config['SECRET_KEY'] = "JIEO:FJ:IO9@)#8u2rIUL@HFG8#"
+        self.app.config['RECAPTCHA_PUBLIC_KEY'] = "6LeYIbsSAAAAACRPIllxA7wvXjIE411PfdB2gt2J"
+        self.app.config['RECAPTCHA_PRIVATE_KEY'] = "6LeYIbsSAAAAAJezaIq3Ft_hSTo0YtyeFG-JgRtu"  
 
         with self.app.app_context():
             Session(self.app)
-            self.captcha = FlaskSessionCaptcha(self.app)
-
         add_admin(self.db_configs, self.app.config)
+    
+    class RecaptchaForm(FlaskForm):
+        username = StringField("username", validators=[DataRequired()])
+        password = PasswordField("password", validators=[DataRequired()])
+        recaptcha = RecaptchaField()
 
     def run(self):
         app = self.app
@@ -72,19 +75,22 @@ class WebApp():
                 cursor.execute('select * from users where username=? and password=?', (username, password))
                 users = cursor.fetchall()
 
+                form = self.RecaptchaForm()
                 if len(users)==0:
-                    return flask.render_template('login.html', error='Invalid username or password')
-                elif self.captcha.validate():
+                    return flask.render_template('login.html', error='Invalid username or password', form=form)
+                elif form.validate_on_submit():
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
                     flask.session['admin'] = users[0][2]
                     return flask.redirect(flask.url_for('index'))
                 else:
-                    return flask.render_template('login.html', error='Invalid Captcha')
+                    form = self.RecaptchaForm()
+                    return flask.render_template('login.html', error='Invalid Captcha', form=form)
 
             else:
-                return flask.render_template('login.html')
+                form = self.RecaptchaForm()
+                return flask.render_template('login.html', form=form)
 
         @app.route('/', methods=['GET', 'POST'])
         def index():

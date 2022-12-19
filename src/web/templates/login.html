@@ -5,23 +5,28 @@
     <div class="container border rounded addpage" style="align-items: center;text-align: center;margin-top: 5rem;">
       <h1>Please login</h1>
       <br>
-      <form action="" method="post">
+      <form action="{{ url_for('login') }}" method="post">
 
-
+        {{ form.csrf_token }}
         <div class="row">
           <div class="col-md-4">
-            <input style="padding:0.2rem;" type="text" placeholder="Username" name="username" value="{{
-              request.form.username }}">
+            <p>
+              {{ form.username.label }}<br>
+              {{ form.username }}
+          </p>
           </div>
 
           <div class="col-md-4">
-            <input style="padding:0.2rem;" type="password" placeholder="Password" name="password" value="{{
-              request.form.password }}">
+            <p>
+              {{ form.password.label }}<br>
+              {{ form.password }}
+          </p>
           </div>
 
           <div style="padding:0.2rem;" class="col-md-4">
-            {{ captcha() }} <!-- This renders an <img> tag with the captcha img. -->
-            <input type="text" name="captcha">
+            <p>
+                {{ form.recaptcha }}
+            </p>
           </div>
 
           <div class="col-md-4">
