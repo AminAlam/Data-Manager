@@ -14,7 +14,7 @@ import flask
 from threading import Thread
 import csv
 import os
-
+import datetime as dt
 from flask_sessionstore import Session
 from flask_session_captcha import FlaskSessionCaptcha
 from flask_sqlalchemy import SQLAlchemy
@@ -162,14 +162,19 @@ class WebApp():
                 conditions_html = flask.render_template('conditions.html', conditions=conditions)
                 conditions_html = flask.Markup(conditions_html)
 
+                tomorrow_date = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
+                yesterday_date = (dt.datetime.now() - dt.timedelta(days=1)).strftime("%Y-%m-%d")
+
+                dates = [yesterday_date, tomorrow_date]
+
                 if flask.request.method == 'POST' and len(flask.request.form):
                     experiments_list = search_engine.filter_experiments(self.db_configs.conn, flask.request.form)
                     experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
                     experiments_html = flask.Markup(experiments_html)
-                    return flask.render_template('experiments.html', experiments_html=experiments_html, conditions_html=conditions_html)
+                    return flask.render_template('experiments.html', experiments_html=experiments_html, conditions_html=conditions_html, dates=dates)
 
                 else:
-                    return flask.render_template('experiments.html', experiments_html=None, conditions_html=conditions_html)
+                    return flask.render_template('experiments.html', experiments_html=None, conditions_html=conditions_html, dates=dates)
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
@@ -178,7 +183,8 @@ class WebApp():
         def insert_experiment():
             if security.check_logged_in(flask.session):
                 conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
-                return flask.render_template('insert_experiment.html', conditions_list=conditions_list)
+                today_date = dt.datetime.now().strftime("%Y-%m-%d")
+                return flask.render_template('insert_experiment.html', conditions_list=conditions_list, today_date=today_date)
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
