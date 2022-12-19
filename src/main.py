@@ -35,4 +35,3 @@ def setup_all(server_ip, port, static_folder):
 if __name__ == '__main__':
     setup_all()
 
-    
