@@ -68,7 +68,7 @@
                               </div>
                         </div>
                         <div class="form-group col-md-11">
-                            <a href="{{ url_for('send_file', path=file[0]) }}">
+                            <a href="{{ url_for('send_experiment_file', experiment_id=experiment[-1], path=file[-1]) }}">
                                 <li class="list-group-item">  {{ file[2] }} </li>
                             </a>
                         </div>

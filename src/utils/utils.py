@@ -177,3 +177,10 @@ def remove_files(app_config, hash_id, file_names):
     for file_name in file_names:
         file_path = os.path.join(app_config['UPLOAD_FOLDER'], hash_id, file_name)
         os.remove(file_path)
+
+def get_hash_id_by_experiment_id(conn, id):
+    cursor = conn.cursor()
+    cursor.execute('select * from experiments where id=?', (id,))
+    experiment = cursor.fetchone()
+    hash_id = experiment[0]
+    return hash_id
