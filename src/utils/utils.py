@@ -185,6 +185,13 @@ def get_hash_id_by_experiment_id(conn, id):
     hash_id = experiment[0]
     return hash_id
 
+def get_id_by_hash_id(conn, hash_id):
+    cursor = conn.cursor()
+    cursor.execute('select * from experiments where id_hash=?', (hash_id,))
+    experiment = cursor.fetchone()
+    id = experiment[9]
+    return id
+
 def experiment_report_maker(conn, experiment_id):
     conn = conn
     cursor = conn.cursor()
@@ -206,3 +213,12 @@ def experiment_report_maker(conn, experiment_id):
     for i in range(20):
         report = report + f'\n{experiment[0]}_{i}'
     return report
+
+def check_hash_id_existence(conn, hash_id):
+    cursor = conn.cursor()
+    cursor.execute('select * from experiments where id_hash=?', (hash_id,))
+    experiment = cursor.fetchone()
+    if experiment is None:
+        return False
+    else:
+        return True
