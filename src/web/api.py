@@ -206,6 +206,11 @@ class WebApp():
                         flask.flash('Please fill all the forms')
                         return flask.redirect(flask.url_for('insert_experiment'))
 
+                    if not utils.check_hash_id_existence(self.db_configs.conn, parent_experiment) and parent_experiment != '':
+                        flask.flash('Parent experiment does not exist')
+                        return flask.redirect(flask.url_for('insert_experiment'))
+
+
                     if Author == '' or date == '' or experiment_name == '':
                         flask.flash('Please fill all the forms')
                         return flask.redirect(flask.url_for('insert_experiment'))
@@ -277,6 +282,15 @@ class WebApp():
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
 
+        @app.route("/experiment_by_hash_id/<string:hash_id>", methods=["POST", "GET"])
+        def experiment_by_hash_id(hash_id):
+            if security.check_logged_in(flask.session):
+                id = utils.get_id_by_hash_id(self.db_configs.conn, hash_id)
+                return flask.redirect(flask.url_for('experiment', id=id))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
         def update_experiment(id):
             if security.check_logged_in(flask.session):
@@ -285,6 +299,12 @@ class WebApp():
                 cursor = self.db_configs.conn.cursor()
                 cursor.execute("SELECT id_hash FROM experiments WHERE id=?", (id,))
                 hash_id = cursor.fetchone()[0]
+
+                parent_experiment = flask.request.form['parent_experiment']
+                if not utils.check_hash_id_existence(self.db_configs.conn, parent_experiment) and parent_experiment != '':
+                        flask.flash('Parent experiment does not exist')
+                        return flask.redirect(flask.url_for('experiment', id=id))
+
                 success_bool = operators.update_experiment_in_db(self.db_configs.conn, id, post_form, app.config, hash_id, flask.request.files.getlist('Files'))
 
                 if success_bool:
