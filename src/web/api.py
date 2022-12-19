@@ -36,7 +36,6 @@ class WebApp():
         self.port = port
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
-        self.app.config['SECRET_KEY'] = 'evmermrefmwrf92i4=#RKM-!#$Km343FIJ!$Ifofi3fj2q4fj2M943f-02f40-F-132-4fk!#$fi91f-'
         self.app.config['DATABASE_FOLDER'] = './src/database'
         self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
         self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
@@ -403,6 +402,20 @@ class WebApp():
                 print(template_name)
                 condition_html = utils.get_conditions_by_template_name(self.db_configs.conn, app.config, username, template_name)
                 return condition_html
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+
+        @app.route('/experiment_report_maker/<int:id>', methods=["POST", "GET"])
+        def experiment_report_maker(id):
+            if security.check_logged_in(flask.session):
+                cwd = os.getcwd()
+                cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'reports')
+                experiment_report = utils.experiment_report_maker(self.db_configs.conn, id)
+                file_path = os.path.join(cwd, f'report_{id}.txt')
+                with open(file_path, 'w') as f:
+                    f.write(experiment_report)
+                return flask.send_from_directory(cwd,  f'report_{id}.txt',as_attachment=True)
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))

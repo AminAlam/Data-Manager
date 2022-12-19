@@ -184,3 +184,25 @@ def get_hash_id_by_experiment_id(conn, id):
     experiment = cursor.fetchone()
     hash_id = experiment[0]
     return hash_id
+
+def experiment_report_maker(conn, experiment_id):
+    conn = conn
+    cursor = conn.cursor()
+    cursor.execute('select * from experiments where id=?', (experiment_id,))
+    experiment = cursor.fetchone()
+    experiment = list(experiment)
+    experiment[1] = parse_tags(experiment[1])
+    experiment[6] = parse_conditions(experiment[6])
+    # write the report to a text file and send it to the user
+    report = f'Hash ID: {experiment[0]}'
+    report = report + f'\nParent Hash ID: {experiment[8]}'
+    report = report + f'\nName: {experiment[7]}'
+    report = report + f'\nAuthor: {experiment[5]}'
+    report = report + f'\nDate: {experiment[4]}'
+    report = report + f'\nFile Path: {experiment[3]}'
+    report = report + f'\nTags: {experiment[1]}'
+    report = report + f'\nConditions: {experiment[6]}'
+    report = report + f'\n\n\n\n\n\n\n'
+    for i in range(20):
+        report = report + f'\n{experiment[0]}_{i}'
+    return report
