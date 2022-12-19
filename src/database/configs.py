@@ -13,6 +13,8 @@ class database_configs():
                                         date DATETIME NOT NULL,
                                         author text NOT NULL,
                                         conditions text,
+                                        experiment_name text,
+                                        experiment_parent text NOT NULL,
                                         id integer primary key autoincrement
                                     ); """, 
         """ CREATE TABLE IF NOT EXISTS tags (

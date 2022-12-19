@@ -24,7 +24,7 @@ def create_table(conn, create_table_sql):
         utils.error_log(e)
 
 ### Experiments
-def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditions):
+def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditions, experiment_name, parent_experiment):
     try:
         conditions_parsed = utils.parse_conditions(conditions)
         Tags_parsed = utils.parse_tags(Tags)
@@ -33,8 +33,8 @@ def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditio
         insert_author(conn, Author)
         cursor = conn.cursor()
         hash_id = utils.generate_hash(conn)
-        rows = [(hash_id, Tags, Notes, File_Path, date, Author, conditions, None)]
-        cursor.executemany('insert into experiments values (?,?,?,?,?,?,?,?)', rows)
+        rows = [(hash_id, Tags, Notes, File_Path, date, Author, conditions, experiment_name, parent_experiment, None)]
+        cursor.executemany('insert into experiments values (?,?,?,?,?,?,?,?,?,?)', rows)
         conn.commit()
         success_bool = 1
     except Error as e:
@@ -50,6 +50,8 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
         Tags = post_form['Tags']
         File_Path = post_form['File_Path']
         Notes = post_form['Notes']
+        experiment_name = post_form['experiment_name']
+        parent_experiment = post_form['parent_experiment']
 
         # add new files to experiment folder if exist
         if len(Files) > 0:
@@ -62,11 +64,10 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
                     Files2remove.append(form_input.split('&')[1])
             except:
                 pass
-        print(Files2remove)
+
         # remove file in Files2remove
         if len(Files2remove) > 0:
             utils.remove_files(app_config, hash_id, Files2remove)
-
 
         conditions = []
         for form_input in post_form:
@@ -74,10 +75,11 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
                 conditions.append('&'.join(form_input.split('&')[2:]))
         conditions = ','.join(conditions)
         cursor = conn.cursor()
-        rows = [(Tags, Notes, File_Path, date, conditions, id)]
-        cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, conditions=? where id=?', rows)
+        rows = [(Tags, Notes, File_Path, date, conditions, experiment_name, parent_experiment, id)]
+        cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, conditions=?, experiment_name=?, experiment_parent=? where id=?', rows)
         conn.commit()
         success_bool = 1
+
     except Error as e:
         utils.error_log(e)
         success_bool = 0

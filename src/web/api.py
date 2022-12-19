@@ -17,6 +17,7 @@ import os
 
 from flask_sessionstore import Session
 from flask_session_captcha import FlaskSessionCaptcha
+from flask_sqlalchemy import SQLAlchemy
 
 def add_admin(db_configs, app_configs):
     conn = db_configs.conn
@@ -46,7 +47,9 @@ class WebApp():
         self.app.config['CAPTCHA_LENGTH'] = 5
         self.app.config['CAPTCHA_WIDTH'] = 160
         self.app.config['CAPTCHA_HEIGHT'] = 60
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+
+        self.app.session_db = SQLAlchemy()
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
         self.app.config['CAPTCHA_SESSION_KEY'] = 'captcha_image'
         self.app.config['SESSION_TYPE'] = 'sqlalchemy'
 
@@ -191,12 +194,14 @@ class WebApp():
                         File_Path = flask.request.form['File_Path']
                         Notes = flask.request.form['Notes']
                         Files = flask.request.files.getlist('Files')
+                        experiment_name = flask.request.form['experiment_name']
+                        parent_experiment = flask.request.form['parent_experiment']
 
                     except:
                         flask.flash('Please fill all the forms')
                         return flask.redirect(flask.url_for('insert_experiment'))
 
-                    if Author == '' or date == '':
+                    if Author == '' or date == '' or experiment_name == '':
                         flask.flash('Please fill all the forms')
                         return flask.redirect(flask.url_for('insert_experiment'))
 
@@ -208,7 +213,7 @@ class WebApp():
                             conditions.append('&'.join(form_input.split('&')[2:]))
 
                     conditions = ','.join(conditions)
-                    success_bool, hash_id = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes, conditions=conditions)
+                    success_bool, hash_id = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes, conditions=conditions, experiment_name=experiment_name, parent_experiment=parent_experiment)
                     
                     if hash_id:
                         utils.upload_files(self.app.config, hash_id, Files)
@@ -230,27 +235,18 @@ class WebApp():
             if security.check_logged_in(flask.session):
                 searchbox = flask.request.form.get("text")
                 return search_engine.author_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
 
         @app.route("/tags_search", methods=["POST", "GET"])
         def tags_search():
             if security.check_logged_in(flask.session):
                 searchbox = flask.request.form.get("text")
                 return search_engine.tags_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
 
         @app.route("/text_search", methods=["POST", "GET"])
         def text_search():
             if security.check_logged_in(flask.session):
                 searchbox = flask.request.form.get("text")
                 return search_engine.text_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
 
         @app.route("/experiment/<int:id>", methods=["POST", "GET"])
         def experiment(id):
