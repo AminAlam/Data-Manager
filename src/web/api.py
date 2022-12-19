@@ -24,7 +24,7 @@ def add_admin(db_configs, app_configs):
     cursor.execute('select * from users where username=?', ('admin',))
     users = cursor.fetchall()
     if len(users)==0:
-        cursor.execute('insert into users values (?,?,?,?,?,?)', ('admin', 'admin', 1, None, None, None))
+        cursor.execute('insert into users values (?,?,?,?,?,?)', ('admin', 'SIGLAB_IST_VICE', 1, None, None, None))
         conn.commit()
         utils.init_user(app_configs, db_configs, 'admin')
 
@@ -170,7 +170,7 @@ class WebApp():
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
-        
+
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         def insert_experiment():
             if security.check_logged_in(flask.session):
@@ -266,7 +266,6 @@ class WebApp():
                     List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), f"{slef_made_codes_inv_map['remove']}&{filename}", filename]
 
                 Files = List
-                print(Files)
                 conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
                 target_conditions = experiment[6].split(',')
                 conditions = utils.modify_conditions_json(conditions, target_conditions)
