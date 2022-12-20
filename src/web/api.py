@@ -48,10 +48,9 @@ class WebApp():
         self.app.session_db = SQLAlchemy()
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
         self.app.config['SESSION_TYPE'] = 'sqlalchemy'
-        self.app.config['SECRET_KEY'] = "JIEO:FJ:IO9@)#8u2rIUL@HFG8#"
-        self.app.config['RECAPTCHA_PUBLIC_KEY'] = "6LeYIbsSAAAAACRPIllxA7wvXjIE411PfdB2gt2J"
-        self.app.config['RECAPTCHA_PRIVATE_KEY'] = "6LeYIbsSAAAAAJezaIq3Ft_hSTo0YtyeFG-JgRtu"  
-
+        self.app.config['SECRET_KEY'] = "JIEO:FJ:IO9@)#8u2rIUL@HFrfrkeferfG8#"
+        self.app.config['RECAPTCHA_PUBLIC_KEY'] = "6LdnS5EjAAAAAAJ28il_17CaciXAswp6r_zeJ7Ap"
+        self.app.config['RECAPTCHA_PRIVATE_KEY'] = "6LdnS5EjAAAAANdLvDGQwT-nxv0i8flIbr2PZ3qm"
         with self.app.app_context():
             Session(self.app)
         add_admin(self.db_configs, self.app.config)
