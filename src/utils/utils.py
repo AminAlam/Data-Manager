@@ -94,6 +94,11 @@ def experiment_list_maker(experiments_list):
         experiment = list(experiment)
         experiment[1] = parse_tags(experiment[1])
         experiment[6] = parse_conditions(experiment[6])
+        for j in range(len(experiment[6])):
+            if len(experiment[6][j].split('&')) ==3:
+                experiment[6][j] = experiment[6][j].split('&')[-1]
+            else:
+                experiment[6][j] = '->'.join(experiment[6][j].split('&')[-2:])
         experiments_list[i] = experiment
     return experiments_list
 
@@ -120,13 +125,27 @@ def read_json_file(json_file):
     return data    
 
 def modify_conditions_json(conditions, target_conditions):
+
     for condition in conditions.keys():
         for condition_nested in conditions[condition].keys():
             for indx, single_condition in enumerate(conditions[condition][condition_nested]):
-                if f'{condition}&{condition_nested}&{single_condition}' in target_conditions:
-                    conditions[condition][condition_nested][indx] = [single_condition, "checked"]
+                if len(single_condition.split('&')) == 4:
+                    param_name = single_condition.split("&")[0]
+                    if type(target_conditions) == str:
+                        target_conditions_list = target_conditions.split(',')
+                    else:
+                        target_conditions_list = target_conditions
+                    for target_condition in target_conditions_list:
+                        if param_name in target_condition:
+                            conditions[condition][condition_nested][indx] = [single_condition, "checked", target_condition.split('&')[-1]]
+                            break
+                    else:
+                        conditions[condition][condition_nested][indx] = [single_condition, ""]
                 else:
-                    conditions[condition][condition_nested][indx] = [single_condition, ""]
+                    if f'{condition}&{condition_nested}&{single_condition}' in target_conditions:
+                        conditions[condition][condition_nested][indx] = [single_condition, "checked"]
+                    else:
+                        conditions[condition][condition_nested][indx] = [single_condition, ""]
     return conditions
 
 def init_user(app_config, db_configs, user_name):
@@ -162,7 +181,6 @@ def get_conditions_by_template_name(conn, app_config, username, templatename):
     conditions_html = flask.render_template('conditions.html', conditions=condition_json, template_name=template_name)
     conditions_html = flask.Markup(conditions_html)
     return conditions_html
-
 
 def upload_files(app_config, hash_id, Files):
     folder_path = os.path.join(app_config['UPLOAD_FOLDER'], hash_id)

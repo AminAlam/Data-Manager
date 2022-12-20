@@ -55,8 +55,13 @@ def filter_experiments(conn, post_request_form):
     Tags = post_request_form['Tags']
     conditions = []
     for form_input in post_request_form:
-        if form_input.split('&')[0] == 'condition':
-            conditions.append('&'.join(form_input.split('&')[2:]))
+        if 'condition' == form_input.split('&')[0]:
+                conditions.append('&'.join(form_input.split('&')[1:]))
+        elif 'PARAM' == form_input.split('&')[0]:
+            list_tmp = form_input.split('&')[2:]
+            list_tmp.append(post_request_form[f"PARAMVALUE&{'&'.join(form_input.split('&')[1:])}"].split('&')[-1])
+            list_tmp = '&'.join(list_tmp)
+            conditions.append(list_tmp)
     conditions = ','.join(conditions)
 
     rows = []

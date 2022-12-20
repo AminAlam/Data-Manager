@@ -10,7 +10,7 @@
     },
 
     "Age/Sex":{
-        "Hours":["1", "4", "8", "16", "24", "48"],
+        "Hours":["PARAM_NAME1&0&1&24", "PARAM_NAME2&0&0.2&24"],
         "Days":["1", "3", "5"],
         "Age":["Adult (Pa)", "patnatal day 0 (p0)", "Embryonic Age (E17.5)", "Differentiation Day 100 (D100)"],
         "Sex":["Male", "Female"]

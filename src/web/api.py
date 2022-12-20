@@ -224,10 +224,13 @@ class WebApp():
                     conditions = []
 
                     for form_input in flask.request.form:
-
-                        if form_input.split('&')[0] == 'condition':
-                            conditions.append('&'.join(form_input.split('&')[2:]))
-
+                        if 'condition' == form_input.split('&')[0]:
+                            conditions.append('&'.join(form_input.split('&')[1:]))
+                        elif 'PARAM' == form_input.split('&')[0]:
+                            list_tmp = form_input.split('&')[2:]
+                            list_tmp.append(flask.request.form[f"PARAMVALUE&{'&'.join(form_input.split('&')[1:])}"].split('&')[-1])
+                            list_tmp = '&'.join(list_tmp)
+                            conditions.append(list_tmp)
                     conditions = ','.join(conditions)
                     success_bool, hash_id = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes, conditions=conditions, experiment_name=experiment_name, parent_experiment=parent_experiment)
                     
@@ -270,6 +273,14 @@ class WebApp():
                 cursor = self.db_configs.conn.cursor()
                 cursor.execute("SELECT * FROM experiments WHERE id=?", (id,))
                 experiment = cursor.fetchone()
+                target_conditions = experiment[6]
+                experiment = list(experiment)
+                experiment[6] = utils.parse_conditions(experiment[6])
+                for i in range(len(experiment[6])):
+                    if len(experiment[6][i].split('&')) ==3:
+                        experiment[6][i] = experiment[6][i].split('&')[-1]
+                    else:
+                        experiment[6][i] = '->'.join(experiment[6][i].split('&')[-2:])
                 hash_id = experiment[0]
                 dirName = os.path.join(app.config['UPLOAD_FOLDER'], hash_id)
                 List = os.listdir(dirName)
@@ -279,7 +290,7 @@ class WebApp():
 
                 Files = List
                 conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
-                target_conditions = experiment[6].split(',')
+                experiment = tuple(experiment)
                 conditions = utils.modify_conditions_json(conditions, target_conditions)
                 conditions_html = flask.render_template('conditions.html', conditions=conditions)
                 conditions_html = flask.Markup(conditions_html)
