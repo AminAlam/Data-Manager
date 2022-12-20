@@ -44,7 +44,15 @@
 
         <div class="form-group col-md-12">
           <label for="Conditions">Conditions</label>
-          <p class="form-control" name="ID_Hash"> {{experiment[6]}} </p>
+          <p class="form-control">
+          {% for condition in experiment[6] %}
+            {% if loop.index == 1 %}
+              {{condition}}
+            {% else %}
+              ,{{condition}}
+            {% endif %}
+          {% endfor %}
+        </p>
       </div>
 
         <div class="form-group col-md-6">

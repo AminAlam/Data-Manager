@@ -71,8 +71,14 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
 
         conditions = []
         for form_input in post_form:
-            if form_input.split('&')[0] == 'condition':
-                conditions.append('&'.join(form_input.split('&')[2:]))
+            if 'condition' == form_input.split('&')[0]:
+                conditions.append('&'.join(form_input.split('&')[1:]))
+            elif 'PARAM' == form_input.split('&')[0]:
+                list_tmp = form_input.split('&')[2:]
+                list_tmp.append(post_form[f"PARAMVALUE&{'&'.join(form_input.split('&')[1:])}"].split('&')[-1])
+                list_tmp = '&'.join(list_tmp)
+                conditions.append(list_tmp)
+                
         conditions = ','.join(conditions)
         cursor = conn.cursor()
         rows = [(Tags, Notes, File_Path, date, conditions, experiment_name, parent_experiment, id)]
@@ -160,6 +166,10 @@ def update_conditions_templates(conn, post_form, username):
     for key, _ in post_form.items():
         if 'condition' == key.split('&')[0]:
             conditions.append(key.split('&')[1:])
+        elif 'PARAM' == key.split('&')[0]:
+            list_tmp = key.split('&')[2:]
+            list_tmp.append(post_form[f"PARAMVALUE&{'&'.join(key.split('&')[1:])}"].split('&')[-1])
+            conditions.append(list_tmp)
     conditions_dict = {}
     for key, group in itertools.groupby(conditions, lambda x: x[0]):
         conditions_dict[key] = list(group)
@@ -168,11 +178,10 @@ def update_conditions_templates(conn, post_form, username):
         for indx, condition_this_template in enumerate(condition_this_template_list):
             condition_this_template_list[indx] = '&'.join(condition_this_template[1:])
         condition_this_template_list = ','.join(condition_this_template_list)
-        print(template_name, condition_this_template_list)
         cursor = conn.cursor()
         if template_name == 'default':
             cursor.execute('insert into conditions_templates values (?, ?, ?, ?)', (username, new_template_name, condition_this_template_list, None))
-        else:
+        elif template_name != '':
             cursor.execute('update conditions_templates set conditions=? where author=? and template_name=?', (condition_this_template_list, username, template_name))
         conn.commit()
     
