@@ -48,9 +48,11 @@ class WebApp():
         self.app.session_db = SQLAlchemy()
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
         self.app.config['SESSION_TYPE'] = 'sqlalchemy'
-        self.app.config['SECRET_KEY'] = "JIEO:FJ:IO9@)#8u2rIUL@HFrfrkeferfG8#"
-        self.app.config['RECAPTCHA_PUBLIC_KEY'] = "6LdnS5EjAAAAAAJ28il_17CaciXAswp6r_zeJ7Ap"
-        self.app.config['RECAPTCHA_PRIVATE_KEY'] = "6LdnS5EjAAAAANdLvDGQwT-nxv0i8flIbr2PZ3qm"
+        self.app.config['CREDS_FILE_PATH'] = os.path.join('src', 'creds.json')
+        self.app.config['CREDS_FILE'] = utils.load_creds(self.app.config['CREDS_FILE_PATH'])
+        self.app.config['SECRET_KEY'] = self.app.config['CREDS_FILE']['SECRET_KEY']
+        self.app.config['RECAPTCHA_PUBLIC_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PUBLIC_KEY']
+        self.app.config['RECAPTCHA_PRIVATE_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PRIVATE_KEY']
         with self.app.app_context():
             Session(self.app)
         add_admin(self.db_configs, self.app.config)
