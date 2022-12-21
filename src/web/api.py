@@ -48,7 +48,7 @@ class WebApp():
         self.app.session_db = SQLAlchemy()
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
         self.app.config['SESSION_TYPE'] = 'sqlalchemy'
-        self.app.config['CREDS_FILE_PATH'] = os.path.join('src', 'creds.json')
+        self.app.config['CREDS_FILE_PATH'] = os.path.join(self.app.root_path, 'creds.json')
         self.app.config['CREDS_FILE'] = utils.load_creds(self.app.config['CREDS_FILE_PATH'])
         self.app.config['SECRET_KEY'] = self.app.config['CREDS_FILE']['SECRET_KEY']
         self.app.config['RECAPTCHA_PUBLIC_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PUBLIC_KEY']
