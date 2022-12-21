@@ -218,6 +218,8 @@ def experiment_report_maker(conn, experiment_id):
     experiment = list(experiment)
     experiment[1] = parse_tags(experiment[1])
     experiment[6] = parse_conditions(experiment[6])
+    for i in range(len(experiment[6])):
+        experiment[6][i] = experiment[6][i].replace('&', '->')
     # write the report to a text file and send it to the user
     report = f'Hash ID: {experiment[0]}'
     report = report + f'\nParent Hash ID: {experiment[8]}'
@@ -240,3 +242,8 @@ def check_hash_id_existence(conn, hash_id):
         return False
     else:
         return True
+
+def load_creds(CREDS_FILE_PATH):
+    with open(CREDS_FILE_PATH) as f:
+        creds = json.load(f)
+    return creds
