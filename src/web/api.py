@@ -458,6 +458,30 @@ class WebApp():
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
 
+        @app.route('/bulk_report', methods=["POST", "GET"])
+        def bulk_report():
+            if security.check_logged_in(flask.session):
+                if flask.request.method == 'POST':
+                    post_form = flask.request.form
+                    experiments_ids = []
+                    for key in post_form:
+                        experiments_ids.append(int(key.split('&')[1]))
+                    
+                    cwd = os.getcwd()
+                    cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'reports')
+                    username = flask.session['username']
+                    file_path = os.path.join(cwd, f'bulk_report_{username}.txt')
+                    if len(experiments_ids) > 0:
+                        with open(file_path, 'w') as f:
+                            for id in experiments_ids:
+                                experiment_report = utils.experiment_report_maker(self.db_configs.conn, id)
+                                f.write(experiment_report)
+                                f.write(f"\n\n{'-'*20}\n\n")
+                        return flask.send_from_directory(cwd, f'bulk_report_{username}.txt', as_attachment=True)
+                    else:
+                        flask.flash('No experiments were selected')
+                        return flask.redirect(flask.request.referrer)
+
         t = Thread(target=self.app.run, args=(self.ip,self.port,False))
         t.start()        
 

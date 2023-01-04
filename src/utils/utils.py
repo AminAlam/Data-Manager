@@ -25,6 +25,9 @@ def init_directories(DATABASE_FOLDER):
     dir2make = os.path.join(DATABASE_FOLDER, 'conditions')
     if not os.path.exists(dir2make):
         os.makedirs(dir2make)
+    dir2make = os.path.join(DATABASE_FOLDER, 'reports')
+    if not os.path.exists(dir2make):
+        os.makedirs(dir2make)
     
 def init_db(db_configs):
     print('Initilizing the databse')
@@ -229,9 +232,9 @@ def experiment_report_maker(conn, experiment_id):
     report = report + f'\nFile Path: {experiment[3]}'
     report = report + f'\nTags: {experiment[1]}'
     report = report + f'\nConditions: {experiment[6]}'
-    report = report + f'\n\n\n\n\n\n\n'
-    for i in range(20):
-        report = report + f'\n{experiment[0]}_{i}'
+    # report = report + f'\n\n\n\n\n\n\n'
+    # for i in range(20):
+    #     report = report + f'\n{experiment[0]}_{i}'
     return report
 
 def check_hash_id_existence(conn, hash_id):
