@@ -43,6 +43,12 @@ class database_configs():
                                         conditions text NOT NULL,
                                         id integer primary key autoincrement
                                     ); """,
+        """ CREATE TABLE IF NOT EXISTS messages (
+                                        author text NOT NULL,
+                                        message text NOT NULL,
+                                        date text NOT NULL,
+                                        id integer primary key autoincrement
+                                    ); """
         ]
     def make_conn(self):
         self.conn = operators.create_connection(self.dbName)

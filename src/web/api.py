@@ -3,7 +3,7 @@ sys.path.append('../database')
 sys.path.append('../utils')
 
 import logging
-
+import chatroom
 import utils
 import security
 import uuid
@@ -53,6 +53,9 @@ class WebApp():
         self.app.config['SECRET_KEY'] = self.app.config['CREDS_FILE']['SECRET_KEY']
         self.app.config['RECAPTCHA_PUBLIC_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PUBLIC_KEY']
         self.app.config['RECAPTCHA_PRIVATE_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PRIVATE_KEY']
+
+        self.ChatRoom = chatroom.ChatRoom(self.db_configs)
+
         with self.app.app_context():
             Session(self.app)
         add_admin(self.db_configs, self.app.config)
@@ -565,6 +568,30 @@ class WebApp():
                         flask.flash('No experiments were selected')
                         return flask.redirect(flask.request.referrer)
 
+
+        @app.route('/chatroom', methods=["GET", "POST"])
+        def chatroom():
+            if security.check_logged_in(flask.session):
+                messages = self.ChatRoom.get_messages()
+                return flask.render_template('chat_room.html', messages=messages)
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+
+        @app.route('/chatroom_send_message', methods=["GET", "POST"])
+        def chatroom_send_message():
+            if security.check_logged_in(flask.session):
+                message = flask.request.form.get('message')
+                username = flask.session['username']
+                time_now = dt.datetime.now()
+                message = {'author': username, 'message': message, 'date_time':time_now }
+                self.ChatRoom.add_message(message)
+                return flask.redirect(flask.url_for('chatroom'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+
+        
         t = Thread(target=self.app.run, args=(self.ip,self.port,False))
         t.start()        
 
