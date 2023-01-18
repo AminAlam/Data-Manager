@@ -207,6 +207,28 @@ class WebApp():
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
 
+        @app.route("/delete_user/<int:id>", methods=['POST', 'GET'])
+        def delete_user(id):
+            if security.check_logged_in(flask.session):
+                if flask.session['admin']:
+                    conn = self.db_configs.conn
+                    cursor = conn.cursor()
+                    cursor.execute('select * from users where id=?', (id,))
+                    users = cursor.fetchall()
+
+                    if len(users)==0:
+                        flask.flash('Username does not exist')
+                        return flask.redirect(flask.url_for('user_management'))
+
+                    else:
+                        cursor.execute('delete from users where id=?', (id,))
+                        conn.commit()
+                        flask.flash('User deleted successfully')
+                        return flask.redirect(flask.url_for('user_management'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+
         
         @app.route('/user_management', methods=['GET', 'POST'])
         def user_management():
