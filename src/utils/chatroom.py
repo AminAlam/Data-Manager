@@ -17,3 +17,9 @@ class ChatRoom():
         cols = [column[0] for column in cur.description]
         messages = [dict(zip(cols, row)) for row in messages]
         return messages
+
+    def delete_message(self, message_id):
+        conn = self.db_configs.conn
+        cur = conn.cursor()
+        cur.execute("DELETE FROM messages WHERE id = ?", (message_id,))
+        conn.commit()
