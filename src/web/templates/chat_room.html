@@ -43,7 +43,6 @@
                                 {% if message['author'] == session['username'] %}
                                     <div class="chat-message-right pb-4">
                                         <div>
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle mr-1" width="40" height="40">
                                             <div class="text-muted small text-nowrap mt-2">{{message['date']}}</div>
                                             <a href="{{ url_for('chatroom_delete_message', id=message['id']) }}" class="btn btn-danger btn-sm">Delete</a>
                                         </div>
@@ -55,7 +54,6 @@
                                 {% else %}
                                 <div class="chat-message-left pb-4">
                                     <div>
-                                        <img src="https://bootdey.com/img/Content/avatar/avatar2.png" class="rounded-circle mr-1" width="40" height="40">
                                         <div class="text-muted small text-nowrap mt-2">{{message['date']}}</div>
                                         {% if session['admin'] %}
                                             <a href="{{ url_for('chatroom_delete_message', id=message['id']) }}" class="btn btn-danger btn-sm">Delete</a>
