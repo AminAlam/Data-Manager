@@ -3,65 +3,56 @@
        <div class="form-row uploadrows">
            
     
-        <div class="form-group col-md-3 ">
-               <label for="username">*username: </label>
-               <input  class=" dropdown-header" id="username" name="username" autocomplete="off" required value="{{user['username']}}" disabled>
-        </div>
+            <div class="form-group col-md-3 ">
+                <label for="username">*username: </label>
+                <input  class=" dropdown-header" id="username" name="username" autocomplete="off" required value="{{user['username']}}" disabled>
+            </div>
     
        
-        <div class="form-group col-md-3 ">
-            <label for="password">*password: </label>
-            <input  class=" dropdown-header" id="password" name="password" autocomplete="off" required value="{{user['password']}}">
-        </div>
-        <div class="form-group col-md-3 ">
-            <label for="repeat_password">*repeat password: </label>
-            <input  class=" dropdown-header" id="repeat_password" name="repeat_password" autocomplete="off" required value="{{user['password']}}">
-        </div>
-    
-    
-        {% if session['admin'] %}
-            <div class="form-group col-md-3">
-                <label for="emailed">*admin:</label>
-                <select class="form-select" name="admin" id="admin" aria-label="Default select example" required>
-                    {% if user['admin'] == True %}
-                        <option selected="True">Yes</option>
-                        <option value="False">No</option>
-                    {% else %}
-                        <option selected="False">No</option>
-                        <option value="True">Yes</option>
-                    {% endif %}
-                </select>
+            <div class="form-group col-md-3 ">
+                <label for="password">*password: </label>
+                <input  class=" dropdown-header" id="password" name="password" autocomplete="off" required value="{{user['password']}}">
             </div>
-        {% endif %}
+            <div class="form-group col-md-3 ">
+                <label for="repeat_password">*repeat password: </label>
+                <input  class=" dropdown-header" id="repeat_password" name="repeat_password" autocomplete="off" required value="{{user['password']}}">
+            </div>
     
     
-        <div class="form-group col-md-6 ">
-            <label for="password">name: </label>
-            <input  class=" dropdown-header" id="name" name="name" autocomplete="off" value="{{user['name']}}">
+            {% if session['admin'] %}
+                <div class="form-group col-md-3">
+                    <label for="emailed">*admin:</label>
+                    <select class="form-select" name="admin" id="admin" aria-label="Default select example" required>
+                        {% if user['admin'] == True %}
+                            <option selected="True">Yes</option>
+                            <option value="False">No</option>
+                        {% else %}
+                            <option selected="False">No</option>
+                            <option value="True">Yes</option>
+                        {% endif %}
+                    </select>
+                </div>
+            {% endif %}
+    
+    
+            <div class="form-group col-md-6 ">
+                <label for="password">name: </label>
+                <input  class=" dropdown-header" id="name" name="name" autocomplete="off" value="{{user['name']}}">
+            </div>
+        
+            <div class="form-group col-md-6">
+                <label for="password">email: </label>
+                <input  class=" dropdown-header" id="email" name="email" autocomplete="off" value="{{user['email']}}">
+            </div>
+
         </div>
-    
-        <div class="form-group col-md-6">
-            <label for="password">email: </label>
-            <input  class=" dropdown-header" id="email" name="email" autocomplete="off" value="{{user['email']}}">
+        <div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
+        
+            <div class="col-md-4">
+            <button class="btn btn-primary" type=submit Course> Update user</button>
+            </div>
+        
         </div>
-    
-    
-         
-    
-    
-     
-    </div>
-    <div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
-    
-     <div class="col-md-4">
-       <button class="btn btn-primary" type=submit Course> Update user</button>
-     </div>
-    
-    </div>
-    </div>
-    
-    
-    
-    
+
     </form>
-    </div>
+</div>
