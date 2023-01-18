@@ -82,8 +82,7 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                # elif form.validate_on_submit():
-                elif 1:
+                elif form.validate_on_submit():
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -592,6 +591,16 @@ class WebApp():
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
+
+        @app.route('/chatroom_delete_message/<int:id>', methods=["GET", "POST"])
+        def chatroom_delete_message(id):
+            if security.check_logged_in(flask.session):
+                self.ChatRoom.delete_message(id)
+                return flask.redirect(flask.url_for('chatroom'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+        
 
         
         t = Thread(target=self.app.run, args=(self.ip,self.port,False))
