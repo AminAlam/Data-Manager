@@ -79,7 +79,8 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                elif form.validate_on_submit():
+                #elif form.validate_on_submit():
+                elif 1:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -155,10 +156,73 @@ class WebApp():
                     cursor.execute('insert into users (username, password, admin, name, email) values (?,?,?,?,?)', (username, password, admin, name, email))
                     utils.init_user(app.config, self.db_configs, username)
                     conn.commit()
+                    flask.flash('User added successfully')
                     return flask.redirect(flask.url_for('index'))
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
+    
+        @app.route("/update_user_in_db/<int:id>", methods=['POST', 'GET'])
+        def update_user_in_db(id):
+            if security.check_logged_in(flask.session):
+                if flask.request.method == 'POST':
+                    print(flask.request.form)
+                    password = flask.request.form['password']
+                    repeat_password = flask.request.form['repeat_password']
+                    if flask.session['admin']:
+                        admin = flask.request.form['admin'] == 'True'
+                    else:
+                        admin = 0
+                    name = flask.request.form['name']
+                    email = flask.request.form['email']
+
+                    if password == '' or admin == '':
+                        flask.flash('Please fill all the fields')
+                        user = flask.request.form
+                        return flask.render_template('profile.html', user=user)
+
+                    if password != repeat_password:
+                        flask.flash('Passwords do not match')
+                        user = flask.request.form
+                        return flask.render_template('profile.html', user=user)
+
+                    conn = self.db_configs.conn
+                    cursor = conn.cursor()
+                    cursor.execute('select * from users where id=?', (id,))
+                    users = cursor.fetchall()
+
+                    if len(users)==0:
+                        flask.flash('Username does not exist')
+                        user = flask.request.form
+                        return flask.render_template('profile.html', user=user)
+
+                    else:
+                        cursor.execute('update users set password=?, admin=?, name=?, email=? where id=?', (password, admin, name, email, id))
+                        conn.commit()
+                        flask.flash('User updated successfully')
+                        return flask.redirect(flask.url_for('user_management'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+
+        
+        @app.route('/user_management', methods=['GET', 'POST'])
+        def user_management():
+            if flask.session['admin']:
+                conn = self.db_configs.conn
+                cursor = conn.cursor()
+                cursor.execute('select * from users where username != ?', ('admin',))
+                users = cursor.fetchall()
+
+                cursor.execute("PRAGMA table_info(users)")
+                columns = cursor.fetchall()
+                columns = [column[1] for column in columns]
+                users = [dict(zip(columns, user)) for user in users]
+
+                users_html = [flask.render_template('user_profile_template.html', user=user) for user in users]
+                users_html = [flask.Markup(user_html) for user_html in users_html]
+
+                return flask.render_template('user_management.html', users_html=users_html)
 
         @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
@@ -393,6 +457,26 @@ class WebApp():
 
                 flask.flash(message)
                 return flask.redirect(flask.url_for('conditions_templates'))
+            else:
+                flask.flash('You are not logged in, please login first')
+                return flask.redirect(flask.url_for('login'))
+
+        @app.route("/profile", methods=["POST", "GET"])
+        def profile():
+            if security.check_logged_in(flask.session):
+                username = flask.session['username']
+                cursor = self.db_configs.conn.cursor()
+                cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+                user = cursor.fetchone()
+                # get columns names from the table
+                cursor.execute("PRAGMA table_info(users)")
+                columns = cursor.fetchall()
+                columns = [column[1] for column in columns]
+                # coonvert user to dict with columns as keys
+                user = dict(zip(columns, user))
+                user_html = flask.render_template('user_profile_template.html', user=user)
+                user_html = flask.Markup(user_html)
+                return flask.render_template('profile.html', user_html=user_html)
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
