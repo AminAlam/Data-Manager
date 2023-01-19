@@ -250,3 +250,8 @@ def load_creds(CREDS_FILE_PATH):
     with open(CREDS_FILE_PATH) as f:
         creds = json.load(f)
     return creds
+
+def set_parent_experiment(conn, experiment_id, parent_hash_id):
+    cursor = conn.cursor()
+    cursor.execute('update experiments set experiment_parent=? where id=?', (parent_hash_id, experiment_id))
+    conn.commit()

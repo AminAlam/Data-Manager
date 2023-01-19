@@ -1,4 +1,4 @@
-<form action="{{ url_for('bulk_report')}}" method=post enctype=multipart/form-data>
+<form action="{{ url_for('experiments_actions')}}" method=post enctype=multipart/form-data>
 <div class="card-deck">
     {% if experiments_list is not none %}
         {% for experiment in experiments_list %}
@@ -9,9 +9,9 @@
                             <div class="col-md-1">
                             </div>
                             <div class="col-md-2">
-                                <input class="form-check-input" type="checkbox" id="Report&{{experiment[-1]}}" name="Report&{{experiment[-1]}}">
-                                <label class="form-check-label" for="Report&{{experiment[-1]}}">
-                                    Report
+                                <input class="form-check-input" type="checkbox" id="Select&{{experiment[-1]}}" name="Select&{{experiment[-1]}}">
+                                <label class="form-check-label" for="Select&{{experiment[-1]}}">
+                                    Select
                                 </label>
                             </div>
                             <div class="col-md-6">
@@ -50,8 +50,19 @@
 </div>
 
 <div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
-    <div class="col-md-12">
-      <button class="btn btn-primary" type=submit id="bulk_report">Generate Report</button>
+    <div class="col-md-3">
+            <label for="emailed">Action:</label>
+            <select class="form-select" name="action" id="action" required>
+                    <option value="bulk_report">Report</option>
+                    <option value="set_parent_experiment">Set parent experiment</option>
+            </select>
+    </div>
+    <div class="col-md-6" style="display:none" id="parent_experiment_hash_id">
+        <label for="parent_experiment_hash_id">Parent HashID:</label>
+        <input class="form-control" type="text" name="parent_experiment_hash_id" autocomplete="off">
     </div>  
+    <div class="col-md-3">
+        <button class="btn btn-primary" type=submit id="action">Submit</button>
+      </div>  
 </div>
 </form>

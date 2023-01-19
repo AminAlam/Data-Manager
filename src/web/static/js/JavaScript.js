@@ -135,12 +135,29 @@ $(document).ready(function(){
 });
 
 
+
+// check for seleted item of dropdown with id == "action" and if it is "set_parent_experiment" then show the div with id == "parent_experiment_hash_id"
+$(document).ready(function(){
+  $("#action").change(function(){
+    if ($("#action").val() == "set_parent_experiment") {
+      $("#parent_experiment_hash_id").show();
+    } else {
+      $("#parent_experiment_hash_id").hide();
+    }
+  });
+});
+
+
+
+
 document.getElementById('Files_id').onchange = function() {
   // code to change the label text
   var fullName = getFileName(document.getElementById('Files_id').value);
   console.log(fullName);
   document.getElementById("Files_name_id").innerHTML= fullName;
 };
+
+
 var getFileName = function(fullPath) {
   if (!fullPath) return null;
   var startIndex = (fullPath.indexOf('\\') >= 0 ? fullPath.lastIndexOf('\\') : fullPath.lastIndexOf('/'));
@@ -149,10 +166,4 @@ var getFileName = function(fullPath) {
     return filename.substring(1);
   }
   return null;
-}
-
-
-
-
-
-
+};
