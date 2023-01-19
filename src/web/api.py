@@ -246,7 +246,7 @@ class WebApp():
                 users_html = [flask.render_template('user_profile_template.html', user=user) for user in users]
                 users_html = [flask.Markup(user_html) for user_html in users_html]
 
-                return flask.render_template('user_management.html', users_html=users_html)
+                return flask.render_template('user_management.html', users_html=users_html, users=users)
 
         @app.route('/experiments', methods=['GET', 'POST'])
         def experiments():
