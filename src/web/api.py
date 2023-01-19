@@ -511,7 +511,6 @@ class WebApp():
             if filename in allowed_files:
                 return flask.send_from_directory(app.root_path, filename)
             else:
-                flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
 
         @app.route('/send_experiment_file/<int:experiment_id>/<path:path>')
@@ -522,7 +521,6 @@ class WebApp():
                     cwd = os.path.join(cwd, app.config['UPLOAD_FOLDER'])
                     hash_id = utils.get_hash_id_by_experiment_id(self.db_configs.conn, experiment_id)
                     path = os.path.join(hash_id, path)
-                    print(cwd, path)
                     return flask.send_from_directory(cwd, path, as_attachment=True)
             else:
                 flask.flash('You are not logged in, please login first')
