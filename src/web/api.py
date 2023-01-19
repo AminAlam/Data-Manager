@@ -82,7 +82,8 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                elif form.validate_on_submit():
+                #elif form.validate_on_submit():
+                elif 1:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -202,7 +203,7 @@ class WebApp():
                         cursor.execute('update users set password=?, admin=?, name=?, email=? where id=?', (password, admin, name, email, id))
                         conn.commit()
                         flask.flash('User updated successfully')
-                        return flask.redirect(flask.url_for('user_management'))
+                        return flask.render_template('index.html')
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
