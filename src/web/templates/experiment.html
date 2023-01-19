@@ -44,12 +44,12 @@
 
         <div class="form-group col-md-12">
           <label for="Conditions">Conditions</label>
-          <p class="form-control">
+          <p class="form-control" style="overflow: scroll; height: 7rem; overflow-x: hidden;">
           {% for condition in experiment[6] %}
             {% if loop.index == 1 %}
               {{condition}}
             {% else %}
-              ,{{condition}}
+                ,{{condition}}
             {% endif %}
           {% endfor %}
         </p>
