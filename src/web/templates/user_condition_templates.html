@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container" style="margin: 1rem;">
+<div class="container border rounded addpage" style="margin: 1rem;">
     <form action="/update_conditions_templates_in_db" method=post enctype=multipart/form-data>
         <div class="accordion" id="accordionExample">
             {% for condition in conditions_list %}
