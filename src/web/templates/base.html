@@ -77,7 +77,7 @@
         </div>
       </nav>
   {% endif %}
-  <div class="container">
+
     {% for message in get_flashed_messages() %}
       <div class="alert alert-primary" role="alert">
         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -85,7 +85,7 @@
       </div>
     {% endfor %}
     {% block content %} {% endblock %}
-  </div>
+
 
   <footer class="bg-light text-center text-lg-start fixed-bottom" style="opacity: 50%; background-color: rgba(0,0,0,0)!important; position: unset !important;">
     <!-- Copyright -->

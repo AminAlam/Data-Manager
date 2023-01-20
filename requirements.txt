@@ -7,3 +7,5 @@ flask-session-captcha
 flask_sqlalchemy
 flask_wtf
 wtforms
+networkx
+pydot

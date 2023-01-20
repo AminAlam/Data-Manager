@@ -7,6 +7,8 @@ import json
 import flask
 sys.path.append('../database')
 import operators
+import matplotlib.pyplot as plt
+import networkx as nx
 
 from datetime import datetime, date
 
@@ -26,6 +28,9 @@ def init_directories(DATABASE_FOLDER):
     if not os.path.exists(dir2make):
         os.makedirs(dir2make)
     dir2make = os.path.join(DATABASE_FOLDER, 'reports')
+    if not os.path.exists(dir2make):
+        os.makedirs(dir2make)
+    dir2make = os.path.join(DATABASE_FOLDER, 'family_tree')
     if not os.path.exists(dir2make):
         os.makedirs(dir2make)
     
@@ -255,3 +260,61 @@ def set_parent_experiment(conn, experiment_id, parent_hash_id):
     cursor = conn.cursor()
     cursor.execute('update experiments set experiment_parent=? where id=?', (parent_hash_id, experiment_id))
     conn.commit()
+
+def get_family_tree(conn, experiment_hash_id):
+    family_tree = {'parent': None, 'children': None, 'self': None}
+    cursor = conn.cursor()
+    cursor.execute('select * from experiments where id_hash=?', (experiment_hash_id,))
+    experiment = cursor.fetchone()
+    experiment = list(experiment)
+    experiment_name = experiment[7]
+    parent_hash_id = experiment[8]
+    experiment_id = experiment[-1]
+    family_tree['self'] = [experiment_name, experiment_id]
+
+    if parent_hash_id is None or parent_hash_id == 'None' or parent_hash_id == '':
+        family_tree['parent'] = None
+    else:
+        cursor.execute('select * from experiments where id_hash=?', (parent_hash_id,))
+        parent = cursor.fetchone()
+        parent = list(parent)
+        parent_name = parent[7]
+        parent_id = parent[-1]
+        family_tree['parent'] = [parent_name, parent_id]
+
+    cursor.execute('select * from experiments where experiment_parent=?', (experiment_hash_id,))
+    children = cursor.fetchall()
+    children = list(children)
+    if len(children) == 0:
+        family_tree['children'] = None
+    else:
+        children = [[child[7], child[-1]] for child in children]
+        family_tree['children'] = children
+
+    return family_tree
+
+def family_tree_to_html(conn, experiment_hash_id, FAMILY_TREE_FOLDER):
+    family_tree = get_family_tree(conn, experiment_hash_id)
+    parent = family_tree['parent']
+    children = family_tree['children']
+    self_exp = family_tree['self']
+    G = nx.DiGraph()
+    url_experiment = flask.url_for('experiment', id=self_exp[1])
+    G.add_node(self_exp[0], color='blue', URL=url_experiment)
+    if children is not None:
+        for child in children:
+            url_experiment = flask.url_for('experiment', id=child[1])
+            G.add_node(child[0], color='green', URL=url_experiment)
+            G.add_edge(self_exp[0], child[0])
+    if parent is not None:
+        url_experiment = flask.url_for('experiment', id=parent[1])
+        G.add_node(parent[0], color='red', URL=url_experiment)
+        G.add_edge(parent[0], self_exp[0])
+    dot_save_path = os.path.join(FAMILY_TREE_FOLDER, f'{experiment_hash_id}.dot')
+    html_save_path = os.path.join(FAMILY_TREE_FOLDER, f'{experiment_hash_id}.html')
+    nx.nx_pydot.write_dot(G, f'{dot_save_path}')
+    os.system(f'dot -Tsvg {dot_save_path} -o {html_save_path}')
+    # read the html file and return it
+    with open(html_save_path, 'r') as f:
+        html = f.read()
+    return html
