@@ -43,6 +43,7 @@ class WebApp():
         self.app = flask.Flask(__name__, static_folder=static_folder)
         self.app.config['DATABASE_FOLDER'] = './src/database'
         self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
+        self.app.config['FAMILY_TREE_FOLDER'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'family_tree')
         self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
         self.app.config['TEMPLATES_FOLDER'] = './src/web/templates'
         self.app.session_db = SQLAlchemy()
@@ -375,6 +376,9 @@ class WebApp():
                 dirName = os.path.join(app.config['UPLOAD_FOLDER'], hash_id)
                 List = os.listdir(dirName)
 
+                family_tree_html = utils.family_tree_to_html(self.db_configs.conn, hash_id, self.app.config['FAMILY_TREE_FOLDER'])
+                family_tree_html = flask.Markup(family_tree_html)
+
                 for count, filename in enumerate(List):
                     List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), f"{slef_made_codes_inv_map['remove']}&{filename}", filename]
 
@@ -384,7 +388,7 @@ class WebApp():
                 conditions = utils.modify_conditions_json(conditions, target_conditions)
                 conditions_html = flask.render_template('conditions.html', conditions=conditions)
                 conditions_html = flask.Markup(conditions_html)
-                return flask.render_template('experiment.html', experiment=experiment, Files=Files, conditions_html=conditions_html)
+                return flask.render_template('experiment.html', experiment=experiment, Files=Files, conditions_html=conditions_html, family_tree_html=family_tree_html)
             else:
                 flask.flash('You are not logged in, please login first')
                 return flask.redirect(flask.url_for('login'))
