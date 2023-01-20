@@ -7,7 +7,6 @@ import json
 import flask
 sys.path.append('../database')
 import operators
-import matplotlib.pyplot as plt
 import networkx as nx
 
 from datetime import datetime, date
