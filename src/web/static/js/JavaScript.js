@@ -169,6 +169,22 @@ $(document).ready(function(){
 
 
 
+// if date_bool is checked then enable the divs with id == "date_start" and id == "date_end" else disable them
+$(document).ready(function(){
+  $("#date_bool").change(function(){
+    if ($("#date_bool").is(":checked")) {
+      $("#date_start").prop("disabled", false);
+      $("#date_end").prop("disabled", false);
+    } else {
+      $("#date_start").prop("disabled", true);
+      $("#date_end").prop("disabled", true);
+    }
+  });
+});
+
+
+
+
 
 document.getElementById('Files_id').onchange = function() {
   // code to change the label text
