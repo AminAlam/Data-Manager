@@ -50,9 +50,17 @@ def filter_experiments(conn, post_request_form):
     Authors = post_request_form['Author']
     Hash_ID = post_request_form['Hash_ID']
     Text = post_request_form['Text']
-    date_start = post_request_form['date_start']
-    date_end = post_request_form['date_end']
     Tags = post_request_form['Tags']
+    if 'date_bool' not in post_request_form:
+        date_bool = False
+    else:
+        date_bool = True
+    if not date_bool:
+        date_start = '0001-01-01'
+        date_end = '9999-12-31'
+    else:
+        date_start = post_request_form['date_start']
+        date_end = post_request_form['date_end']
     conditions = []
     for form_input in post_request_form:
         if 'condition' == form_input.split('&')[0]:
