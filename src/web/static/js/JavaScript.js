@@ -1,13 +1,3 @@
-document.addEventListener("DOMContentLoaded", function() {
-    showEmailDate('email_date', document.getElementById('emailed'));
-  });
-
-// function showEmailDate(divId, element)
-// {
-//     document.getElementById(divId).style.display = element.value == "Yes" ? 'block' : 'none';
-// }
-
-
 
 function put_text(id_parent, id, txt) {     
   document.getElementById(id).value = txt;
@@ -18,26 +8,18 @@ function put_text(id_parent, id, txt) {
 
  function replace_text(id_parent, id, txt) {
   input_txt = document.getElementById(id).value;
-  // find index of , in input_txt
   index = input_txt.indexOf(",");
-  // if index is not -1, then there is a comma in the string
   if (index != -1) {
-    // split the string by ,
     input_txt = input_txt.split(",");
-    // replace the last part with the new text
     input_txt[input_txt.length-1] = txt;
-    // iterate through input_txt
     for (i = 0; i < input_txt.length; i++) {
-      // if the part is empty, remove it
       if (input_txt[i] == "") {
         input_txt.splice(i, 1);
       }
     }
-    // join the parts back together
     console.log(input_txt)
     input_txt = input_txt.join(",");
   } else {
-    // if there is no comma, then just add the new text
     input_txt = txt;
   }
   document.getElementById(id).value = input_txt;
@@ -156,7 +138,6 @@ $(document).ready(function(){
 
 
 
-// check for seleted item of dropdown with id == "action" and if it is "set_parent_experiment" then show the div with id == "parent_experiment_hash_id"
 $(document).ready(function(){
   $("#action").change(function(){
     if ($("#action").val() == "set_parent_experiment") {
@@ -169,7 +150,6 @@ $(document).ready(function(){
 
 
 
-// if date_bool is checked then enable the divs with id == "date_start" and id == "date_end" else disable them
 $(document).ready(function(){
   $("#date_bool").change(function(){
     if ($("#date_bool").is(":checked")) {
@@ -185,14 +165,13 @@ $(document).ready(function(){
 
 
 
-
-document.getElementById('Files_id').onchange = function() {
-  // code to change the label text
-  var fullName = getFileName(document.getElementById('Files_id').value);
-  console.log(fullName);
-  document.getElementById("Files_name_id").innerHTML= fullName;
-};
-
+if (document.getElementById('Files_id')) {
+  document.getElementById('Files_id').onchange = function() {
+    var fullName = getFileName(document.getElementById('Files_id').value);
+    console.log(fullName);
+    document.getElementById("Files_name_id").innerHTML= fullName;
+  };
+}
 
 var getFileName = function(fullPath) {
   if (!fullPath) return null;
