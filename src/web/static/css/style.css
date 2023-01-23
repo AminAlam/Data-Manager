@@ -87,6 +87,7 @@ div.SearchBarBody{
 div.SearchBarMain{
     width : 100%;
     border: 0px solid rgba(0,0,0,.15)!important;
+    text-align: left;
 }
 
 div.SearchBarMainBox{
@@ -94,6 +95,7 @@ div.SearchBarMainBox{
     border: 0px solid rgba(0,0,0,.15)!important;
     padding: .0rem 0!important;
     transition: 0.3s;
+    
 }
 
 div.SearchBarMainBox:focus{
@@ -106,6 +108,11 @@ input.SearchBarBox{
     border-radius: .25rem 0.25rem 0 0!important;
     background-color: rgb(235, 235, 235);
     transition: 0.3s;
+}
+
+label.SearchBarBox{
+    position: relative;
+    z-index: -1;
 }
 
 input.SearchBarBox:focus{
@@ -121,7 +128,6 @@ input.SearchBarBox:focus .div.SearchBarBox{
 
 div.SearchBarBox{
     width : 100%!important;
-    display: block;
     background-color: rgb(235, 235, 235);
     /* border: 1px solid rgba(0,0,0,.35)!important;
     border-radius: .25rem!important; */
@@ -145,67 +151,66 @@ div.PanelLogin{
 
 
 
-
 /*======Responsive CSS=======*/
 @media (max-width: 767px){
-.comments .commenter-name {
-    font-size: 13px;
-    top: -5px;
-}
-.comments .commenter-pic {
-    width: 40px;
-    height: 40px;
-}
-.comments .commenter-name a{
-  display: block;
-}
-.comments .commenter-name .comment-time{
-  display: block;
-  margin-left: 0px;
-}
-}
-
-
-.chat-online {
-    color: #34ce57
-}
-
-.chat-offline {
-    color: #e4606d
-}
-
-.chat-messages {
-    display: flex;
-    flex-direction: column;
-    max-height: 800px;
-    overflow-y: scroll
-}
-
-.chat-message-left,
-.chat-message-right {
-    display: flex;
-    flex-shrink: 0
-}
-
-.chat-message-left {
-    margin-right: auto
-}
-
-.chat-message-right {
-    flex-direction: row-reverse;
-    margin-left: auto
-}
-.py-3 {
-    padding-top: 1rem!important;
-    padding-bottom: 1rem!important;
-}
-.px-4 {
-    padding-right: 1.5rem!important;
-    padding-left: 1.5rem!important;
-}
-.flex-grow-0 {
-    flex-grow: 0!important;
-}
-.border-top {
-    border-top: 1px solid #dee2e6!important;
-}
+    .comments .commenter-name {
+        font-size: 13px;
+        top: -5px;
+    }
+    .comments .commenter-pic {
+        width: 40px;
+        height: 40px;
+    }
+    .comments .commenter-name a{
+      display: block;
+    }
+    .comments .commenter-name .comment-time{
+      display: block;
+      margin-left: 0px;
+    }
+    }
+    
+    
+    .chat-online {
+        color: #34ce57
+    }
+    
+    .chat-offline {
+        color: #e4606d
+    }
+    
+    .chat-messages {
+        display: flex;
+        flex-direction: column;
+        max-height: 800px;
+        overflow-y: scroll
+    }
+    
+    .chat-message-left,
+    .chat-message-right {
+        display: flex;
+        flex-shrink: 0
+    }
+    
+    .chat-message-left {
+        margin-right: auto
+    }
+    
+    .chat-message-right {
+        flex-direction: row-reverse;
+        margin-left: auto
+    }
+    .py-3 {
+        padding-top: 1rem!important;
+        padding-bottom: 1rem!important;
+    }
+    .px-4 {
+        padding-right: 1.5rem!important;
+        padding-left: 1.5rem!important;
+    }
+    .flex-grow-0 {
+        flex-grow: 0!important;
+    }
+    .border-top {
+        border-top: 1px solid #dee2e6!important;
+    }
