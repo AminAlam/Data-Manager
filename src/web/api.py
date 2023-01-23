@@ -83,7 +83,7 @@ class WebApp():
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
                 #elif form.validate_on_submit():
-                elif 1:
+                elif form.validate_on_submit():
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
