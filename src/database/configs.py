@@ -48,6 +48,14 @@ class database_configs():
                                         message text NOT NULL,
                                         date text NOT NULL,
                                         id integer primary key autoincrement
+                                    ); """,
+        """ CREATE TABLE IF NOT EXISTS logs (
+                                        username text NOT NULL,
+                                        action text NOT NULL,
+                                        date text NOT NULL,
+                                        status text NOT NULL,   
+                                        error text,
+                                        id integer primary key autoincrement
                                     ); """
         ]
     def make_conn(self):
