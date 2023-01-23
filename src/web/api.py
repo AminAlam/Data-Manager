@@ -2,17 +2,14 @@ import sys
 sys.path.append('../database')
 sys.path.append('../utils')
 
-import logging
 import chatroom
 import utils
 import security
-import uuid
 import search_engine
 import operators
 from dictianory import slef_made_codes, slef_made_codes_inv_map
 import flask
 from threading import Thread
-import csv
 import os
 import datetime as dt
 from flask_sessionstore import Session
