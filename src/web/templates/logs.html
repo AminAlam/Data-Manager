@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    
+    <!-- make a table of logs -->
+    <div class="container border rounded addpage" style="align-items: center;text-align: center;margin-top: 5rem;">
+        <h1>Logs</h1>
+        <br>
+        <div style="max-height: 50rem; overflow: scroll;">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">error</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                    <tr>
+                        <td>{{ log['username'] }}</td>
+                        <td>{{ log['action'] }}</td>
+                        <td>{{ log['date'] }}</td>
+                        <td>{{ log['status'] }}</td>
+                        <td>{{ log['error'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+
+{% endblock %}
