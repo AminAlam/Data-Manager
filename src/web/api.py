@@ -254,7 +254,6 @@ class WebApp():
 
         @app.route('/experiments', methods=['GET', 'POST'])
         @security.login_required
-        @self.logger
         def experiments():
             conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
             conditions = utils.modify_conditions_json(conditions, target_conditions=[])
