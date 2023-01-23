@@ -71,7 +71,6 @@ class WebApp():
 
         @app.route('/login', methods=['GET', 'POST'])
         def login():
-
             if flask.request.method == 'POST':
                 username = flask.request.form['username']
                 password = flask.request.form['password']
@@ -83,8 +82,8 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                elif form.validate_on_submit():
-                #elif 1:
+                #elif form.validate_on_submit():
+                elif 1:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -99,416 +98,366 @@ class WebApp():
                 return flask.render_template('login.html', form=form)
 
         @app.route('/', methods=['GET', 'POST'])
+        @security.login_required
         def index():
-
-            if security.check_logged_in(flask.session):
-                experiments_list = search_engine.experiments_time_line(self.db_configs.conn)
-                experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
-                experiments_html = flask.Markup(experiments_html)
-                return flask.render_template('index.html', experiments_html=experiments_html)
-            else:
-                return flask.redirect(flask.url_for('login'))
+            experiments_list = search_engine.experiments_time_line(self.db_configs.conn)
+            experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
+            experiments_html = flask.Markup(experiments_html)
+            return flask.render_template('index.html', experiments_html=experiments_html)
 
         @app.route('/logout')
+        @security.login_required
         def logout():
-            if security.check_logged_in(flask.session):
-                flask.session.pop('logged_in', None)
-                flask.session.pop('username', None)
-                flask.session.pop('password', None)
-                flask.session.pop('admin', None)
-                return flask.redirect(flask.url_for('login'))
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            flask.session.pop('logged_in', None)
+            flask.session.pop('username', None)
+            flask.session.pop('password', None)
+            flask.session.pop('admin', None)
+            return flask.redirect(flask.url_for('login'))
 
         @app.route('/add_user', methods=['GET', 'POST'])
+        @security.admin_required
         def add_user():
-            if flask.session['admin']:
-                return flask.render_template('add_user.html')
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            return flask.render_template('add_user.html')
 
         @app.route('/add_user_to_db', methods=['GET', 'POST'])
+        @security.admin_required
         def add_user_to_db():
-            if security.check_logged_in(flask.session):
-                username = flask.request.form['username']
+            username = flask.request.form['username']
+            password = flask.request.form['password']
+            repeat_password = flask.request.form['repeat_password']
+            admin = flask.request.form['admin'] == 'True'
+            name = flask.request.form['name']
+            email = flask.request.form['email']
+
+            if username == '' or password == '' or admin == '':
+                flask.flash('Please fill all the fields')
+                return flask.render_template('add_user.html')
+
+            if password != repeat_password:
+                flask.flash('Passwords do not match')
+                return flask.render_template('add_user.html')
+
+            conn = self.db_configs.conn
+            cursor = conn.cursor()
+            cursor.execute('select * from users where username=?', (username,))
+            users = cursor.fetchall()
+
+            if len(users)>0:
+                flask.flash('Username already exists')
+                return flask.render_template('add_user.html')
+
+            else:
+                cursor.execute('insert into users (username, password, admin, name, email) values (?,?,?,?,?)', (username, password, admin, name, email))
+                utils.init_user(app.config, self.db_configs, username)
+                conn.commit()
+                flask.flash('User added successfully')
+                return flask.redirect(flask.url_for('index'))
+    
+        @app.route("/update_user_in_db/<int:id>", methods=['POST', 'GET'])
+        @security.login_required
+        def update_user_in_db(id):
+            if flask.request.method == 'POST':
+                print(flask.request.form)
                 password = flask.request.form['password']
                 repeat_password = flask.request.form['repeat_password']
-                admin = flask.request.form['admin'] == 'True'
+                if flask.session['admin']:
+                    admin = flask.request.form['admin'] == 'True'
+                else:
+                    admin = 0
                 name = flask.request.form['name']
                 email = flask.request.form['email']
 
-                if username == '' or password == '' or admin == '':
+                if password == '' or admin == '':
                     flask.flash('Please fill all the fields')
-                    return flask.render_template('add_user.html')
+                    user = flask.request.form
+                    return flask.render_template('profile.html', user=user)
 
                 if password != repeat_password:
                     flask.flash('Passwords do not match')
-                    return flask.render_template('add_user.html')
+                    user = flask.request.form
+                    return flask.render_template('profile.html', user=user)
 
                 conn = self.db_configs.conn
                 cursor = conn.cursor()
-                cursor.execute('select * from users where username=?', (username,))
+                cursor.execute('select * from users where id=?', (id,))
                 users = cursor.fetchall()
 
-                if len(users)>0:
-                    flask.flash('Username already exists')
-                    return flask.render_template('add_user.html')
+                if len(users)==0:
+                    flask.flash('Username does not exist')
+                    user = flask.request.form
+                    return flask.render_template('profile.html', user=user)
 
                 else:
-                    cursor.execute('insert into users (username, password, admin, name, email) values (?,?,?,?,?)', (username, password, admin, name, email))
-                    utils.init_user(app.config, self.db_configs, username)
+                    cursor.execute('update users set password=?, admin=?, name=?, email=? where id=?', (password, admin, name, email, id))
                     conn.commit()
-                    flask.flash('User added successfully')
-                    return flask.redirect(flask.url_for('index'))
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
-    
-        @app.route("/update_user_in_db/<int:id>", methods=['POST', 'GET'])
-        def update_user_in_db(id):
-            if security.check_logged_in(flask.session):
-                if flask.request.method == 'POST':
-                    print(flask.request.form)
-                    password = flask.request.form['password']
-                    repeat_password = flask.request.form['repeat_password']
-                    if flask.session['admin']:
-                        admin = flask.request.form['admin'] == 'True'
-                    else:
-                        admin = 0
-                    name = flask.request.form['name']
-                    email = flask.request.form['email']
-
-                    if password == '' or admin == '':
-                        flask.flash('Please fill all the fields')
-                        user = flask.request.form
-                        return flask.render_template('profile.html', user=user)
-
-                    if password != repeat_password:
-                        flask.flash('Passwords do not match')
-                        user = flask.request.form
-                        return flask.render_template('profile.html', user=user)
-
-                    conn = self.db_configs.conn
-                    cursor = conn.cursor()
-                    cursor.execute('select * from users where id=?', (id,))
-                    users = cursor.fetchall()
-
-                    if len(users)==0:
-                        flask.flash('Username does not exist')
-                        user = flask.request.form
-                        return flask.render_template('profile.html', user=user)
-
-                    else:
-                        cursor.execute('update users set password=?, admin=?, name=?, email=? where id=?', (password, admin, name, email, id))
-                        conn.commit()
-                        flask.flash('User updated successfully')
-                        return flask.render_template('index.html')
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+                    flask.flash('User updated successfully')
+                    return flask.render_template('index.html')
 
         @app.route("/delete_user/<int:id>", methods=['POST', 'GET'])
+        @security.admin_required
         def delete_user(id):
-            if security.check_logged_in(flask.session):
-                if flask.session['admin']:
-                    conn = self.db_configs.conn
-                    cursor = conn.cursor()
-                    cursor.execute('select * from users where id=?', (id,))
-                    users = cursor.fetchall()
+            conn = self.db_configs.conn
+            cursor = conn.cursor()
+            cursor.execute('select * from users where id=?', (id,))
+            users = cursor.fetchall()
 
-                    if len(users)==0:
-                        flask.flash('Username does not exist')
-                        return flask.redirect(flask.url_for('user_management'))
+            if len(users)==0:
+                flask.flash('Username does not exist')
+                return flask.redirect(flask.url_for('user_management'))
 
-                    else:
-                        cursor.execute('delete from users where id=?', (id,))
-                        conn.commit()
-                        flask.flash('User deleted successfully')
-                        return flask.redirect(flask.url_for('user_management'))
             else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
-
+                cursor.execute('delete from users where id=?', (id,))
+                conn.commit()
+                flask.flash('User deleted successfully')
+                return flask.redirect(flask.url_for('user_management'))
         
         @app.route('/user_management', methods=['GET', 'POST'])
+        @security.admin_required
         def user_management():
-            if flask.session['admin']:
-                conn = self.db_configs.conn
-                cursor = conn.cursor()
-                cursor.execute('select * from users where username != ?', ('admin',))
-                users = cursor.fetchall()
+            conn = self.db_configs.conn
+            cursor = conn.cursor()
+            cursor.execute('select * from users where username != ?', ('admin',))
+            users = cursor.fetchall()
 
-                cursor.execute("PRAGMA table_info(users)")
-                columns = cursor.fetchall()
-                columns = [column[1] for column in columns]
-                users = [dict(zip(columns, user)) for user in users]
+            cursor.execute("PRAGMA table_info(users)")
+            columns = cursor.fetchall()
+            columns = [column[1] for column in columns]
+            users = [dict(zip(columns, user)) for user in users]
 
-                users_html = [flask.render_template('user_profile_template.html', user=user) for user in users]
-                users_html = [flask.Markup(user_html) for user_html in users_html]
+            users_html = [flask.render_template('user_profile_template.html', user=user) for user in users]
+            users_html = [flask.Markup(user_html) for user_html in users_html]
 
-                return flask.render_template('user_management.html', users_html=users_html, users=users)
+            return flask.render_template('user_management.html', users_html=users_html, users=users)
 
         @app.route('/experiments', methods=['GET', 'POST'])
+        @security.login_required
         def experiments():
-            if security.check_logged_in(flask.session):
-                conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
-                conditions = utils.modify_conditions_json(conditions, target_conditions=[])
-                conditions_html = flask.render_template('conditions.html', conditions=conditions)
-                conditions_html = flask.Markup(conditions_html)
+            conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
+            conditions = utils.modify_conditions_json(conditions, target_conditions=[])
+            conditions_html = flask.render_template('conditions.html', conditions=conditions)
+            conditions_html = flask.Markup(conditions_html)
 
-                tomorrow_date = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
-                yesterday_date = (dt.datetime.now() - dt.timedelta(days=1)).strftime("%Y-%m-%d")
+            tomorrow_date = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
+            yesterday_date = (dt.datetime.now() - dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
-                dates = [yesterday_date, tomorrow_date]
+            dates = [yesterday_date, tomorrow_date]
 
-                if flask.request.method == 'POST' and len(flask.request.form):
-                    experiments_list = search_engine.filter_experiments(self.db_configs.conn, flask.request.form)
-                    experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
-                    experiments_html = flask.Markup(experiments_html)
-                    return flask.render_template('experiments.html', experiments_html=experiments_html, conditions_html=conditions_html, dates=dates)
+            if flask.request.method == 'POST' and len(flask.request.form):
+                experiments_list = search_engine.filter_experiments(self.db_configs.conn, flask.request.form)
+                experiments_html = flask.render_template('experiments_list.html', experiments_list=experiments_list)
+                experiments_html = flask.Markup(experiments_html)
+                return flask.render_template('experiments.html', experiments_html=experiments_html, conditions_html=conditions_html, dates=dates)
 
-                else:
-                    return flask.render_template('experiments.html', experiments_html=None, conditions_html=conditions_html, dates=dates)
             else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+                return flask.render_template('experiments.html', experiments_html=None, conditions_html=conditions_html, dates=dates)
+
 
         @app.route('/insert_experiment', methods=('GET', 'POST'))
+        @security.login_required
         def insert_experiment():
-            if security.check_logged_in(flask.session):
-                conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
-                today_date = dt.datetime.now().strftime("%Y-%m-%d")
-                return flask.render_template('insert_experiment.html', conditions_list=conditions_list, today_date=today_date)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
+            today_date = dt.datetime.now().strftime("%Y-%m-%d")
+            return flask.render_template('insert_experiment.html', conditions_list=conditions_list, today_date=today_date)
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
+        @security.login_required
         def insert_experiment_to_db():
-            if security.check_logged_in(flask.session):
-                if flask.request.method == 'POST':
-                    try:
-                        Author = flask.session['username']
-                        date = flask.request.form['date']
-                        Tags = flask.request.form['Tags']
-                        File_Path = flask.request.form['File_Path']
-                        Notes = flask.request.form['Notes']
-                        Files = flask.request.files.getlist('Files')
-                        experiment_name = flask.request.form['experiment_name']
-                        parent_experiment = flask.request.form['parent_experiment']
+            if flask.request.method == 'POST':
+                try:
+                    Author = flask.session['username']
+                    date = flask.request.form['date']
+                    Tags = flask.request.form['Tags']
+                    File_Path = flask.request.form['File_Path']
+                    Notes = flask.request.form['Notes']
+                    Files = flask.request.files.getlist('Files')
+                    experiment_name = flask.request.form['experiment_name']
+                    parent_experiment = flask.request.form['parent_experiment']
 
-                    except:
-                        flask.flash('Please fill all the forms')
-                        return flask.redirect(flask.url_for('insert_experiment'))
+                except:
+                    flask.flash('Please fill all the forms')
+                    return flask.redirect(flask.url_for('insert_experiment'))
 
-                    if not utils.check_hash_id_existence(self.db_configs.conn, parent_experiment) and parent_experiment != '':
-                        flask.flash('Parent experiment does not exist')
-                        return flask.redirect(flask.url_for('insert_experiment'))
+                if not utils.check_hash_id_existence(self.db_configs.conn, parent_experiment) and parent_experiment != '':
+                    flask.flash('Parent experiment does not exist')
+                    return flask.redirect(flask.url_for('insert_experiment'))
 
 
-                    if Author == '' or date == '' or experiment_name == '':
-                        flask.flash('Please fill all the forms')
-                        return flask.redirect(flask.url_for('insert_experiment'))
+                if Author == '' or date == '' or experiment_name == '':
+                    flask.flash('Please fill all the forms')
+                    return flask.redirect(flask.url_for('insert_experiment'))
 
-                    conditions = []
+                conditions = []
 
-                    for form_input in flask.request.form:
-                        if 'condition' == form_input.split('&')[0]:
-                            conditions.append('&'.join(form_input.split('&')[1:]))
-                        elif 'PARAM' == form_input.split('&')[0]:
-                            list_tmp = form_input.split('&')[2:]
-                            list_tmp.append(flask.request.form[f"PARAMVALUE&{'&'.join(form_input.split('&')[1:])}"].split('&')[-1])
-                            list_tmp = '&'.join(list_tmp)
-                            conditions.append(list_tmp)
-                    conditions = ','.join(conditions)
-                    success_bool, hash_id = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes, conditions=conditions, experiment_name=experiment_name, parent_experiment=parent_experiment)
-                    
-                    if hash_id:
-                        utils.upload_files(self.app.config, hash_id, Files)
+                for form_input in flask.request.form:
+                    if 'condition' == form_input.split('&')[0]:
+                        conditions.append('&'.join(form_input.split('&')[1:]))
+                    elif 'PARAM' == form_input.split('&')[0]:
+                        list_tmp = form_input.split('&')[2:]
+                        list_tmp.append(flask.request.form[f"PARAMVALUE&{'&'.join(form_input.split('&')[1:])}"].split('&')[-1])
+                        list_tmp = '&'.join(list_tmp)
+                        conditions.append(list_tmp)
+                conditions = ','.join(conditions)
+                success_bool, hash_id = operators.insert_experiment_to_db(conn=self.db_configs.conn, Author=Author, date=date, Tags=Tags, File_Path=File_Path, Notes=Notes, conditions=conditions, experiment_name=experiment_name, parent_experiment=parent_experiment)
+                
+                if hash_id:
+                    utils.upload_files(self.app.config, hash_id, Files)
 
-                    if success_bool:
-                        message = flask.Markup(f'Experiment is added successfully! hash_id: {hash_id}')
+                if success_bool:
+                    message = flask.Markup(f'Experiment is added successfully! hash_id: {hash_id}')
 
-                    else:
-                        message = 'Something went wrong'
+                else:
+                    message = 'Something went wrong'
 
-                    flask.flash(message)
-                    return flask.redirect(flask.url_for('index', session=flask.session))
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+                flask.flash(message)
+                return flask.redirect(flask.url_for('index', session=flask.session))
 
         @app.route("/author_search", methods=["POST", "GET"])
+        @security.login_required
         def author_search():
-            if security.check_logged_in(flask.session):
-                searchbox = flask.request.form.get("text")
-                return search_engine.author_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+            searchbox = flask.request.form.get("text")
+            return search_engine.author_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
 
         @app.route("/tags_search", methods=["POST", "GET"])
+        @security.login_required
         def tags_search():
-            if security.check_logged_in(flask.session):
-                searchbox = flask.request.form.get("text")
-                return search_engine.tags_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+            searchbox = flask.request.form.get("text")
+            return search_engine.tags_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
 
         @app.route("/text_search", methods=["POST", "GET"])
+        @security.login_required
         def text_search():
-            if security.check_logged_in(flask.session):
-                searchbox = flask.request.form.get("text")
-                return search_engine.text_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+            searchbox = flask.request.form.get("text")
+            return search_engine.text_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
 
         @app.route("/experiment/<int:id>", methods=["POST", "GET"])
+        @security.login_required
         def experiment(id):
-            if security.check_logged_in(flask.session):
-                cursor = self.db_configs.conn.cursor()
-                cursor.execute("SELECT * FROM experiments WHERE id=?", (id,))
-                experiment = cursor.fetchone()
-                target_conditions = experiment[6]
-                experiment = list(experiment)
-                experiment[6] = utils.parse_conditions(experiment[6])
-                for i in range(len(experiment[6])):
-                    if len(experiment[6][i].split('&')) ==3:
-                        experiment[6][i] = experiment[6][i].split('&')[-1]
-                    else:
-                        experiment[6][i] = '->'.join(experiment[6][i].split('&')[-2:])
-                hash_id = experiment[0]
-                dirName = os.path.join(app.config['UPLOAD_FOLDER'], hash_id)
-                List = os.listdir(dirName)
+            cursor = self.db_configs.conn.cursor()
+            cursor.execute("SELECT * FROM experiments WHERE id=?", (id,))
+            experiment = cursor.fetchone()
+            target_conditions = experiment[6]
+            experiment = list(experiment)
+            experiment[6] = utils.parse_conditions(experiment[6])
+            for i in range(len(experiment[6])):
+                if len(experiment[6][i].split('&')) ==3:
+                    experiment[6][i] = experiment[6][i].split('&')[-1]
+                else:
+                    experiment[6][i] = '->'.join(experiment[6][i].split('&')[-2:])
+            hash_id = experiment[0]
+            dirName = os.path.join(app.config['UPLOAD_FOLDER'], hash_id)
+            List = os.listdir(dirName)
 
-                family_tree_html = utils.family_tree_to_html(self.db_configs.conn, hash_id, self.app.config['FAMILY_TREE_FOLDER'])
-                family_tree_html = flask.Markup(family_tree_html)
+            family_tree_html = utils.family_tree_to_html(self.db_configs.conn, hash_id, self.app.config['FAMILY_TREE_FOLDER'])
+            family_tree_html = flask.Markup(family_tree_html)
 
-                for count, filename in enumerate(List):
-                    List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), f"{slef_made_codes_inv_map['remove']}&{filename}", filename]
+            for count, filename in enumerate(List):
+                List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), f"{slef_made_codes_inv_map['remove']}&{filename}", filename]
 
-                Files = List
-                conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
-                experiment = tuple(experiment)
-                conditions = utils.modify_conditions_json(conditions, target_conditions)
-                conditions_html = flask.render_template('conditions.html', conditions=conditions)
-                conditions_html = flask.Markup(conditions_html)
-                return flask.render_template('experiment.html', experiment=experiment, Files=Files, conditions_html=conditions_html, family_tree_html=family_tree_html)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            Files = List
+            conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
+            experiment = tuple(experiment)
+            conditions = utils.modify_conditions_json(conditions, target_conditions)
+            conditions_html = flask.render_template('conditions.html', conditions=conditions)
+            conditions_html = flask.Markup(conditions_html)
+            return flask.render_template('experiment.html', experiment=experiment, Files=Files, conditions_html=conditions_html, family_tree_html=family_tree_html)
 
         @app.route("/experiment_by_hash_id/<string:hash_id>", methods=["POST", "GET"])
+        @security.login_required
         def experiment_by_hash_id(hash_id):
-            if security.check_logged_in(flask.session):
-                id = utils.get_id_by_hash_id(self.db_configs.conn, hash_id)
-                return flask.redirect(flask.url_for('experiment', id=id))
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            id = utils.get_id_by_hash_id(self.db_configs.conn, hash_id)
+            return flask.redirect(flask.url_for('experiment', id=id))
 
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
+        @security.login_required
         def update_experiment(id):
-            if security.check_logged_in(flask.session):
-                post_form = flask.request.form
-                # get hash_id from id
-                cursor = self.db_configs.conn.cursor()
-                cursor.execute("SELECT id_hash FROM experiments WHERE id=?", (id,))
-                hash_id = cursor.fetchone()[0]
+            post_form = flask.request.form
+            # get hash_id from id
+            cursor = self.db_configs.conn.cursor()
+            cursor.execute("SELECT id_hash FROM experiments WHERE id=?", (id,))
+            hash_id = cursor.fetchone()[0]
 
-                parent_experiment = flask.request.form['parent_experiment']
-                if not utils.check_hash_id_existence(self.db_configs.conn, parent_experiment) and parent_experiment != '':
-                        flask.flash('Parent experiment does not exist')
-                        return flask.redirect(flask.url_for('experiment', id=id))
+            parent_experiment = flask.request.form['parent_experiment']
+            if not utils.check_hash_id_existence(self.db_configs.conn, parent_experiment) and parent_experiment != '':
+                    flask.flash('Parent experiment does not exist')
+                    return flask.redirect(flask.url_for('experiment', id=id))
 
-                success_bool = operators.update_experiment_in_db(self.db_configs.conn, id, post_form, app.config, hash_id, flask.request.files.getlist('Files'))
+            success_bool = operators.update_experiment_in_db(self.db_configs.conn, id, post_form, app.config, hash_id, flask.request.files.getlist('Files'))
 
-                if success_bool:
-                    message = 'Experiment is updated successfully'
+            if success_bool:
+                message = 'Experiment is updated successfully'
 
-                else:
-                    message = 'Something went wrong'
-
-                flask.flash(message)
-                return flask.redirect(flask.url_for('index'))
             else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+                message = 'Something went wrong'
+
+            flask.flash(message)
+            return flask.redirect(flask.url_for('index'))
+
 
         @app.route("/experiment/<int:id>/delete_experiment", methods=["POST", "GET"])
+        @security.login_required
         def delete_experiment(id):
-            if security.check_logged_in(flask.session):
-                success_bool = operators.delete_experiment_from_db(self.db_configs.conn, id)
+            success_bool = operators.delete_experiment_from_db(self.db_configs.conn, id)
 
-                if success_bool:
-                    message = 'Experiment is deleted successfully'
+            if success_bool:
+                message = 'Experiment is deleted successfully'
 
-                else:
-                    message = 'Something went wrong'
-
-                flask.flash(message)
-                return flask.redirect(flask.url_for('index'))
             else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+                message = 'Something went wrong'
+
+            flask.flash(message)
+            return flask.redirect(flask.url_for('index'))
         
         @app.route("/protocols", methods=["POST", "GET"])
+        @security.login_required
         def protocols():
-            if security.check_logged_in(flask.session):
-                # list all files in the protocols folder
-                dirName = os.path.join(app.config['DATABASE_FOLDER'], 'protocols')
-                List = os.listdir(dirName)
+            # list all files in the protocols folder
+            dirName = os.path.join(app.config['DATABASE_FOLDER'], 'protocols')
+            List = os.listdir(dirName)
 
-                for count, filename in enumerate(List):
-                    List[count] = filename
+            for count, filename in enumerate(List):
+                List[count] = filename
 
-                protocols_file_list = List
-                return flask.render_template('protocols.html', Files=protocols_file_list)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            protocols_file_list = List
+            return flask.render_template('protocols.html', Files=protocols_file_list)
+
 
         @app.route("/conditions_templates", methods=["POST", "GET"])
+        @security.login_required
         def conditions_templates():
-            if security.check_logged_in(flask.session):
-                conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
-                return flask.render_template('user_condition_templates.html', conditions_list=conditions_list)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
+            return flask.render_template('user_condition_templates.html', conditions_list=conditions_list)
 
         @app.route("/update_conditions_templates_in_db", methods=["POST", "GET"])
+        @security.login_required
         def update_conditions_templates_in_db():
-            if security.check_logged_in(flask.session):
-                post_form = flask.request.form
-                success_bool = operators.update_conditions_templates(self.db_configs.conn, post_form, flask.session['username'])
+            post_form = flask.request.form
+            success_bool = operators.update_conditions_templates(self.db_configs.conn, post_form, flask.session['username'])
 
-                if success_bool:
-                    message = 'Conditions template is updated successfully'
-
-                else:
-                    message = 'Something went wrong'
-
-                flask.flash(message)
-                return flask.redirect(flask.url_for('conditions_templates'))
+            if success_bool:
+                message = 'Conditions template is updated successfully'
             else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+                message = 'Something went wrong'
+
+            flask.flash(message)
+            return flask.redirect(flask.url_for('conditions_templates'))
+
 
         @app.route("/profile", methods=["POST", "GET"])
+        @security.login_required
         def profile():
-            if security.check_logged_in(flask.session):
-                username = flask.session['username']
-                cursor = self.db_configs.conn.cursor()
-                cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-                user = cursor.fetchone()
-                # get columns names from the table
-                cursor.execute("PRAGMA table_info(users)")
-                columns = cursor.fetchall()
-                columns = [column[1] for column in columns]
-                # coonvert user to dict with columns as keys
-                user = dict(zip(columns, user))
-                user_html = flask.render_template('user_profile_template.html', user=user)
-                user_html = flask.Markup(user_html)
-                return flask.render_template('profile.html', user_html=user_html)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            username = flask.session['username']
+            cursor = self.db_configs.conn.cursor()
+            cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+            user = cursor.fetchone()
+            # get columns names from the table
+            cursor.execute("PRAGMA table_info(users)")
+            columns = cursor.fetchall()
+            columns = [column[1] for column in columns]
+            # coonvert user to dict with columns as keys
+            user = dict(zip(columns, user))
+            user_html = flask.render_template('user_profile_template.html', user=user)
+            user_html = flask.Markup(user_html)
+            return flask.render_template('profile.html', user_html=user_html)
 
         @app.route("/<path:filename>")
         def static_dir(filename):
@@ -519,129 +468,109 @@ class WebApp():
                 return flask.redirect(flask.url_for('login'))
 
         @app.route('/send_experiment_file/<int:experiment_id>/<path:path>')
+        @security.login_required
         def send_experiment_file(experiment_id, path):
-            if security.check_logged_in(flask.session):
-                if '/' not in path:
-                    cwd = os.getcwd()
-                    cwd = os.path.join(cwd, app.config['UPLOAD_FOLDER'])
-                    hash_id = utils.get_hash_id_by_experiment_id(self.db_configs.conn, experiment_id)
-                    path = os.path.join(hash_id, path)
-                    return flask.send_from_directory(cwd, path, as_attachment=True)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            if '/' not in path:
+                cwd = os.getcwd()
+                cwd = os.path.join(cwd, app.config['UPLOAD_FOLDER'])
+                hash_id = utils.get_hash_id_by_experiment_id(self.db_configs.conn, experiment_id)
+                path = os.path.join(hash_id, path)
+                return flask.send_from_directory(cwd, path, as_attachment=True)
 
         @app.route('/send_protocol_file/<path:path>')
+        @security.login_required
         def send_protocol_file(path):
-            if security.check_logged_in(flask.session):
-                if '/' not in path:
-                    cwd = os.getcwd()
-                    cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'protocols')
-                    print(cwd, path)
-                    return flask.send_from_directory(cwd, path, as_attachment=True)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            if '/' not in path:
+                cwd = os.getcwd()
+                cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'protocols')
+                print(cwd, path)
+                return flask.send_from_directory(cwd, path, as_attachment=True)
 
         @app.route('/get_conditoin_by_templatename', methods=["POST", "GET"])
+        @security.login_required
         def get_conditoin_by_templatename():
-            if security.check_logged_in(flask.session):
-                username = flask.session['username']
-                template_name = flask.request.form.get("template_name")
-                print(template_name)
-                condition_html = utils.get_conditions_by_template_name(self.db_configs.conn, app.config, username, template_name)
-                return condition_html
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            username = flask.session['username']
+            template_name = flask.request.form.get("template_name")
+            print(template_name)
+            condition_html = utils.get_conditions_by_template_name(self.db_configs.conn, app.config, username, template_name)
+            return condition_html
 
         @app.route('/experiment_report_maker/<int:id>', methods=["POST", "GET"])
+        @security.login_required
         def experiment_report_maker(id):
-            if security.check_logged_in(flask.session):
-                cwd = os.getcwd()
-                cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'reports')
-                experiment_report = utils.experiment_report_maker(self.db_configs.conn, id)
-                file_path = os.path.join(cwd, f'report_{id}.txt')
-                with open(file_path, 'w') as f:
-                    f.write(experiment_report)
-                return flask.send_from_directory(cwd,  f'report_{id}.txt',as_attachment=True)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            cwd = os.getcwd()
+            cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'reports')
+            experiment_report = utils.experiment_report_maker(self.db_configs.conn, id)
+            file_path = os.path.join(cwd, f'report_{id}.txt')
+            with open(file_path, 'w') as f:
+                f.write(experiment_report)
+            return flask.send_from_directory(cwd,  f'report_{id}.txt',as_attachment=True)
+
 
         @app.route('/experiments_actions', methods=["POST", "GET"])
+        @security.login_required
         def experiments_actions():
-            if security.check_logged_in(flask.session):
-                if flask.request.method == 'POST':
-                    post_form = flask.request.form
-                    experiments_ids = []
-                    action = post_form['action']  
-                    for key in post_form:
-                        if '&' in key:
-                            if key.split('&')[0] == 'Select':
-                                experiments_ids.append(int(key.split('&')[1]))
+            if flask.request.method == 'POST':
+                post_form = flask.request.form
+                experiments_ids = []
+                action = post_form['action']  
+                for key in post_form:
+                    if '&' in key:
+                        if key.split('&')[0] == 'Select':
+                            experiments_ids.append(int(key.split('&')[1]))
 
-                    if len(experiments_ids) == 0:
-                        flask.flash('No experiments were selected')
+                if len(experiments_ids) == 0:
+                    flask.flash('No experiments were selected')
+                    return flask.redirect(flask.request.referrer)
+                        
+                if action == 'bulk_report':
+                    cwd = os.getcwd()
+                    cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'reports')
+                    username = flask.session['username']
+                    file_path = os.path.join(cwd, f'bulk_report_{username}.txt')
+                    with open(file_path, 'w') as f:
+                        for id in experiments_ids:
+                            experiment_report = utils.experiment_report_maker(self.db_configs.conn, id)
+                            f.write(experiment_report)
+                            f.write(f"\n\n{'-'*20}\n\n")
+                    return flask.send_from_directory(cwd, f'bulk_report_{username}.txt', as_attachment=True)
+
+                elif action == 'set_parent_experiment':
+                    parent_experiment_hash_id = post_form['parent_experiment_hash_id']
+                    if utils.check_hash_id_existence(self.db_configs.conn, parent_experiment_hash_id):
+                        for id in experiments_ids:
+                            utils.set_parent_experiment(self.db_configs.conn, id, parent_experiment_hash_id)
+                        flask.flash('Parent experiment was set successfully')
                         return flask.redirect(flask.request.referrer)
-                            
-                    if action == 'bulk_report':
-                        cwd = os.getcwd()
-                        cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'reports')
-                        username = flask.session['username']
-                        file_path = os.path.join(cwd, f'bulk_report_{username}.txt')
-                        with open(file_path, 'w') as f:
-                            for id in experiments_ids:
-                                experiment_report = utils.experiment_report_maker(self.db_configs.conn, id)
-                                f.write(experiment_report)
-                                f.write(f"\n\n{'-'*20}\n\n")
-                        return flask.send_from_directory(cwd, f'bulk_report_{username}.txt', as_attachment=True)
-
-                    elif action == 'set_parent_experiment':
-                        parent_experiment_hash_id = post_form['parent_experiment_hash_id']
-                        if utils.check_hash_id_existence(self.db_configs.conn, parent_experiment_hash_id):
-                            for id in experiments_ids:
-                                utils.set_parent_experiment(self.db_configs.conn, id, parent_experiment_hash_id)
-                            flask.flash('Parent experiment was set successfully')
-                            return flask.redirect(flask.request.referrer)
-                        else:
-                            flask.flash('Parent experiment Hash ID does not exist')
-                            return flask.redirect(flask.request.referrer)
+                    else:
+                        flask.flash('Parent experiment Hash ID does not exist')
+                        return flask.redirect(flask.request.referrer)
                     
 
 
         @app.route('/chatroom', methods=["GET", "POST"])
+        @security.login_required
         def chatroom():
-            if security.check_logged_in(flask.session):
-                messages = self.ChatRoom.get_messages()
-                return flask.render_template('chat_room.html', messages=messages)
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            messages = self.ChatRoom.get_messages()
+            return flask.render_template('chat_room.html', messages=messages)
 
         @app.route('/chatroom_send_message', methods=["GET", "POST"])
+        @security.login_required
         def chatroom_send_message():
-            if security.check_logged_in(flask.session):
-                message = flask.request.form.get('message')
-                username = flask.session['username']
-                time_now = dt.datetime.now()
-                time_now = time_now.strftime("%d/%m/%Y %H:%M:%S")
-                message = {'author': username, 'message': message, 'date_time':time_now }
-                self.ChatRoom.add_message(message)
-                return flask.redirect(flask.url_for('chatroom'))
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
+            message = flask.request.form.get('message')
+            username = flask.session['username']
+            time_now = dt.datetime.now()
+            time_now = time_now.strftime("%d/%m/%Y %H:%M:%S")
+            message = {'author': username, 'message': message, 'date_time':time_now }
+            self.ChatRoom.add_message(message)
+            return flask.redirect(flask.url_for('chatroom'))
 
         @app.route('/chatroom_delete_message/<int:id>', methods=["GET", "POST"])
+        @security.login_required
         def chatroom_delete_message(id):
-            if security.check_logged_in(flask.session):
-                self.ChatRoom.delete_message(id)
-                return flask.redirect(flask.url_for('chatroom'))
-            else:
-                flask.flash('You are not logged in, please login first')
-                return flask.redirect(flask.url_for('login'))
-        
+            self.ChatRoom.delete_message(id)
+            return flask.redirect(flask.url_for('chatroom'))
+    
 
         
         t = Thread(target=self.app.run, args=(self.ip,self.port,False))

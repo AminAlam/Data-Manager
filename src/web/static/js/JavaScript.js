@@ -62,6 +62,11 @@ function put_text(id_parent, id, txt) {
               console.log(err);
           }
       });
+      $(document).click(function(e) {
+    if (!$(e.target).is('#author_search')) {
+      document.getElementById('author_search_datalist').style.display = "none";
+    }
+  });
  };
 
 
@@ -86,6 +91,11 @@ $(document).ready(function(){
           }
       });
   });
+  $(document).click(function(e) {
+    if (!$(e.target).is('#author_search')) {
+      document.getElementById('author_search_datalist').style.display = "none";
+    }
+  });
 });
 
 
@@ -109,6 +119,11 @@ $(document).ready(function(){
           }
       });
   });
+  $(document).click(function(e) {
+    if (!$(e.target).is('#tags_search')) {
+      document.getElementById('tags_search_datalist').style.display = "none";
+    }
+  });
 });
 
 
@@ -131,6 +146,11 @@ $(document).ready(function(){
               $("#text_search_datalist").html(data);
           }
       });
+  });
+  $(document).click(function(e) {
+    if (!$(e.target).is('#text_search')) {
+      document.getElementById('text_search_datalist').style.display = "none";
+    }
   });
 });
 
