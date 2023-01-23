@@ -601,6 +601,18 @@ class WebApp():
         def chatroom_delete_message(id):
             self.ChatRoom.delete_message(id)
             return flask.redirect(flask.url_for('chatroom'))
+
+        @app.route('/logs', methods=["GET", "POST"])
+        @security.admin_required
+        def logs():
+            cusor = self.db_configs.conn.cursor()
+            # get all logs since last 7 days
+            cusor.execute("SELECT * FROM logs WHERE date > date('now', '-7 days')")
+            logs = cusor.fetchall()
+            columns = [column[0] for column in cusor.description]
+            logs = [dict(zip(columns, row)) for row in logs]
+            return flask.render_template('logs.html', logs=logs)
+
     
 
         
