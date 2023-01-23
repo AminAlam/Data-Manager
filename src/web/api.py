@@ -24,6 +24,8 @@ from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
 from flask_wtf.recaptcha import RecaptchaField
 
+from functools import wraps
+
 
 def add_admin(db_configs, app_configs):
     conn = db_configs.conn
@@ -65,6 +67,24 @@ class WebApp():
         username = StringField("username", validators=[DataRequired()])
         password = PasswordField("password", validators=[DataRequired()])
         recaptcha = RecaptchaField()
+    
+    
+    def logger(self, f):
+        @wraps(f)
+        def wrap(*args, **kwargs):
+            time = dt.datetime.now()
+            conn = self.db_configs.conn
+            cursor = conn.cursor()
+            try:
+                action = f.__name__
+                username = flask.session['username']
+                cursor.execute('insert into logs values (?,?,?,?,?,?)', (username, action, time, 'pass', None, None))
+                conn.commit()
+                return f(*args, **kwargs)
+            except Exception as e:
+                cursor.execute('update logs set status=?, error=? where username=? and action=? and time=?', ('fail', str(e), username, action, time))
+                conn.commit()
+        return wrap
 
     def run(self):
         app = self.app
@@ -121,6 +141,7 @@ class WebApp():
 
         @app.route('/add_user_to_db', methods=['GET', 'POST'])
         @security.admin_required
+        @self.logger
         def add_user_to_db():
             username = flask.request.form['username']
             password = flask.request.form['password']
@@ -155,6 +176,7 @@ class WebApp():
     
         @app.route("/update_user_in_db/<int:id>", methods=['POST', 'GET'])
         @security.login_required
+        @self.logger
         def update_user_in_db(id):
             if flask.request.method == 'POST':
                 print(flask.request.form)
@@ -195,6 +217,7 @@ class WebApp():
 
         @app.route("/delete_user/<int:id>", methods=['POST', 'GET'])
         @security.admin_required
+        @self.logger
         def delete_user(id):
             conn = self.db_configs.conn
             cursor = conn.cursor()
@@ -231,6 +254,7 @@ class WebApp():
 
         @app.route('/experiments', methods=['GET', 'POST'])
         @security.login_required
+        @self.logger
         def experiments():
             conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
             conditions = utils.modify_conditions_json(conditions, target_conditions=[])
@@ -261,6 +285,7 @@ class WebApp():
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         @security.login_required
+        @self.logger
         def insert_experiment_to_db():
             if flask.request.method == 'POST':
                 try:
@@ -369,6 +394,7 @@ class WebApp():
 
         @app.route("/experiment/<int:id>/update_experiment", methods=["POST", "GET"])
         @security.login_required
+        @self.logger
         def update_experiment(id):
             post_form = flask.request.form
             # get hash_id from id
@@ -395,6 +421,7 @@ class WebApp():
 
         @app.route("/experiment/<int:id>/delete_experiment", methods=["POST", "GET"])
         @security.login_required
+        @self.logger
         def delete_experiment(id):
             success_bool = operators.delete_experiment_from_db(self.db_configs.conn, id)
 
@@ -429,6 +456,7 @@ class WebApp():
 
         @app.route("/update_conditions_templates_in_db", methods=["POST", "GET"])
         @security.login_required
+        @self.logger
         def update_conditions_templates_in_db():
             post_form = flask.request.form
             success_bool = operators.update_conditions_templates(self.db_configs.conn, post_form, flask.session['username'])
@@ -491,12 +519,12 @@ class WebApp():
         def get_conditoin_by_templatename():
             username = flask.session['username']
             template_name = flask.request.form.get("template_name")
-            print(template_name)
             condition_html = utils.get_conditions_by_template_name(self.db_configs.conn, app.config, username, template_name)
             return condition_html
 
         @app.route('/experiment_report_maker/<int:id>', methods=["POST", "GET"])
         @security.login_required
+        @self.logger
         def experiment_report_maker(id):
             cwd = os.getcwd()
             cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'reports')
@@ -509,6 +537,7 @@ class WebApp():
 
         @app.route('/experiments_actions', methods=["POST", "GET"])
         @security.login_required
+        @self.logger
         def experiments_actions():
             if flask.request.method == 'POST':
                 post_form = flask.request.form
@@ -556,6 +585,7 @@ class WebApp():
 
         @app.route('/chatroom_send_message', methods=["GET", "POST"])
         @security.login_required
+        @self.logger
         def chatroom_send_message():
             message = flask.request.form.get('message')
             username = flask.session['username']
@@ -567,6 +597,7 @@ class WebApp():
 
         @app.route('/chatroom_delete_message/<int:id>', methods=["GET", "POST"])
         @security.login_required
+        @self.logger
         def chatroom_delete_message(id):
             self.ChatRoom.delete_message(id)
             return flask.redirect(flask.url_for('chatroom'))
