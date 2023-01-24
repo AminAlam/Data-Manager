@@ -183,7 +183,9 @@ div.PanelLogin{
         display: flex;
         flex-direction: column;
         max-height: 800px;
-        overflow-y: scroll
+        overflow-y: scroll;
+        min-height: 30rem;
+        max-height: 50rem;    
     }
     
     .chat-message-left,
