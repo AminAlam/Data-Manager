@@ -177,7 +177,6 @@ class WebApp():
         @self.logger
         def update_user_in_db(id):
             if flask.request.method == 'POST':
-                print(flask.request.form)
                 password = flask.request.form['password']
                 repeat_password = flask.request.form['repeat_password']
                 if flask.session['admin']:
@@ -500,7 +499,6 @@ class WebApp():
             if '/' not in path:
                 cwd = os.getcwd()
                 cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'protocols')
-                print(cwd, path)
                 return flask.send_from_directory(cwd, path, as_attachment=True)
 
         @app.route('/get_conditoin_by_templatename', methods=["POST", "GET"])
@@ -571,7 +569,6 @@ class WebApp():
         def chatroom():
             messages = self.ChatRoom.get_messages()
             users = utils.get_users(self.db_configs.conn)
-            print(messages)
             users.insert(0, {'username': 'Group Chat'})
             for i, user in enumerate(users):
                 if user['username'] == flask.session['username']:

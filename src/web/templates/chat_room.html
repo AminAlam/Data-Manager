@@ -1,47 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<main class="content">
+<main class="content" style="margin-top: 2rem;">
     <div class="container p-0">
-
-        <!-- <div class="d-flex align-items-start">
-            <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                {%for user in users%}
-                    {% if loop.index == 1 %}
-                        <button class="nav-link" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="true">{{user['username']}}</button>
-                    {% else %}
-                        <button class="nav-link" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="false">{{user['username']}}</button>
-                    {% endif %}
-                {%endfor%}
-            </div>
-            <div class="tab-content" id="v-pills-tabContent">
-                {%for user in users %}
-                    {% if loop.index == 1 %}
-                        <div class="tab-pane fade active show" id="v-pills-{{loop.index}}" role="tabpanel" aria-labelledby="v-pills-{{loop.index}}-tab" aria-selected="true">
-                            {{loop.index}}
-                        </div>
-                    {% else %}
-                        <div class="tab-pane fade" id="v-pills-{{loop.index}}" role="tabpanel" aria-labelledby="v-pills-{{loop.index}}-tab" aria-selected="false">
-                            {{loop.index}}
-                        </div>
-                        
-                    {% endif %}
-                {%endfor%}
-            </div>
-          </div> -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="card">
     <div class="row g-0">
@@ -85,7 +45,7 @@
                     {% endif %}
 
                         <div class="tab-pane fade {{active_show}}" id="v-pills-{{loop.index}}" role="tabpanel" aria-labelledby="v-pills-{{loop.index}}-tab" aria-selected="{{aria_selected}}">
-
+                            <div class="chat-messages p-4">
                             {% for message in messages %}
                                 {% if message['author'] == session['username']%}
                                     {% set message_author = 'You' %}
@@ -111,11 +71,19 @@
                                     {% set plot_message = 1 %}
                                 {% endif %}
 
+                                {% if message['author'] == session['username'] or session['admin']%}
+                                    {% set delete_bool = 1 %}
+                                {% else %}
+                                    {% set delete_bool = 0 %}
+                                {% endif %}
+
                                 {% if plot_message %}
                                         <div class="chat-message-{{message_side}} pb-4">
                                             <div>
                                                 <div class="text-muted small text-nowrap mt-2">{{message['date']}}</div>
-                                                <a href="{{ url_for('chatroom_delete_message', id=message['id']) }}" class="btn btn-danger btn-sm">Delete</a>
+                                                {% if delete_bool %}
+                                                    <a href="{{ url_for('chatroom_delete_message', id=message['id']) }}" class="btn btn-danger btn-sm">Delete</a>
+                                                {% endif %}
                                             </div>
                                             <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
                                                 <div class="font-weight-bold mb-1">{{message_author}}</div>
@@ -124,6 +92,7 @@
                                         </div>
                                 {% endif %}
                             {% endfor %}
+                        </div>
 
                             <form action="{{ url_for('chatroom_send_message', destination=user['username']) }}" method=post enctype=multipart/form-data> 
                                 <div class="flex-grow-0 py-3 px-4 border-top">

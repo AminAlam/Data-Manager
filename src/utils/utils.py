@@ -117,7 +117,6 @@ def check_for_internet_connection():
         return False
 
 def apply_updates2db(db_configs):
-    # add email_date to the database
     cursor = db_configs.conn.cursor()
     cursor.execute('SELECT * FROM messages')
     column_names = list(map(lambda x: x[0], cursor.description))
