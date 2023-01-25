@@ -118,13 +118,11 @@ def check_for_internet_connection():
 
 def apply_updates2db(db_configs):
     # add email_date to the database
-    # cursor = db_configs.conn.cursor()
-    # cursor.execute('SELECT * FROM universities')
-    # cursor.execute('SELECT * FROM supervisors')
-    # column_names = list(map(lambda x: x[0], cursor.description))
-    # if 'email_date' not in column_names:
-    #     cursor.execute('ALTER TABLE supervisors ADD COLUMN email_date timestamp')
-    pass
+    cursor = db_configs.conn.cursor()
+    cursor.execute('SELECT * FROM messages')
+    column_names = list(map(lambda x: x[0], cursor.description))
+    if 'destination' not in column_names:
+        cursor.execute('ALTER TABLE messages ADD COLUMN destination text NOT NULL') 
 
 def read_json_file(json_file):
     with open(json_file) as f:
