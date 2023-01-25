@@ -79,8 +79,9 @@ class WebApp():
                 conn.commit()
                 return f(*args, **kwargs)
             except Exception as e:
-                cursor.execute('update logs set status=?, error=? where username=? and action=? and time=?', ('fail', str(e), username, action, time))
+                cursor.execute('update logs set status=?, error=? where username=? and action=? and date=?', ('fail', str(e), username, action, time))
                 conn.commit()
+                return flask.render_template
         return wrap
 
     def run(self):
@@ -100,7 +101,7 @@ class WebApp():
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
                 #elif form.validate_on_submit():
-                elif form.validate_on_submit():
+                elif 1:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -234,15 +235,7 @@ class WebApp():
         @app.route('/user_management', methods=['GET', 'POST'])
         @security.admin_required
         def user_management():
-            conn = self.db_configs.conn
-            cursor = conn.cursor()
-            cursor.execute('select * from users where username != ?', ('admin',))
-            users = cursor.fetchall()
-
-            cursor.execute("PRAGMA table_info(users)")
-            columns = cursor.fetchall()
-            columns = [column[1] for column in columns]
-            users = [dict(zip(columns, user)) for user in users]
+            users = utils.get_users(self.db_configs.conn)
 
             users_html = [flask.render_template('user_profile_template.html', user=user) for user in users]
             users_html = [flask.Markup(user_html) for user_html in users_html]
@@ -577,17 +570,25 @@ class WebApp():
         @security.login_required
         def chatroom():
             messages = self.ChatRoom.get_messages()
-            return flask.render_template('chat_room.html', messages=messages)
+            users = utils.get_users(self.db_configs.conn)
+            print(messages)
+            users.insert(0, {'username': 'Group Chat'})
+            for i, user in enumerate(users):
+                if user['username'] == flask.session['username']:
+                    users.insert(1, users.pop(i))
+                    break
+            
+            return flask.render_template('chat_room.html', messages=messages, users=users)
 
-        @app.route('/chatroom_send_message', methods=["GET", "POST"])
+        @app.route('/chatroom_send_message/<string:destination>', methods=["GET", "POST"])
         @security.login_required
         @self.logger
-        def chatroom_send_message():
+        def chatroom_send_message(destination):
             message = flask.request.form.get('message')
             username = flask.session['username']
             time_now = dt.datetime.now()
             time_now = time_now.strftime("%d/%m/%Y %H:%M:%S")
-            message = {'author': username, 'message': message, 'date_time':time_now }
+            message = {'author': username, 'message': message, 'date_time':time_now, 'destination': destination}
             self.ChatRoom.add_message(message)
             return flask.redirect(flask.url_for('chatroom'))
 

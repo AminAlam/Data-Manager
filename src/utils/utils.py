@@ -317,3 +317,14 @@ def family_tree_to_html(conn, experiment_hash_id, FAMILY_TREE_FOLDER):
     with open(html_save_path, 'r') as f:
         html = f.read()
     return html
+
+def get_users(conn):
+    cursor = conn.cursor()
+    cursor.execute('select * from users')
+    users = cursor.fetchall()
+
+    cursor.execute("PRAGMA table_info(users)")
+    columns = cursor.fetchall()
+    columns = [column[1] for column in columns]
+    users = [dict(zip(columns, user)) for user in users]
+    return users

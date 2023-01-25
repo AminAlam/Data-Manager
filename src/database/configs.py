@@ -45,10 +45,16 @@ class database_configs():
                                     ); """,
         """ CREATE TABLE IF NOT EXISTS messages (
                                         author text NOT NULL,
+                                        destination text NOT NULL,
                                         message text NOT NULL,
                                         date text NOT NULL,
                                         id integer primary key autoincrement
                                     ); """,
+
+        # alter table messages add column destination text NOT NULL before message column;
+
+        """ Alter table messages add column destination text NOT NULL before message column;"""
+
         """ CREATE TABLE IF NOT EXISTS logs (
                                         username text NOT NULL,
                                         action text NOT NULL,
