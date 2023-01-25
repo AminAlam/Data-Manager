@@ -122,7 +122,7 @@ def apply_updates2db(db_configs):
     cursor.execute('SELECT * FROM messages')
     column_names = list(map(lambda x: x[0], cursor.description))
     if 'destination' not in column_names:
-        cursor.execute('ALTER TABLE messages ADD COLUMN destination text NOT NULL') 
+        cursor.execute('ALTER TABLE messages ADD COLUMN destination text') 
 
 def read_json_file(json_file):
     with open(json_file) as f:
