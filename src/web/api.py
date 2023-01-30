@@ -100,8 +100,8 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                #elif form.validate_on_submit():
                 elif form.validate_on_submit():
+                #elif 1:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -263,7 +263,6 @@ class WebApp():
             else:
                 return flask.render_template('experiments.html', experiments_html=None, conditions_html=conditions_html, dates=dates)
 
-
         @app.route('/insert_experiment', methods=('GET', 'POST'))
         @security.login_required
         def insert_experiment():
@@ -385,6 +384,13 @@ class WebApp():
         @self.logger
         def update_experiment(id):
             post_form = flask.request.form
+            experiment = utils.get_experiment_by_id(self.db_configs.conn, id)
+            author = experiment[5]
+            usename = flask.session['username']
+            if author != usename:
+                flask.flash('You are not allowed to edit this experiment')
+                return flask.redirect(flask.url_for('experiment', id=id))
+
             # get hash_id from id
             cursor = self.db_configs.conn.cursor()
             cursor.execute("SELECT id_hash FROM experiments WHERE id=?", (id,))
@@ -411,6 +417,14 @@ class WebApp():
         @security.login_required
         @self.logger
         def delete_experiment(id):
+            experiment = utils.get_experiment_by_id(self.db_configs.conn, id)
+            author = experiment[5]
+            author = experiment[5]
+            usename = flask.session['username']
+            if author != usename:
+                flask.flash('You are not allowed to delete this experiment')
+                return flask.redirect(flask.url_for('experiment', id=id))
+
             success_bool = operators.delete_experiment_from_db(self.db_configs.conn, id)
 
             if success_bool:

@@ -182,3 +182,15 @@ var getFileName = function(fullPath) {
   }
   return null;
 };
+
+
+// make a function called copyToClipboard that takes one argument, text and copies it to the clipboard
+function copy_2_clipboard(that){
+  var inp =document.createElement('input');
+  document.body.appendChild(inp)
+  inp.value =that.textContent
+  inp.select();
+  document.execCommand('copy',false);
+  inp.remove();
+  alert("Copied the text: " + inp.value);
+  }

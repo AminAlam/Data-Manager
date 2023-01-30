@@ -1,3 +1,4 @@
+import flask
 from flask import jsonify
 import utils
 
@@ -111,9 +112,11 @@ def filter_experiments(conn, post_request_form):
     return experiments_list
 
 def experiments_time_line(conn):
-    # select last 12 experiments
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM experiments ORDER BY date DESC LIMIT 12")
+    if flask.session['admin']:
+        cursor.execute("SELECT * FROM experiments ORDER BY date DESC LIMIT 12")         
+    else:
+        cursor.execute("SELECT * FROM experiments WHERE author == ? ORDER BY date DESC LIMIT 12", (flask.session['username'],))                              
     experiments_list = cursor.fetchall()
     experiments_list=  utils.experiment_list_maker(experiments_list)
     return experiments_list

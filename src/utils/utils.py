@@ -325,3 +325,9 @@ def get_users(conn):
     columns = [column[1] for column in columns]
     users = [dict(zip(columns, user)) for user in users]
     return users
+
+def get_experiment_by_id(conn, experiment_id):
+    cursor = conn.cursor()
+    cursor.execute('select * from experiments where id=?', (experiment_id,))
+    experiment = cursor.fetchone()
+    return experiment
