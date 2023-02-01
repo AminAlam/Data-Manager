@@ -150,6 +150,15 @@ def modify_conditions_json(conditions, target_conditions):
                         conditions[condition][condition_nested][indx] = [single_condition, "checked"]
                     else:
                         conditions[condition][condition_nested][indx] = [single_condition, ""]
+    # sort the conditions bt key
+    conditions = dict(sorted(conditions.items(), key=lambda item: item[0]))
+    # sort each nested condition by key
+    for condition in conditions.keys():
+        conditions[condition] = dict(sorted(conditions[condition].items(), key=lambda item: item[0]))
+    # sort each nested nested condition by key
+    for condition in conditions.keys():
+        for condition_nested in conditions[condition].keys():
+            conditions[condition][condition_nested] = sorted(conditions[condition][condition_nested], key=lambda x: x[0])
     return conditions
 
 def init_user(app_config, db_configs, user_name):
