@@ -88,8 +88,10 @@ class WebApp():
                 return f(*args, **kwargs)
             except Exception as e:
                 cursor.execute('update logs set status=?, error=? where username=? and action=? and date=?', ('fail', str(e), username, action, time))
+                print(e)
                 conn.commit()
-                return flask.render_template
+                flask.flash('An error occured. Please try again later.')
+                return flask.redirect(flask.url_for('index'))
         return wrap
 
     def run(self):
@@ -629,16 +631,28 @@ class WebApp():
             logs = [dict(zip(columns, row)) for row in logs]
             return flask.render_template('logs.html', logs=logs)
 
+        @app.route('/backup', methods=["GET", "POST"])
+        @security.admin_required
+        def backup():
+            if flask.request.method == 'POST':
+                status, backup_file_path = utils.backup_db(self.app.config)
+                if status:
+                    return flask.send_from_directory(os.path.dirname(backup_file_path), os.path.basename(backup_file_path), as_attachment=True)
+                else:
+                    flask.flash('Database was not backed up successfully')
+                    return flask.render_template('backup.html')
+            else:
+                return flask.render_template('backup.html')
+
         @app.route('/restore_db', methods=["GET", "POST"])
         @security.admin_required
-        @self.logger
         def restore_db():
             if flask.request.method == 'POST':
                 Files = flask.request.files.getlist('Files')
                 file = Files[0]
                 if file.filename.split('.')[-1] != 'zip':
-                    flask.flash('Wrong file format')
-                    return flask.render_template('restore_db.html')
+                    flask.flash('Wrong file format / No file was selected')
+                    return flask.render_template('backup.html')
                 else:
                     backup_file_path = os.path.join(app.config['DATABASE_FOLDER'], 'backup.zip')
                     file.save(backup_file_path)
@@ -647,9 +661,7 @@ class WebApp():
                         flask.flash('Database was restored successfully. Please restart the server')                        
                     else:
                         flask.flash('Database was not restored. Please try again')
-                    return flask.render_template('restore_db.html')
-            else:
-                return flask.render_template('restore_db.html')
+                    return flask.render_template('backup.html')
 
             
         t = Thread(target=waitress.serve, args=([self.app]), kwargs={'host':self.ip, 'port':self.port})

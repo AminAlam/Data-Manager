@@ -357,3 +357,29 @@ def restore_db(app_config, backup_file_path):
         return True
     except:
         return False
+
+def backup_db(app_config):
+    backup_file_path = os.path.join(app_config['DATABASE_FOLDER'], 'DataManager_backup')
+    try:
+        parent_folder = os.path.dirname(backup_file_path)
+        time_now = datetime.now()
+        time_now = time_now.strftime('%Y-%m-%d_%H-%M')
+        TEMP_FOLDER = os.path.join(parent_folder, 'backup_datamanager', time_now)
+        if os.path.exists(TEMP_FOLDER):
+            shutil.rmtree(TEMP_FOLDER)
+        # make TEMP_FOLDER and its parents if they don't exist
+        os.makedirs(TEMP_FOLDER)
+
+        for folder in ['db_main.db', 'conditions', 'uploaded_files']:
+            folder_path = os.path.join(app_config['DATABASE_FOLDER'], folder)
+            if os.path.isdir(folder_path):
+                shutil.copytree(folder_path, os.path.join(TEMP_FOLDER, folder))
+            elif os.path.isfile(folder_path):
+                shutil.copyfile(folder_path, os.path.join(TEMP_FOLDER, folder))
+        TEMP_FOLDER = os.path.dirname(TEMP_FOLDER)
+        shutil.make_archive(backup_file_path, 'zip', TEMP_FOLDER)
+        shutil.rmtree(TEMP_FOLDER)
+        backup_file_path = f'{backup_file_path}.zip'
+        return True, backup_file_path
+    except:
+        return False, backup_file_path
