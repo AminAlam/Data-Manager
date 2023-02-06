@@ -1,8 +1,10 @@
 # **V1.3.4**
 import sys
-sys.path.append('src/database')
-sys.path.append('src/utils')
-sys.path.append('src/web')
+import pathlib
+parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+sys.path.append(os.path.join(parent_parent_path, 'src', 'utils'))
+sys.path.append(os.path.join(parent_parent_path, 'src', 'database'))
+sys.path.append(os.path.join(parent_parent_path, 'src', 'web'))
 
 import flask
 import click

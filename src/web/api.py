@@ -1,6 +1,8 @@
 import sys
-sys.path.append('../database')
-sys.path.append('../utils')
+import pathlib
+parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+sys.path.append(os.path.join(parent_parent_path, 'utils'))
+sys.path.append(os.path.join(parent_parent_path, 'database'))
 
 import chatroom
 import utils
@@ -23,6 +25,7 @@ from flask_wtf.recaptcha import RecaptchaField
 
 from functools import wraps
 
+import waitress
 
 def add_admin(db_configs, app_configs):
     conn = db_configs.conn
@@ -40,11 +43,12 @@ class WebApp():
         self.port = port
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
-        self.app.config['DATABASE_FOLDER'] = './src/database'
-        self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
+        self.parent_path = str(pathlib.Path(__file__).parent.absolute())
+        self.app.config['DATABASE_FOLDER'] = os.path.join(self.parent_path, 'src' ,'database')
+        self.app.config['UPLOAD_FOLDER'] = os.path.join(self.parent_path, 'src' ,'database' ,'uploaded_files')
         self.app.config['FAMILY_TREE_FOLDER'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'family_tree')
         self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
-        self.app.config['TEMPLATES_FOLDER'] = './src/web/templates'
+        self.app.config['TEMPLATES_FOLDER'] = os.path.join(self.parent_path, 'src' ,'web', 'templates')
         self.app.session_db = SQLAlchemy()
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
         self.app.config['SESSION_TYPE'] = 'sqlalchemy'
@@ -59,6 +63,8 @@ class WebApp():
         with self.app.app_context():
             Session(self.app)
         add_admin(self.db_configs, self.app.config)
+
+        print(f'App initialized. Server running on http://{self.ip}:{self.port}')
     
     class RecaptchaForm(FlaskForm):
         username = StringField("username", validators=[DataRequired()])
@@ -491,7 +497,7 @@ class WebApp():
 
         @app.route("/<path:filename>")
         def static_dir(filename):
-            allowed_files = ['static/js/JavaScript.js', 'static/css/style.css', 'static/bootstrap.min.css', '/static/css/style.css', '/static/js/JavaScript.js', '/static/bootstrap.min.css']
+            allowed_files = [os.path.join('static', 'js', 'JavaScript.js'), os.path.join('static', 'css', 'style.css'), os.path.join('static', 'css', 'bootstrap.min.css')]
             if filename in allowed_files:
                 return flask.send_from_directory(app.root_path, filename)
             else:
@@ -621,10 +627,8 @@ class WebApp():
             logs = [dict(zip(columns, row)) for row in logs]
             return flask.render_template('logs.html', logs=logs)
 
-    
-
-        
-        t = Thread(target=self.app.run, args=(self.ip,self.port,False))
+            
+        t = Thread(target=waitress.serve, args=([self.app]), kwargs={'host':self.ip, 'port':self.port})
         t.start()        
 
 

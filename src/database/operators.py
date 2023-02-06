@@ -1,5 +1,8 @@
 import sys
-sys.path.append('../utils')
+import pathlib
+import os
+parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+sys.path.append(os.path.join(parent_parent_path, 'utils'))
 
 import utils
 from dictianory import slef_made_codes

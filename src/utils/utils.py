@@ -5,7 +5,9 @@ import random
 import string
 import json
 import flask
-sys.path.append('../database')
+import pathlib
+parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+sys.path.append(os.path.join(parent_parent_path, 'database'))
 import operators
 import networkx as nx
 
@@ -34,7 +36,7 @@ def init_directories(DATABASE_FOLDER):
         os.makedirs(dir2make)
     
 def init_db(db_configs):
-    print('Initilizing the databse')
+    print('Initilizing the databse ...')
     for table in db_configs.table_lists:
         operators.create_table(db_configs.conn, table)
 
