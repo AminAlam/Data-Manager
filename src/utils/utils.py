@@ -5,9 +5,13 @@ import random
 import string
 import json
 import flask
-sys.path.append('../database')
+import pathlib
+parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+sys.path.append(os.path.join(parent_parent_path, 'database'))
 import operators
 import networkx as nx
+import zipfile
+import shutil
 
 from datetime import datetime, date
 
@@ -34,7 +38,7 @@ def init_directories(DATABASE_FOLDER):
         os.makedirs(dir2make)
     
 def init_db(db_configs):
-    print('Initilizing the databse')
+    print('Initilizing the databse ...')
     for table in db_configs.table_lists:
         operators.create_table(db_configs.conn, table)
 
@@ -150,12 +154,9 @@ def modify_conditions_json(conditions, target_conditions):
                         conditions[condition][condition_nested][indx] = [single_condition, "checked"]
                     else:
                         conditions[condition][condition_nested][indx] = [single_condition, ""]
-    # sort the conditions bt key
     conditions = dict(sorted(conditions.items(), key=lambda item: item[0]))
-    # sort each nested condition by key
     for condition in conditions.keys():
         conditions[condition] = dict(sorted(conditions[condition].items(), key=lambda item: item[0]))
-    # sort each nested nested condition by key
     for condition in conditions.keys():
         for condition_nested in conditions[condition].keys():
             conditions[condition][condition_nested] = sorted(conditions[condition][condition_nested], key=lambda x: x[0])
@@ -233,7 +234,6 @@ def experiment_report_maker(conn, experiment_id):
     experiment[6] = parse_conditions(experiment[6])
     for i in range(len(experiment[6])):
         experiment[6][i] = experiment[6][i].replace('&', '->')
-    # write the report to a text file and send it to the user
     report = f'Hash ID: {experiment[0]}'
     report = report + f'\nParent Hash ID: {experiment[8]}'
     report = report + f'\nName: {experiment[7]}'
@@ -242,9 +242,6 @@ def experiment_report_maker(conn, experiment_id):
     report = report + f'\nFile Path: {experiment[3]}'
     report = report + f'\nTags: {experiment[1]}'
     report = report + f'\nConditions: {experiment[6]}'
-    # report = report + f'\n\n\n\n\n\n\n'
-    # for i in range(20):
-    #     report = report + f'\n{experiment[0]}_{i}'
     return report
 
 def check_hash_id_existence(conn, hash_id):
@@ -319,7 +316,6 @@ def family_tree_to_html(conn, experiment_hash_id, FAMILY_TREE_FOLDER):
     html_save_path = os.path.join(FAMILY_TREE_FOLDER, f'{experiment_hash_id}.html')
     nx.nx_pydot.write_dot(G, f'{dot_save_path}')
     os.system(f'dot -Tsvg {dot_save_path} -o {html_save_path}')
-    # read the html file and return it
     with open(html_save_path, 'r') as f:
         html = f.read()
     return html
@@ -340,3 +336,50 @@ def get_experiment_by_id(conn, experiment_id):
     cursor.execute('select * from experiments where id=?', (experiment_id,))
     experiment = cursor.fetchone()
     return experiment
+
+def restore_db(app_config, backup_file_path):
+    try:
+        parent_folder = os.path.dirname(backup_file_path)
+        TEMP_FOLDER = os.path.join(parent_folder, 'temp_backup')
+        with zipfile.ZipFile(backup_file_path, 'r') as zip_ref:
+            zip_ref.extractall(TEMP_FOLDER)
+        TEMP_FOLDER = os.path.join(TEMP_FOLDER, os.listdir(TEMP_FOLDER)[0])
+        for folder in os.listdir(TEMP_FOLDER):
+            folder_path = os.path.join(TEMP_FOLDER, folder)
+            if os.path.isdir(folder_path):
+                shutil.rmtree(os.path.join(app_config['DATABASE_FOLDER'], folder))
+                shutil.copytree(folder_path, os.path.join(app_config['DATABASE_FOLDER'], folder))
+            elif os.path.isfile(folder_path):
+                os.remove(os.path.join(app_config['DATABASE_FOLDER'], folder))
+                shutil.copyfile(folder_path, os.path.join(app_config['DATABASE_FOLDER'], folder))
+        shutil.rmtree(TEMP_FOLDER)
+        os.remove(backup_file_path)
+        return True
+    except:
+        return False
+
+def backup_db(app_config):
+    backup_file_path = os.path.join(app_config['DATABASE_FOLDER'], 'DataManager_backup')
+    try:
+        parent_folder = os.path.dirname(backup_file_path)
+        time_now = datetime.now()
+        time_now = time_now.strftime('%Y-%m-%d_%H-%M')
+        TEMP_FOLDER = os.path.join(parent_folder, 'backup_datamanager', time_now)
+        if os.path.exists(TEMP_FOLDER):
+            shutil.rmtree(TEMP_FOLDER)
+        # make TEMP_FOLDER and its parents if they don't exist
+        os.makedirs(TEMP_FOLDER)
+
+        for folder in ['db_main.db', 'conditions', 'uploaded_files']:
+            folder_path = os.path.join(app_config['DATABASE_FOLDER'], folder)
+            if os.path.isdir(folder_path):
+                shutil.copytree(folder_path, os.path.join(TEMP_FOLDER, folder))
+            elif os.path.isfile(folder_path):
+                shutil.copyfile(folder_path, os.path.join(TEMP_FOLDER, folder))
+        TEMP_FOLDER = os.path.dirname(TEMP_FOLDER)
+        shutil.make_archive(backup_file_path, 'zip', TEMP_FOLDER)
+        shutil.rmtree(TEMP_FOLDER)
+        backup_file_path = f'{backup_file_path}.zip'
+        return True, backup_file_path
+    except:
+        return False, backup_file_path
