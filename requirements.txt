@@ -9,3 +9,4 @@ flask_wtf
 wtforms
 networkx
 pydot
+waitress

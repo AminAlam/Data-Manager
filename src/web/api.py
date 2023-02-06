@@ -1,6 +1,9 @@
 import sys
-sys.path.append('../database')
-sys.path.append('../utils')
+import pathlib
+import os
+parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+sys.path.append(os.path.join(parent_parent_path, 'utils'))
+sys.path.append(os.path.join(parent_parent_path, 'database'))
 
 import chatroom
 import utils
@@ -10,7 +13,7 @@ import operators
 from dictianory import slef_made_codes, slef_made_codes_inv_map
 import flask
 from threading import Thread
-import os
+
 import datetime as dt
 from flask_sessionstore import Session
 from flask_sqlalchemy import SQLAlchemy
@@ -23,6 +26,7 @@ from flask_wtf.recaptcha import RecaptchaField
 
 from functools import wraps
 
+import waitress
 
 def add_admin(db_configs, app_configs):
     conn = db_configs.conn
@@ -30,7 +34,7 @@ def add_admin(db_configs, app_configs):
     cursor.execute('select * from users where username=?', ('admin',))
     users = cursor.fetchall()
     if len(users)==0:
-        cursor.execute('insert into users values (?,?,?,?,?,?)', ('admin', 'SIGLAB_IST_VICE', 1, None, None, None))
+        cursor.execute('insert into users values (?,?,?,?,?,?)', ('admin', 'admin', 1, None, None, None))
         conn.commit()
         utils.init_user(app_configs, db_configs, 'admin')
 
@@ -40,11 +44,13 @@ class WebApp():
         self.port = port
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
-        self.app.config['DATABASE_FOLDER'] = './src/database'
-        self.app.config['UPLOAD_FOLDER'] = './src/database/uploaded_files'
+        self.parent_path = str(pathlib.Path(__file__).parent.absolute())
+        self.parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+        self.app.config['DATABASE_FOLDER'] = os.path.join(self.parent_parent_path ,'database')
+        self.app.config['UPLOAD_FOLDER'] = os.path.join(self.parent_parent_path ,'database' ,'uploaded_files')
         self.app.config['FAMILY_TREE_FOLDER'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'family_tree')
         self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
-        self.app.config['TEMPLATES_FOLDER'] = './src/web/templates'
+        self.app.config['TEMPLATES_FOLDER'] = os.path.join(self.parent_parent_path, 'web', 'templates')
         self.app.session_db = SQLAlchemy()
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
         self.app.config['SESSION_TYPE'] = 'sqlalchemy'
@@ -59,6 +65,8 @@ class WebApp():
         with self.app.app_context():
             Session(self.app)
         add_admin(self.db_configs, self.app.config)
+
+        print(f'App initialized. Server running on http://{self.ip}:{self.port}')
     
     class RecaptchaForm(FlaskForm):
         username = StringField("username", validators=[DataRequired()])
@@ -80,8 +88,10 @@ class WebApp():
                 return f(*args, **kwargs)
             except Exception as e:
                 cursor.execute('update logs set status=?, error=? where username=? and action=? and date=?', ('fail', str(e), username, action, time))
+                print(e)
                 conn.commit()
-                return flask.render_template
+                flask.flash('An error occured. Please try again later.')
+                return flask.redirect(flask.url_for('index'))
         return wrap
 
     def run(self):
@@ -100,8 +110,8 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                elif form.validate_on_submit():
-                #elif 1:
+                #elif form.validate_on_submit():
+                elif 1:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -491,7 +501,7 @@ class WebApp():
 
         @app.route("/<path:filename>")
         def static_dir(filename):
-            allowed_files = ['static/js/JavaScript.js', 'static/css/style.css', 'static/bootstrap.min.css', '/static/css/style.css', '/static/js/JavaScript.js', '/static/bootstrap.min.css']
+            allowed_files = [os.path.join('static', 'js', 'JavaScript.js'), os.path.join('static', 'css', 'style.css'), os.path.join('static', 'css', 'bootstrap.min.css')]
             if filename in allowed_files:
                 return flask.send_from_directory(app.root_path, filename)
             else:
@@ -621,10 +631,40 @@ class WebApp():
             logs = [dict(zip(columns, row)) for row in logs]
             return flask.render_template('logs.html', logs=logs)
 
-    
+        @app.route('/backup', methods=["GET", "POST"])
+        @security.admin_required
+        def backup():
+            if flask.request.method == 'POST':
+                status, backup_file_path = utils.backup_db(self.app.config)
+                if status:
+                    return flask.send_from_directory(os.path.dirname(backup_file_path), os.path.basename(backup_file_path), as_attachment=True)
+                else:
+                    flask.flash('Database was not backed up successfully')
+                    return flask.render_template('backup.html')
+            else:
+                return flask.render_template('backup.html')
 
-        
-        t = Thread(target=self.app.run, args=(self.ip,self.port,False))
+        @app.route('/restore_db', methods=["GET", "POST"])
+        @security.admin_required
+        def restore_db():
+            if flask.request.method == 'POST':
+                Files = flask.request.files.getlist('Files')
+                file = Files[0]
+                if file.filename.split('.')[-1] != 'zip':
+                    flask.flash('Wrong file format / No file was selected')
+                    return flask.render_template('backup.html')
+                else:
+                    backup_file_path = os.path.join(app.config['DATABASE_FOLDER'], 'backup.zip')
+                    file.save(backup_file_path)
+                    status = utils.restore_db(self.app.config, backup_file_path)
+                    if status:
+                        flask.flash('Database was restored successfully. Please restart the server')                        
+                    else:
+                        flask.flash('Database was not restored. Please try again')
+                    return flask.render_template('backup.html')
+
+            
+        t = Thread(target=waitress.serve, args=([self.app]), kwargs={'host':self.ip, 'port':self.port})
         t.start()        
 
 
