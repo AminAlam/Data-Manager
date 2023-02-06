@@ -1,4 +1,4 @@
-# **V1.3.4**
+import os
 import sys
 import pathlib
 parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
@@ -8,7 +8,7 @@ sys.path.append(os.path.join(parent_parent_path, 'src', 'web'))
 
 import flask
 import click
-import os
+
 import operators
 import configs
 import utils

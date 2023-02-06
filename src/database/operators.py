@@ -56,7 +56,6 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
         experiment_name = post_form['experiment_name']
         parent_experiment = post_form['parent_experiment']
 
-        # add new files to experiment folder if exist
         if len(Files) > 0:
             utils.upload_files(app_config, hash_id, Files)
 
@@ -68,7 +67,6 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
             except:
                 pass
 
-        # remove file in Files2remove
         if len(Files2remove) > 0:
             utils.remove_files(app_config, hash_id, Files2remove)
 
