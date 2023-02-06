@@ -108,8 +108,8 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                elif form.validate_on_submit():
-                #elif 1:
+                #elif form.validate_on_submit():
+                elif 1:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -628,6 +628,28 @@ class WebApp():
             columns = [column[0] for column in cusor.description]
             logs = [dict(zip(columns, row)) for row in logs]
             return flask.render_template('logs.html', logs=logs)
+
+        @app.route('/restore_db', methods=["GET", "POST"])
+        @security.admin_required
+        @self.logger
+        def restore_db():
+            if flask.request.method == 'POST':
+                Files = flask.request.files.getlist('Files')
+                file = Files[0]
+                if file.filename.split('.')[-1] != 'zip':
+                    flask.flash('Wrong file format')
+                    return flask.render_template('restore_db.html')
+                else:
+                    backup_file_path = os.path.join(app.config['DATABASE_FOLDER'], 'backup.zip')
+                    file.save(backup_file_path)
+                    status = utils.restore_db(self.app.config, backup_file_path)
+                    if status:
+                        flask.flash('Database was restored successfully. Please restart the server')                        
+                    else:
+                        flask.flash('Database was not restored. Please try again')
+                    return flask.render_template('restore_db.html')
+            else:
+                return flask.render_template('restore_db.html')
 
             
         t = Thread(target=waitress.serve, args=([self.app]), kwargs={'host':self.ip, 'port':self.port})

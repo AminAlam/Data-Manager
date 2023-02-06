@@ -10,6 +10,8 @@ parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
 sys.path.append(os.path.join(parent_parent_path, 'database'))
 import operators
 import networkx as nx
+import zipfile
+import shutil
 
 from datetime import datetime, date
 
@@ -334,3 +336,24 @@ def get_experiment_by_id(conn, experiment_id):
     cursor.execute('select * from experiments where id=?', (experiment_id,))
     experiment = cursor.fetchone()
     return experiment
+
+def restore_db(app_config, backup_file_path):
+    try:
+        parent_folder = os.path.dirname(backup_file_path)
+        TEMP_FOLDER = os.path.join(parent_folder, 'temp_backup')
+        with zipfile.ZipFile(backup_file_path, 'r') as zip_ref:
+            zip_ref.extractall(TEMP_FOLDER)
+        TEMP_FOLDER = os.path.join(TEMP_FOLDER, os.listdir(TEMP_FOLDER)[0])
+        for folder in os.listdir(TEMP_FOLDER):
+            folder_path = os.path.join(TEMP_FOLDER, folder)
+            if os.path.isdir(folder_path):
+                shutil.rmtree(os.path.join(app_config['DATABASE_FOLDER'], folder))
+                shutil.copytree(folder_path, os.path.join(app_config['DATABASE_FOLDER'], folder))
+            elif os.path.isfile(folder_path):
+                os.remove(os.path.join(app_config['DATABASE_FOLDER'], folder))
+                shutil.copyfile(folder_path, os.path.join(app_config['DATABASE_FOLDER'], folder))
+        shutil.rmtree(TEMP_FOLDER)
+        os.remove(backup_file_path)
+        return True
+    except:
+        return False
