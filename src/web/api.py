@@ -1,5 +1,6 @@
 import sys
 import pathlib
+import os
 parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
 sys.path.append(os.path.join(parent_parent_path, 'utils'))
 sys.path.append(os.path.join(parent_parent_path, 'database'))
@@ -12,7 +13,7 @@ import operators
 from dictianory import slef_made_codes, slef_made_codes_inv_map
 import flask
 from threading import Thread
-import os
+
 import datetime as dt
 from flask_sessionstore import Session
 from flask_sqlalchemy import SQLAlchemy
@@ -33,7 +34,7 @@ def add_admin(db_configs, app_configs):
     cursor.execute('select * from users where username=?', ('admin',))
     users = cursor.fetchall()
     if len(users)==0:
-        cursor.execute('insert into users values (?,?,?,?,?,?)', ('admin', 'SIGLAB_IST_VICE', 1, None, None, None))
+        cursor.execute('insert into users values (?,?,?,?,?,?)', ('admin', 'admin', 1, None, None, None))
         conn.commit()
         utils.init_user(app_configs, db_configs, 'admin')
 
@@ -44,11 +45,12 @@ class WebApp():
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
         self.parent_path = str(pathlib.Path(__file__).parent.absolute())
-        self.app.config['DATABASE_FOLDER'] = os.path.join(self.parent_path, 'src' ,'database')
-        self.app.config['UPLOAD_FOLDER'] = os.path.join(self.parent_path, 'src' ,'database' ,'uploaded_files')
+        self.parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+        self.app.config['DATABASE_FOLDER'] = os.path.join(self.parent_parent_path ,'database')
+        self.app.config['UPLOAD_FOLDER'] = os.path.join(self.parent_parent_path ,'database' ,'uploaded_files')
         self.app.config['FAMILY_TREE_FOLDER'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'family_tree')
         self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
-        self.app.config['TEMPLATES_FOLDER'] = os.path.join(self.parent_path, 'src' ,'web', 'templates')
+        self.app.config['TEMPLATES_FOLDER'] = os.path.join(self.parent_parent_path, 'web', 'templates')
         self.app.session_db = SQLAlchemy()
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
         self.app.config['SESSION_TYPE'] = 'sqlalchemy'

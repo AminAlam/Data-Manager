@@ -152,12 +152,9 @@ def modify_conditions_json(conditions, target_conditions):
                         conditions[condition][condition_nested][indx] = [single_condition, "checked"]
                     else:
                         conditions[condition][condition_nested][indx] = [single_condition, ""]
-    # sort the conditions bt key
     conditions = dict(sorted(conditions.items(), key=lambda item: item[0]))
-    # sort each nested condition by key
     for condition in conditions.keys():
         conditions[condition] = dict(sorted(conditions[condition].items(), key=lambda item: item[0]))
-    # sort each nested nested condition by key
     for condition in conditions.keys():
         for condition_nested in conditions[condition].keys():
             conditions[condition][condition_nested] = sorted(conditions[condition][condition_nested], key=lambda x: x[0])
@@ -235,7 +232,6 @@ def experiment_report_maker(conn, experiment_id):
     experiment[6] = parse_conditions(experiment[6])
     for i in range(len(experiment[6])):
         experiment[6][i] = experiment[6][i].replace('&', '->')
-    # write the report to a text file and send it to the user
     report = f'Hash ID: {experiment[0]}'
     report = report + f'\nParent Hash ID: {experiment[8]}'
     report = report + f'\nName: {experiment[7]}'
@@ -244,9 +240,6 @@ def experiment_report_maker(conn, experiment_id):
     report = report + f'\nFile Path: {experiment[3]}'
     report = report + f'\nTags: {experiment[1]}'
     report = report + f'\nConditions: {experiment[6]}'
-    # report = report + f'\n\n\n\n\n\n\n'
-    # for i in range(20):
-    #     report = report + f'\n{experiment[0]}_{i}'
     return report
 
 def check_hash_id_existence(conn, hash_id):
@@ -321,7 +314,6 @@ def family_tree_to_html(conn, experiment_hash_id, FAMILY_TREE_FOLDER):
     html_save_path = os.path.join(FAMILY_TREE_FOLDER, f'{experiment_hash_id}.html')
     nx.nx_pydot.write_dot(G, f'{dot_save_path}')
     os.system(f'dot -Tsvg {dot_save_path} -o {html_save_path}')
-    # read the html file and return it
     with open(html_save_path, 'r') as f:
         html = f.read()
     return html
