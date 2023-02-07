@@ -110,8 +110,8 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                #elif form.validate_on_submit():
-                elif 1:
+                elif form.validate_on_submit():
+                #elif 1:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
@@ -446,6 +446,7 @@ class WebApp():
             flask.flash(message)
             return flask.redirect(flask.url_for('index'))
         
+
         @app.route("/protocols", methods=["POST", "GET"])
         @security.login_required
         def protocols():
@@ -545,7 +546,6 @@ class WebApp():
                 f.write(experiment_report)
             return flask.send_from_directory(cwd,  f'report_{id}.txt',as_attachment=True)
 
-
         @app.route('/experiments_actions', methods=["POST", "GET"])
         @security.login_required
         @self.logger
@@ -585,8 +585,6 @@ class WebApp():
                     else:
                         flask.flash('Parent experiment Hash ID does not exist')
                         return flask.redirect(flask.request.referrer)
-                    
-
 
         @app.route('/chatroom', methods=["GET", "POST"])
         @security.login_required
@@ -598,7 +596,6 @@ class WebApp():
                 if user['username'] == flask.session['username']:
                     users.insert(1, users.pop(i))
                     break
-            
             return flask.render_template('chat_room.html', messages=messages, users=users)
 
         @app.route('/chatroom_send_message/<string:destination>', methods=["GET", "POST"])
@@ -633,6 +630,7 @@ class WebApp():
 
         @app.route('/backup', methods=["GET", "POST"])
         @security.admin_required
+        @self.logger
         def backup():
             if flask.request.method == 'POST':
                 status, backup_file_path = utils.backup_db(self.app.config)
@@ -646,6 +644,7 @@ class WebApp():
 
         @app.route('/restore_db', methods=["GET", "POST"])
         @security.admin_required
+        @self.logger
         def restore_db():
             if flask.request.method == 'POST':
                 Files = flask.request.files.getlist('Files')
