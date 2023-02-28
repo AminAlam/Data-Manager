@@ -10,4 +10,3 @@ wtforms
 networkx
 pydot
 waitress
-flaskcode
