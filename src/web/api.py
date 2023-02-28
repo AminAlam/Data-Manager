@@ -23,6 +23,7 @@ from wtforms.validators import DataRequired
 
 from flask_wtf import FlaskForm
 from flask_wtf.recaptcha import RecaptchaField
+import flaskcode
 
 from functools import wraps
 
@@ -59,6 +60,10 @@ class WebApp():
         self.app.config['SECRET_KEY'] = self.app.config['CREDS_FILE']['SECRET_KEY']
         self.app.config['RECAPTCHA_PUBLIC_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PUBLIC_KEY']
         self.app.config['RECAPTCHA_PRIVATE_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PRIVATE_KEY']
+
+        self.app.config.from_object(flaskcode.default_config)
+        self.app.config['FLASKCODE_RESOURCE_BASEPATH'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions')
+        self.app.register_blueprint(flaskcode.blueprint, url_prefix='/editor')
 
         self.ChatRoom = chatroom.ChatRoom(self.db_configs)
 
@@ -661,6 +666,12 @@ class WebApp():
                     else:
                         flask.flash('Database was not restored. Please try again')
                     return flask.render_template('backup.html')
+                
+        @app.route('/editor', methods=["GET", "POST"])
+        @security.admin_required
+        @self.logger
+        def editor():
+            return flask.url_for('editor')
 
             
         t = Thread(target=waitress.serve, args=([self.app]), kwargs={'host':self.ip, 'port':self.port})
