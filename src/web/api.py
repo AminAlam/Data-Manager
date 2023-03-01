@@ -667,7 +667,7 @@ class WebApp():
                         flask.flash('Database was not restored. Please try again')
                     return flask.render_template('backup.html')
                 
-        @app.route('/editor', methods=["GET", "POST"])
+        @app.route('/editor/', methods=["GET", "POST"])
         @security.admin_required
         @self.logger
         def editor():
