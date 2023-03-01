@@ -1,3 +1,21 @@
+<div align="center">
+<br/>
+<h1>NeuroDUI</h1>
+<h3>Neuro Data User Interface</h3>
+<br/>
+<img src="https://img.shields.io/badge/Python-14354C?style=for-the-badge&logo=python&logoColor=white" alt="built with Python3" />
+<img src="https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white" alt="built with SQLite" />
+<img src="https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white" alt="built with HTML" />
+<img src="https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white" alt="built with CSS" />
+<img src="https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white" alt="built with Shell Script" />
+
+
+</div>
+
+
+
+
+
 ## Installation
 
 ### Source code
