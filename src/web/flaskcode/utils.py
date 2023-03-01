@@ -6,6 +6,45 @@ import shutil
 from functools import wraps
 from flask import request, make_response
 
+import json
+
+def check_conditions_json(content, target_conditions=[]):
+    try:
+        conditions = json.loads(content)
+        for condition in conditions.keys():
+            for condition_nested in conditions[condition].keys():
+                for indx, single_condition in enumerate(conditions[condition][condition_nested]):
+                    if len(single_condition.split('&')) == 4:
+                        param_name = single_condition.split("&")[0]
+                        if type(target_conditions) == str:
+                            target_conditions_list = target_conditions.split(',')
+                        else:
+                            target_conditions_list = target_conditions
+                        for target_condition in target_conditions_list:
+                            if param_name in target_condition:
+                                conditions[condition][condition_nested][indx] = [single_condition, "checked", target_condition.split('&')[-1]]
+                                break
+                        else:
+                            conditions[condition][condition_nested][indx] = [single_condition, ""]
+                    else:
+                        if f'{condition}&{condition_nested}&{single_condition}' in target_conditions:
+                            conditions[condition][condition_nested][indx] = [single_condition, "checked"]
+                        else:
+                            conditions[condition][condition_nested][indx] = [single_condition, ""]
+        conditions = dict(sorted(conditions.items(), key=lambda item: item[0]))
+        for condition in conditions.keys():
+            conditions[condition] = dict(sorted(conditions[condition].items(), key=lambda item: item[0]))
+        for condition in conditions.keys():
+            for condition_nested in conditions[condition].keys():
+                conditions[condition][condition_nested] = sorted(conditions[condition][condition_nested], key=lambda x: x[0])
+
+        status = True
+        message = ''
+    except Exception as e:
+        message = e
+        status = False
+    return status, message
+
 
 PY2 = sys.version_info.major == 2
 DEFAULT_CHUNK_SIZE = 16 * 1024
@@ -28,6 +67,13 @@ def get_file_extension(filename):
 def write_file(content, filepath, encoding='utf-8', chunk_size=None):
     success = True
     message = 'File saved successfully'
+    _, file_nmae = os.path.split(filepath)
+    if file_nmae == 'info.json':
+        conditoins_status, err_message = check_conditions_json(content)
+        if not conditoins_status:
+            success = False
+            message = f'Could not save file: Invalid input in info.json {err_message}'
+            return success, message
     if isinstance(content, string_types):
         content_io = io.StringIO()
         content_io.write(content)
