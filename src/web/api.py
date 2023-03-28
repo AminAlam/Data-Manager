@@ -40,13 +40,14 @@ def add_admin(db_configs, app_configs):
         utils.init_user(app_configs, db_configs, 'admin')
 
 class WebApp():
-    def __init__(self, db_configs, ip, port, static_folder): 
+    def __init__(self, db_configs, ip, port, static_folder, recaptcha_bool): 
         self.ip = ip
         self.port = port
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
         self.parent_path = str(pathlib.Path(__file__).parent.absolute())
         self.parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
+        self.app.config['RECAPTCHA_ENABLED'] = recaptcha_bool
         self.app.config['DATABASE_FOLDER'] = os.path.join(self.parent_parent_path ,'database')
         self.app.config['UPLOAD_FOLDER'] = os.path.join(self.parent_parent_path ,'database' ,'uploaded_files')
         self.app.config['FAMILY_TREE_FOLDER'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'family_tree')
@@ -115,8 +116,7 @@ class WebApp():
                 form = self.RecaptchaForm()
                 if len(users)==0:
                     return flask.render_template('login.html', error='Invalid username or password', form=form)
-                elif form.validate_on_submit():
-                #elif 1:
+                elif form.validate_on_submit() or not app.config['RECAPTCHA_ENABLED']:
                     flask.session['username'] = username
                     flask.session['password'] = password
                     flask.session['logged_in'] = True
