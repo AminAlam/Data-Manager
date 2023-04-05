@@ -48,13 +48,15 @@ def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditio
 
 def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
     try:
-        print(post_form)
         date = post_form['date']
         Tags = post_form['Tags']
         File_Path = post_form['File_Path']
         Notes = post_form['Notes']
         experiment_name = post_form['experiment_name']
         parent_experiment = post_form['parent_experiment']
+
+        Tags_parsed = utils.parse_tags(Tags)
+        insert_tag(conn, Tags_parsed)
 
         if len(Files) > 0:
             utils.upload_files(app_config, hash_id, Files)
