@@ -154,7 +154,7 @@ def modify_conditions_json(conditions, target_conditions):
                         conditions[condition][condition_nested][indx] = [single_condition, "checked"]
                     else:
                         conditions[condition][condition_nested][indx] = [single_condition, ""]
-    conditions = dict(sorted(conditions.items(), key=lambda item: item[0]))
+    # conditions = dict(sorted(conditions.items(), key=lambda item: item[0]))
     for condition in conditions.keys():
         conditions[condition] = dict(sorted(conditions[condition].items(), key=lambda item: item[0]))
     for condition in conditions.keys():
@@ -184,13 +184,13 @@ def list_user_conditoins_templates(conn, app_config, session):
         conditions_list.append([conditions_html, template_name])
     return conditions_list
 
-def get_conditions_by_template_name(conn, app_config, username, templatename):
+def get_conditions_by_template_and_method(conn, app_config, username, templatename, method_name):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM conditions_templates WHERE author=? AND template_name=?", (username, templatename))
     conditions_template = cursor.fetchall()    
     template_name = conditions_template[0][1]
     condition = conditions_template[0][2]
-    condition_json = read_json_file(app_config['CONDITIONS_JSON'])
+    condition_json = read_json_file(os.path.join(app_config['CONDITIONS_JSON_FOLDER'], f'{method_name}.json'))
     condition_json = modify_conditions_json(condition_json, condition)
     conditions_html = flask.render_template('conditions.html', conditions=condition_json, template_name=template_name)
     conditions_html = flask.Markup(conditions_html)
@@ -383,3 +383,10 @@ def backup_db(app_config):
         return True, backup_file_path
     except:
         return False, backup_file_path
+    
+def get_methods_list(app_config):
+    methods_list = os.listdir(app_config['CONDITIONS_JSON_FOLDER'])
+    methods_list = [method_name.split('.')[0] for method_name in methods_list]    
+    methods_list.remove(app_config['CONDITIONS_JSON_DEFAULT'].split('.')[0])
+    methods_list.insert(0, app_config['CONDITIONS_JSON_DEFAULT'].split('.')[0])
+    return methods_list

@@ -40,21 +40,41 @@
           </div>
         </div>
 
-      <div class="dropdown form-group col-md-12">
-        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Choose template
-        </a>
-        <ul class="dropdown-menu">
-          {%for condition_template in conditions_list%}
-            <li><a class="dropdown-item" onclick="replace_condition('#condition_selected', '{{condition_template[1]}}')" href="javascript:void(0);">{{condition_template[1]}}</a></li>
+      <div class="form-group col-md-3">
+        <label for="method">Method:</label>
+        <select class="form-select" name="method" id="method" required>
+          {%for method in methods_list%}
+            {%if loop.index == 0%}
+              <option selected="True" value="{{method}}">{{method}}</option>
+            {%else %}
+              <option value="{{method}}">{{method}}</option>
+            {%endif%}
           {%endfor%}
-        </ul>
+        </select>
       </div>
+
+
+
+      <div class="form-group col-md-3">
+        <label for="template">Template:</label>
+        <select class="form-select" name="template" id="template" required>
+          {%for condition_template in conditions_list%}
+            {%if loop.index == 0%}
+              <option selected="True" value="{{condition_template[1]}}">{{condition_template[1]}}</option>
+            {%else %}
+              <option value="{{condition_template[1]}}">{{condition_template[1]}}</option>
+            {%endif%}
+          {%endfor%}
+        </select>
+      </div>
+
 
      <div id="condition_selected" class="form-group col-md-12">
       {{conditions_list[0][0]}}
      </div>
 
+
+     
       <div class="form-group col-md-6">
           <label for="File_Path">File Path</label>
           <input class="form-control" name="File_Path" autocomplete="off"> 
@@ -69,16 +89,16 @@
 
 
 
-        <div class="form-group col-md-12">
-          <label for="Notes">Notes</label>
-          <textarea class="form-control" id="Notes" rows="3" name="Notes" autocomplete="off"></textarea>
-        </div>
+    <div class="form-group col-md-12">
+      <label for="Notes">Notes</label>
+      <textarea class="form-control" id="Notes" rows="3" name="Notes" autocomplete="off"></textarea>
+    </div>
 
 
-        <div class="form-group col-md-12">
-              <input type="file" class="form-control" id="Files_id" name="Files" aria-describedby="Files">
-              <label class="custom-file-label" for="Files_id" id="Files_name_id" >Data File/Files</label>
-        </div>
+    <div class="form-group col-md-12">
+          <input type="file" class="form-control" id="Files_id" name="Files" aria-describedby="Files">
+          <label class="custom-file-label" for="Files_id" id="Files_name_id" >Data File/Files</label>
+    </div>
 
 
   

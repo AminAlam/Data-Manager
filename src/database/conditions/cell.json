@@ -1,0 +1,49 @@
+{
+    "Species":{
+        "Mouse Heterozygous":["Ai9", "Ai95", "Arc GFP", "Cox flox", "Cd11ccre", "Cx3cr1 GFP/bl6", "Cx3cr1 creERT2/bl6", "Csf1r GFP", "Csf2rb2", "Cx3cr1 Cre", "Cx3cr1 GFP", "Cx3cr1 creERT2", "Fbxo32 GFP", "GCamp tomato", "Gja10 cre", "Lgals9", "Lhx4 GFP", "LSLhM4Di", "mito QC", "MFSD1fl", "Mmp9", "Pcp2 GFP", "Pde6b rd1", "Pde6b rd10", "Pde6c cpfl1", "Pdgfra GFP", "Pham", "Pvalb cre", "R26R-Confetti", "Rosa26iDTR", "Rosa DTA", "Thy1-Brainbow", "Thy1 EGFP", "Trap2", "Ucp2"],
+        "Mouse Homozygous":["Ai9", "Ai95", "Cd11ccre", "Cox flox", "Cx3cr1 GFP", "Cx3cr1 creERT2", "GCamp tomato", "Gja10 cre", "LSLhM4Di", "MFSD1fl", "mito QC", "Mmp9", "Pde6b rd1", "Pde6b rd10", "Pde6c cpfl1", "Pham", "Pvalb cre", "R26R-Confetti", "Rosa26iDTR", "Rosa DTA", "Thy1-Brainbow", "Thy1 EGFP", "Trap2", "Ucp2"],
+         "Rat":["Rat"],
+         "Human":["Human"]
+    },
+
+    "Cells":{
+        "Culture Model":["Non Microglia Assembled Retinal Organoid", "Microglia Assembled Retinal Organoid", "Microglia Only", "Dissociated Non Microglia Assembled Retinal Organoid", "Dissociated Microglia Assembled Retinal Organoid"],
+        "Cells":["Primary Mixed Glia", "Primary Microglia", "293T", "HMC3", "CR05", "SC102a", "F49B7", "Hybrid"]
+    },
+
+     "Region_of_Interest (ROI)":{
+        "Brain":["Primary Visual Cortex", "Substantia Nigra", "Cochlear Nucleus", "Cerebellum", "Dentate Gyrus", "Primary Somatosensory Cortex", "Frontal Cortex", "Ganglion Cell Layer", "Dorsal Lateral Geniculate Nucleus", "Superior Coliculus", "Olfactory Bulb"],
+        "Retina":[ "Outer Plexiform Layer", "Inner Plexiform Layer", "Ganglion Cell Layer", "Inner Nuclear Layer", "Outer Nuclear Layer", "Neurofibrillary Layer"],
+        "Cortical Layer":[ "L1", "L2-3", "L4", "L5", "L6"],
+        "Anatomical Plane":[ "Ipsilateral", "Contralateral", "Surgery eye"]
+    },
+
+    "Treatment":{
+        "Drug":["Ketamine-xylazine-acepromacine", "Buprenorphine", "Butorphanol", "Carprofen", "Control Isoflurane", "Control Saline", "Fentanyl", "Flunixin", "Isoflurane", "Ketamine Xylazine", "Lidocaine", "Meloxicam", "Metamizol", "Ibuprofen", "Poly IC", "Tetrodotoxin", "Lipopolysaccharide", "Macrophage Colony Stimulating Factor", "Brain Derived Neurotrophic Factor", "Interleukin 34", "PLX5622 (in food)"],
+        "Surgery":["Optic Nerve Crush"],
+        "Virus":["AAV2-EF1-GCAMP6s", "AAV2-7m8-EF1-GCAMP6s", "AAV2-hSYN-GCAMP6f"],
+        "Concentration":["ml&0&1&1000" ,"microliter&0&1&1000", "kg&0&1&1000", "gram&0&1&1000"],
+        "Length of treatment":["Months&0&1&12" ,"Days&0&1&1000", "Hours&0&1&24", "Minutes&0&1&60"]
+    },
+    
+    "Primary Antibody":{
+        "Rabbit":["SST", "Iba1", "mGluR6", "Rbpms", "Adam17", "Aggrecan", "AMPA Receptor 1 (GluA1) (Extracellular)", "ARL13B", "b2AR (sER355, sER356)", "C-Fos", "C1q(4.8)", "Caspase-3", "CD31", "CD45 (D9M8I)", "cMYB (N-term)", "Connexin 45", "Cox-1", "Cux-2", "Doublecortin DCX", "Erk1/2-Phospho p44/42 MAPK (Thr202/Tyr204)", "FoxG1", "GABA", "Galectin 1", "GFAP", "GFP ALEXAFLUOR 488", "GFP TAG ANTIBODY, Molecular Probes", "GPR109A", "GPR183", "GPR65", "GPR84", "GRN", "Iba1 (HL22) (GeneTex)", "Iba1 (HL22) (Szabo-Scandic)", "Lamb1", "mGluR6", "MMP12", "MMP14", "MMP9", "NANOG", "Neuroligin 2", "Opsin red/green", "P2RY12", "PHH3", "PKC zeta (C-20, rat)", "PSD95 (D27E11)", "PU.1", "RBPMS", "Recoverin", "RFP", "RFP Biotin Conjugated", "Ribeye A domain", "SATB2", "Shank1A", "Somatostatin (THermo Fisher)", "Somatostatin (Novus Biologicals)", "TBR1", "Tenascin C (EPR4219)", "TMEM119", "TMEM119 (C-terminal)", "TOMM20", "TPH2", "c-FOS (9F6)"],
+        "Guinea Pig":["Nlgn2","Calbindin D28K","GluA2","Neuroligin 2","Parvalbumin","Synapsin 1/2","Vgat (Cytoplasmic domain)"],
+        "Sheep":["Chx10","TREM2 (mouse)"],
+        "Goat":["Iba1","Opsin-SW","Brn-3(C13)","ChAT","COX2","Fluorescein","GFP","Human CD14","Otx2 (human)","Otx2 (P-15)","TREM2 (Human)"],
+        "Chicken":["GFP", "MAP2","Myelin Basic Protein","NeuN","Paravalbumin","RFP","S100B","Synapsin 1/2","beta3 Tubulin","Cd11b/itgam"], 
+        "Rat":["Gphn", "C3 (11H9)", "CD106 (Mouse)", "CD11b", "CD11b (mouse) eFluor 660", "CD16/CD32 (Mouse)", "CD169 (Mouse, Clone MOMA-1", "CD45", "CD45 (Mouse)", "CD45 (Mouse) eFluor 450", "CD68 (mouse) (AbD Serotec)", "CD68 (mouse) Bio-rad", "Ctip2 (25B6)", "F4/80 (mouse) Antigen eFluor 660", "Gephyrin", "Ki67 (SolA15)", "LAMP1 (1D48)", "Ly-6C (mouse) eFluor 450", "Mouse I-A/I-E", "Tenascin X (MTn-12)", "TNF alpha (mouse, V1q)"],
+        "Mouse":["beta Tubulin isotype III", "Bassoon", "beta Dystroglycan", "cFOS(E-8)", "Calbindin", "Calretinin (Chemicon)", "Calretinin (Swant)", "Caspase-3", "CD11b (Human)", "CD163 (Human) (Biorad)", "CD163 (Human) Alexa488 (Biorad)", "CD68 (Human clone KP1)", "CD68 (KP1)", "CRALBP", "Cre (Clone 2D8)", "CSPG (Chrondroitin Sulfate, Clone C5-56)", "CtBP2,RUO", "CX3CR1 (human)", "E-cadherin", "Gap43 (human)", "GFAP (Astro6)", "GFP", "Go alpha", "human CD68 (Clone KP1)", "Ki67 (human)", "MITF", "Nestin", "NeuN", "Oct 3/4", "Pax6 (chicken/human/mouse/rat)", "PCNA", "PKC alpha", "PSD95 (7E3) (Biotin)", "Rhodopsin", "Ribeye human, clone 3D12.1", "RUNX1 (Human)", "TMEM119 (Extracellular)", "VSV Glycoprotein", "VSV Glycoprotein (clone P5D4)", "IgG1, K isotype", "Mouse on Mouse ImmPRESS HRP (Peroxidase) Polymer kit"]
+    },
+    
+    "Secondary Antibody":{
+        "Rabbit":["Alexa Fluor 488 Donkey", "Alexa Fluor 488 Goat", "Alexa Fluor 568 Donkey", "Alexa Fluor 568 Goat", "Alexa Fluor 647 Donkey", "Alexa Fluor 647 Goat", "Rabbit IgG HRP Linked Whole AP Donkey"],
+        "Guinea Pig":["Alexa Fluor 488 Goat", "Alexa Fluor 633 Goat", "Alexa Fluor 647 AffiniPure Donkey"],
+        "Goat":["Alexa Fluor 488 Donkey","Alexa Fluor 568 Donkey","Alexa Fluor 647 Donkey"],
+        "Chicken":["Alexa Fluor 488 Goat", "Alexa Fluor 488 Donkey", "Alexa Fluor 568 Goat", "Alexa Fluor 647 Donkey","Alexa Fluor 647 Goat","STAR RED Goat"], 
+        "Rat":["Alexa Fluor 488 Donkey", "Alexa Fluor 488 Goat", "Alexa Fluor 568 Goat", "Alexa Fluor 647 Goat", "Alexa Fluor 650 Donkey"],
+        "Mouse":["Alexa Fluor 488 Donkey", "Alexa Fluor 488 Goat", "Alexa Fluor 568 Donkey", "Alexa Fluor 568 Goat", "Alexa Fluor 647 Donkey", "Alexa Fluor 647 Goat", "Amersham ECL Sheep"],
+        "Streptavidin":["Alexa Fluor 568 Conjugate","Alexa Fluor 647 Conjugate"],
+        "Nuclei Dye":["DAPI","Hoechst 3347"]
+    }
+}
