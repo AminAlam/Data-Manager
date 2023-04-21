@@ -29,12 +29,26 @@ function put_text(id_parent, id, txt) {
  };
 
 
- function replace_condition(id, template_name) {
+ // make a function called replace_condition_trigger which will be called when the user selects a template name or a method name
+
+ $(document).ready(function(){
+  $("#template").change(function(){
+    replace_condition("#condition_selected", $("#template").val(), $("#method").val());
+  });
+  $("#method").change(function(){
+    replace_condition("#condition_selected", $("#template").val(), $("#method").val());
+  });
+});
+
+
+
+
+ function replace_condition(id, template_name, method_name) {
 
       $.ajax({
           method:"post",
-          url:"/get_conditoin_by_templatename",
-          data:{template_name:template_name},
+          url:"/get_conditoin_by_templatename_methodname",
+          data:{template_name:template_name, method_name:method_name},
           success:function(res){
               $(id).empty();
               condition_html = res;
@@ -44,11 +58,6 @@ function put_text(id_parent, id, txt) {
               console.log(err);
           }
       });
-      $(document).click(function(e) {
-    if (!$(e.target).is('#author_search')) {
-      document.getElementById('author_search_datalist').style.display = "none";
-    }
-  });
  };
 
 
@@ -184,7 +193,6 @@ var getFileName = function(fullPath) {
 };
 
 
-// make a function called copyToClipboard that takes one argument, text and copies it to the clipboard
 function copy_2_clipboard(that){
   var inp =document.createElement('input');
   document.body.appendChild(inp)

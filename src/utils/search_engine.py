@@ -6,8 +6,7 @@ def author_search_in_db(conn, keyword):
     if keyword != '' and keyword != ' ':
         try:
             cursor = conn.cursor()
-            # case insensitive search
-            cursor.execute("select *  FROM authors WHERE author LIKE ? COLLATE NOCASE", (f"%{keyword}%",))
+            cursor.execute("select *  FROM authors WHERE author LIKE ?", (f"%{keyword}%",))
             result = cursor.fetchall()
         except:
             result = None
@@ -34,7 +33,7 @@ def text_search_in_db(conn, keyword):
     if keyword != '' and keyword != ' ':
         try:
             cursor = conn.cursor()
-            cursor.execute("select *  FROM experiments WHERE extra_txt LIKE ? COLLATE NOCASE", (f"%{keyword}%",))
+            cursor.execute("select *  FROM experiments WHERE extra_txt LIKE ?", (f"%{keyword}%",))
             result = cursor.fetchall()
         except:
             result = None
