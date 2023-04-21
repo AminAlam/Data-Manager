@@ -66,9 +66,6 @@
 
                     {% if "&" in condition_single[0] %}
                       {% set param_name = condition_single[0].split("&")[0] %}
-                      {% set min_value = condition_single[0].split("&")[1] %}
-                      {% set step_value = condition_single[0].split("&")[2] %}
-                      {% set max_value = condition_single[0].split("&")[3] %}
 
                       {% if condition_single|length == 2 %}
                         {% set param_value = "0" %}
@@ -81,7 +78,7 @@
                           <label class="form-check-label" for="PARAM&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}">
                             {{param_name}}
                           </label>
-                          <input type="number" required="required" min={{min_value}} step={{step_value}} max={{max_value}} name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" value={{param_value}}>
+                          <input type="text" required="required" name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" value={{param_value}} style="width: 50%;">
                       </div>
 
                     {% else %}
