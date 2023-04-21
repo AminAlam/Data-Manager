@@ -51,7 +51,9 @@ class WebApp():
         self.app.config['DATABASE_FOLDER'] = os.path.join(self.parent_parent_path ,'database')
         self.app.config['UPLOAD_FOLDER'] = os.path.join(self.parent_parent_path ,'database' ,'uploaded_files')
         self.app.config['FAMILY_TREE_FOLDER'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'family_tree')
-        self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'info.json')
+        self.app.config['CONDITIONS_JSON_FOLDER'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions')
+        self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'default.json')
+        self.app.config['CONDITIONS_JSON_DEFAULT'] = 'default.json'
         self.app.config['TEMPLATES_FOLDER'] = os.path.join(self.parent_parent_path, 'web', 'templates')
         self.app.session_db = SQLAlchemy()
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
@@ -282,8 +284,9 @@ class WebApp():
         @security.login_required
         def insert_experiment():
             conditions_list = utils.list_user_conditoins_templates(self.db_configs.conn, self.app.config, flask.session)
+            methods_list = utils.get_methods_list(self.app.config)
             today_date = dt.datetime.now().strftime("%Y-%m-%d")
-            return flask.render_template('insert_experiment.html', conditions_list=conditions_list, today_date=today_date)
+            return flask.render_template('insert_experiment.html', conditions_list=conditions_list, today_date=today_date, methods_list=methods_list)
 
         @app.route('/insert_experiment_to_db', methods=['GET', 'POST'])
         @security.login_required
@@ -427,7 +430,6 @@ class WebApp():
             flask.flash(message)
             return flask.redirect(flask.url_for('index'))
 
-
         @app.route("/experiment/<int:id>/delete_experiment", methods=["POST", "GET"])
         @security.login_required
         @self.logger
@@ -451,7 +453,6 @@ class WebApp():
             flask.flash(message)
             return flask.redirect(flask.url_for('index'))
         
-
         @app.route("/protocols", methods=["POST", "GET"])
         @security.login_required
         def protocols():
@@ -464,7 +465,6 @@ class WebApp():
 
             protocols_file_list = List
             return flask.render_template('protocols.html', Files=protocols_file_list)
-
 
         @app.route("/conditions_templates", methods=["POST", "GET"])
         @security.login_required
@@ -486,7 +486,6 @@ class WebApp():
 
             flask.flash(message)
             return flask.redirect(flask.url_for('conditions_templates'))
-
 
         @app.route("/profile", methods=["POST", "GET"])
         @security.login_required
@@ -531,12 +530,13 @@ class WebApp():
                 cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'protocols')
                 return flask.send_from_directory(cwd, path, as_attachment=True)
 
-        @app.route('/get_conditoin_by_templatename', methods=["POST", "GET"])
+        @app.route('/get_conditoin_by_templatename_methodname', methods=["POST", "GET"])
         @security.login_required
-        def get_conditoin_by_templatename():
+        def get_conditoin_by_templatename_methodname():
             username = flask.session['username']
             template_name = flask.request.form.get("template_name")
-            condition_html = utils.get_conditions_by_template_name(self.db_configs.conn, app.config, username, template_name)
+            method_name = flask.request.form.get("method_name")
+            condition_html = utils.get_conditions_by_template_and_method(self.db_configs.conn, app.config, username, template_name, method_name)
             return condition_html
 
         @app.route('/experiment_report_maker/<int:id>', methods=["POST", "GET"])
@@ -567,7 +567,7 @@ class WebApp():
                 if len(experiments_ids) == 0:
                     flask.flash('No experiments were selected')
                     return flask.redirect(flask.request.referrer)
-                        
+
                 if action == 'bulk_report':
                     cwd = os.getcwd()
                     cwd = os.path.join(cwd, app.config['DATABASE_FOLDER'], 'reports')
