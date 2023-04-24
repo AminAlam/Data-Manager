@@ -6,7 +6,7 @@
 {% if conditoin_no is not defined %}
   {% set conditoin_no = 0 %}
 {% endif %}
-  
+
   <div class="form-group col-md-12" style="margin-top: 1rem;border-style: groove;border-color: white;border-top: medium;border-right: none;">
 
     <nav>
@@ -68,7 +68,7 @@
                       {% set param_name = condition_single[0].split("&")[0] %}
 
                       {% if condition_single|length == 2 %}
-                        {% set param_value = "0" %}
+                        {% set param_value = "None" %}
                       {% elif condition_single|length == 3 %}
                         {% set param_value = condition_single[2] %}
                       {% endif %}

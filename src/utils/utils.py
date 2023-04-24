@@ -137,7 +137,7 @@ def modify_conditions_json(conditions, target_conditions):
     for condition in conditions.keys():
         for condition_nested in conditions[condition].keys():
             for indx, single_condition in enumerate(conditions[condition][condition_nested]):
-                if len(single_condition.split('&')) == 4:
+                if len(single_condition.split('&')) == 2:
                     param_name = single_condition.split("&")[0]
                     if type(target_conditions) == str:
                         target_conditions_list = target_conditions.split(',')
