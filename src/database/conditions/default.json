@@ -12,7 +12,7 @@
     },
 
     "Age/Sex":{
-        "Age":["Embryonic", "Postnatal", "Years&0&1&10" ,"Months&0&1&12" ,"Days&0&1&1000", "Hours&0&1&24"],
+        "Age":["Embryonic", "Postnatal", "Years&PARAM" ,"Months&PARAM" ,"Days&PARAM", "Hours&PARAM"],
         "Sex":["Male", "Female", "Unknown", "Hermaprodite"]
     },
     
@@ -27,8 +27,8 @@
         "Drug":["Ketamine-xylazine-acepromacine", "Buprenorphine", "Butorphanol", "Carprofen", "Control Isoflurane", "Control Saline", "Fentanyl", "Flunixin", "Isoflurane", "Ketamine Xylazine", "Lidocaine", "Meloxicam", "Metamizol", "Ibuprofen", "Poly IC", "Tetrodotoxin", "Lipopolysaccharide", "Macrophage Colony Stimulating Factor", "Brain Derived Neurotrophic Factor", "Interleukin 34", "PLX5622 (in food)"],
         "Surgery":["Optic Nerve Crush"],
         "Virus":["AAV2-EF1-GCAMP6s", "AAV2-7m8-EF1-GCAMP6s", "AAV2-hSYN-GCAMP6f"],
-        "Concentration":["ml&0&1&1000" ,"microliter&0&1&1000", "kg&0&1&1000", "gram&0&1&1000"],
-        "Length of treatment":["Months&0&1&12" ,"Days&0&1&1000", "Hours&0&1&24", "Minutes&0&1&60"]
+        "Concentration":["ml&PARAM" ,"microliter&PARAM", "kg&PARAM", "gram&PARAM"],
+        "Length of treatment":["Months&PARAM" ,"Days&PARAM", "Hours&PARAM", "Minutes&PARAM"]
     },
     
     "Primary Antibody":{
