@@ -201,7 +201,6 @@ def upload_files(app_config, hash_id, Files):
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
     for file in Files:
-        print(Files)
         if file.filename != '':
             file.save(os.path.join(folder_path, file.filename))
 

@@ -68,7 +68,7 @@
                       {% set param_name = condition_single[0].split("&")[0] %}
 
                       {% if condition_single|length == 2 %}
-                        {% set param_value = "None" %}
+                        {% set param_value = "-" %}
                       {% elif condition_single|length == 3 %}
                         {% set param_value = condition_single[2] %}
                       {% endif %}
@@ -78,7 +78,11 @@
                           <label class="form-check-label" for="PARAM&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}">
                             {{param_name}}
                           </label>
-                          <input type="text" required="required" name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" value={{param_value}} style="width: 50%;">
+                          {% if condition_single|length == 2 %}
+                            <input type="text" name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" style="width: 50%;">
+                          {% elif condition_single|length == 3 %}
+                            <input type="text" name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" value={{condition_single[2]}} style="width: 50%;">
+                          {% endif %}
                       </div>
 
                     {% else %}

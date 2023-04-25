@@ -100,6 +100,8 @@ def filter_experiments(conn, post_request_form):
         if conditions != '':
             conditions = conditions.split(',')
             for condition in conditions:
+                if len(condition.split('&')) == 5:
+                    condition = '&'.join(condition.split('&')[:-1])
                 if condition != '':
                     sql_command += 'conditions like ? AND '
                     rows.append(f'%{condition}%')
