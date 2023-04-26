@@ -12,7 +12,7 @@
     },
 
     "Age/Sex":{
-        "Age":["Embryonic", "Postnatal", "Years&PARAM" ,"Months&PARAM" ,"Days&PARAM", "Hours&PARAM"],
+        "Age":["Embryonic", "Postnatal", "Age&PARAM"],
         "Sex":["Male", "Female", "Unknown", "Hermaprodite"]
     },
     
@@ -24,11 +24,9 @@
     },
 
     "Treatment":{
-        "Drug":["Ketamine-xylazine-acepromacine", "Buprenorphine", "Butorphanol", "Carprofen", "Control Isoflurane", "Control Saline", "Fentanyl", "Flunixin", "Isoflurane", "Ketamine Xylazine", "Lidocaine", "Meloxicam", "Metamizol", "Ibuprofen", "Poly IC", "Tetrodotoxin", "Lipopolysaccharide", "Macrophage Colony Stimulating Factor", "Brain Derived Neurotrophic Factor", "Interleukin 34", "PLX5622 (in food)"],
+        "Drug":["Ketamine-xylazine-acepromacine&PARAM", "Buprenorphine&PARAM", "Butorphanol&PARAM", "Carprofen&PARAM", "Control Isoflurane&PARAM", "Control Saline&PARAM", "Fentanyl&PARAM", "Flunixin&PARAM", "Isoflurane&PARAM", "Ketamine Xylazine&PARAM", "Lidocaine&PARAM", "Meloxicam&PARAM", "Metamizol&PARAM", "Ibuprofen&PARAM", "Poly IC&PARAM", "Tetrodotoxin&PARAM", "Lipopolysaccharide&PARAM", "Macrophage Colony Stimulating Factor&PARAM", "Brain Derived Neurotrophic Factor&PARAM", "Interleukin 34&PARAM", "PLX5622 (in food)&PARAM"],
         "Surgery":["Optic Nerve Crush"],
-        "Virus":["AAV2-EF1-GCAMP6s", "AAV2-7m8-EF1-GCAMP6s", "AAV2-hSYN-GCAMP6f"],
-        "Concentration":["ml&PARAM" ,"microliter&PARAM", "kg&PARAM", "gram&PARAM"],
-        "Length of treatment":["Months&PARAM" ,"Days&PARAM", "Hours&PARAM", "Minutes&PARAM"]
+        "Virus":["AAV2-EF1-GCAMP6s", "AAV2-7m8-EF1-GCAMP6s", "AAV2-hSYN-GCAMP6f"]
     },
     
     "Primary Antibody":{
