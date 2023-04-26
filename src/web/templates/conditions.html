@@ -79,9 +79,9 @@
                             {{param_name}}
                           </label>
                           {% if condition_single|length == 2 %}
-                            <input type="text" name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" style="width: 50%;">
+                            <input type="text" name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" style="width: 50%;font-size: small;" placeholder="Details...">
                           {% elif condition_single|length == 3 %}
-                            <input type="text" name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" value={{condition_single[2]}} style="width: 50%;">
+                            <input type="text" name="PARAMVALUE&condition&{{template_name}}&{{condition}}&{{condition_nested}}&{{param_name}}" value={{condition_single[2]}} style="width: 50%;font-size: small;" placeholder="Details...">
                           {% endif %}
                       </div>
 
