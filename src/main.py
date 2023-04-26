@@ -30,8 +30,9 @@ utils.apply_updates2db(db_configs)
 @click.option('--port', default=8080, help='Port to run the server on')
 @click.option('--static_folder', default='web', help='Folder with static files')
 @click.option('--recaptcha_bool', default=True, help='Enable recaptcha')
-def setup_all(server_ip, port, static_folder, recaptcha_bool):
-    webapp = api.WebApp(db_configs, server_ip, port, static_folder, recaptcha_bool)
+@click.option('--num_threads', default=6, help='Number of threads to run the server on')
+def setup_all(server_ip, port, static_folder, recaptcha_bool, num_threads):
+    webapp = api.WebApp(db_configs, server_ip, port, static_folder, recaptcha_bool, num_threads)
     utils.init_directories(webapp.app.config['DATABASE_FOLDER'])
     webapp.run()
 

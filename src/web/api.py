@@ -40,9 +40,10 @@ def add_admin(db_configs, app_configs):
         utils.init_user(app_configs, db_configs, 'admin')
 
 class WebApp():
-    def __init__(self, db_configs, ip, port, static_folder, recaptcha_bool): 
+    def __init__(self, db_configs, ip, port, static_folder, recaptcha_bool, num_threads): 
         self.ip = ip
         self.port = port
+        self.num_threads = num_threads
         self.db_configs = db_configs
         self.app = flask.Flask(__name__, static_folder=static_folder)
         self.parent_path = str(pathlib.Path(__file__).parent.absolute())
@@ -674,7 +675,7 @@ class WebApp():
             return flask.url_for('editor')
 
             
-        t = Thread(target=waitress.serve, args=([self.app]), kwargs={'host':self.ip, 'port':self.port})
+        t = Thread(target=waitress.serve, args=([self.app]), kwargs={'host':self.ip, 'port':self.port, 'threads':self.num_threads})
         t.start()        
 
 
