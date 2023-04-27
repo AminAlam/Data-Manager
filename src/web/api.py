@@ -508,7 +508,10 @@ class WebApp():
 
         @app.route("/<path:filename>")
         def static_dir(filename):
-            allowed_files = [os.path.join('static', 'js', 'JavaScript.js'), os.path.join('static', 'css', 'style.css'), os.path.join('static', 'css', 'bootstrap.min.css')]
+            allowed_files = [os.path.join('static', 'js', 'JavaScript.js'), 
+                             os.path.join('static', 'css', 'style.css'), 
+                             os.path.join('static', 'css', 'bootstrap.min.css'),
+                             os.path.join('static', 'assets', 'loading.gif'),]
             if filename in allowed_files:
                 return flask.send_from_directory(app.root_path, filename)
             else:
@@ -535,6 +538,7 @@ class WebApp():
         @app.route('/get_conditoin_by_templatename_methodname', methods=["POST", "GET"])
         @security.login_required
         def get_conditoin_by_templatename_methodname():
+
             username = flask.session['username']
             template_name = flask.request.form.get("template_name")
             method_name = flask.request.form.get("method_name")
