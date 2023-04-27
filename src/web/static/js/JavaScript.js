@@ -45,6 +45,14 @@ function put_text(id_parent, id, txt) {
 
  function replace_condition(id, template_name, method_name) {
 
+    // load /static/loading.gif while the ajax request is being processed
+
+    $(id).empty();
+
+    var condition_html = "<img src='/static/assets/loading.gif' alt='loading' style='margin-left: auto; margin-right: auto; display: block;'>";
+    $(id).html(condition_html);
+
+    // make an ajax request to the server to get the condition html
       $.ajax({
           method:"post",
           url:"/get_conditoin_by_templatename_methodname",
