@@ -406,7 +406,8 @@ class WebApp():
             experiment = utils.get_experiment_by_id(self.db_configs.conn, id)
             author = experiment[5]
             usename = flask.session['username']
-            if author != usename:
+            admin = flask.session['admin']
+            if author != usename and not admin:
                 flask.flash('You are not allowed to edit this experiment')
                 return flask.redirect(flask.url_for('experiment', id=id))
 
@@ -677,6 +678,3 @@ class WebApp():
             
         t = Thread(target=waitress.serve, args=([self.app]), kwargs={'host':self.ip, 'port':self.port, 'threads':self.num_threads})
         t.start()        
-
-
-                
