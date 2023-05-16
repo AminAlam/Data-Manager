@@ -96,10 +96,24 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
 
 def delete_experiment_from_db(conn, id):
     try:
+        hash_id = utils.get_hash_id_by_experiment_id(conn, id)
         cursor = conn.cursor()
         cursor.execute('delete from experiments where id=?', (id,))
         conn.commit()
+        remove_deleted_experiment_as_parent(conn, hash_id)
         delete_author(conn, id)
+        success_bool = 1
+    except Error as e:
+        utils.error_log(e)
+        success_bool = 0
+    return success_bool
+
+
+def remove_deleted_experiment_as_parent(conn, hash_id):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("update experiments set experiment_parent='' where experiment_parent=?", (hash_id,))
+        conn.commit()
         success_bool = 1
     except Error as e:
         utils.error_log(e)
