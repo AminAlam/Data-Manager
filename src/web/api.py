@@ -56,9 +56,6 @@ class WebApp():
         self.app.config['CONDITIONS_JSON'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions', 'default.json')
         self.app.config['CONDITIONS_JSON_DEFAULT'] = 'default.json'
         self.app.config['TEMPLATES_FOLDER'] = os.path.join(self.parent_parent_path, 'web', 'templates')
-        self.app.session_db = SQLAlchemy()
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
-        self.app.config['SESSION_TYPE'] = 'sqlalchemy'
         self.app.config['CREDS_FILE_PATH'] = os.path.join(self.app.root_path, 'creds.json')
         self.app.config['CREDS_FILE'] = utils.load_creds(self.app.config['CREDS_FILE_PATH'])
         self.app.config['SECRET_KEY'] = self.app.config['CREDS_FILE']['SECRET_KEY']
@@ -71,8 +68,6 @@ class WebApp():
 
         self.ChatRoom = chatroom.ChatRoom(self.db_configs)
 
-        with self.app.app_context():
-            Session(self.app)
         add_admin(self.db_configs, self.app.config)
 
         print(f'App initialized. Server running on http://{self.ip}:{self.port}')
