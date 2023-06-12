@@ -133,7 +133,6 @@ def read_json_file(json_file):
     return data    
 
 def modify_conditions_json(conditions, target_conditions):
-
     for condition in conditions.keys():
         for condition_nested in conditions[condition].keys():
             for indx, single_condition in enumerate(conditions[condition][condition_nested]):
