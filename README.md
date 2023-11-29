@@ -32,6 +32,7 @@ Amin@Maximus:./Data-Manager$ bash requirements_linux.sh
 ```
 
 ## Usage
+Please take a look at [here](https://github.com/AminAlam/Data-Manager/wiki) for documentations.
 
 After installing the dependencies, you can run the program via following command:
 ```console
