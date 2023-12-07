@@ -41,3 +41,7 @@ Amin@Maximus:./Data-Manager$ python3 src/main.py --server_ip localhost --port 80
 ```
 You can access the app via the following url http://localhost:8080. It is also possible to run the program on a different PORT (Please make sure that PORT is open in your firewall settings). 
 The default username and password are *admin* and *admin* (You can change this password in the <em>profile</em> tab).
+
+## Documentation
+
+Please take a look at [here](https://github.com/AminAlam/Data-Manager/wiki) for the full documentation.
