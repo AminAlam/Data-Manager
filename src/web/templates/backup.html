@@ -1,37 +1,32 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
- <title>Backup</title>
- <h1>Backup</h1>
- <div class="container border rounded addpage">
-    <h4>Make a backup</h4>
-    <form action="/backup" method=post enctype=multipart/form-data>
-
-        <div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
-            <div class="col-md-4">
-                <button class="btn btn-primary" type=submit Course>Make backup</button>
-            </div>
+<div class="container">
+    <h1 class="mb-4">Backup</h1>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">Make a backup</h4>
         </div>
-    </form>
-
-    <h4>Restore database from backup file</h4>
-    <form action="/restore_db" method=post enctype=multipart/form-data>
-
-        <div class="form-group col-md-12">
-            <input type="file" class="form-control" id="Files_id" name="Files" aria-describedby="Files">
-            <label class="custom-file-label" for="Files_id" id="Files_name_id" >Backup File</label>
+        <div class="card-body p-4">
+            <form action="/backup" method="post" enctype="multipart/form-data">
+                <button class="btn btn-primary" type="submit">Make backup</button>
+            </form>
         </div>
+    </div>
 
-        <div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
-            <div class="col-md-4">
-                <button class="btn btn-primary" type=submit Course>Restore database</button>
-            </div>
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">Restore database from backup file</h4>
         </div>
-    </form>
-
+        <div class="card-body p-4">
+            <form action="/restore_db" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="Files_id" class="form-label">Backup File</label>
+                    <input type="file" class="form-control" id="Files_id" name="Files" aria-describedby="Files">
+                </div>
+                <button class="btn btn-primary" type="submit">Restore database</button>
+            </form>
+        </div>
+    </div>
 </div>
-    
-
- 
- {% endblock %}
+{% endblock %}

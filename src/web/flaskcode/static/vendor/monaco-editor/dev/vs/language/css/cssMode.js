@@ -7251,7 +7251,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "text-size-adjust",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | auto | <percentage>",
                 "browsers": [
                     "E12",
@@ -7544,7 +7544,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "description": "Equivalent to '100%' for the horizontal position if one or two values are given, otherwise specifies the right edge as the origin for the next offset."
                     }
                 ],
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ center | [ left | right | x-start | x-end ]? <length-percentage>? ]#",
                 "references": [
                     {
@@ -7574,7 +7574,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "description": "Equivalent to '0%' for the vertical position if one or two values are given, otherwise specifies the top edge as the origin for the next offset."
                     }
                 ],
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ center | [ top | bottom | y-start | y-end ]? <length-percentage>? ]#",
                 "references": [
                     {
@@ -8276,7 +8276,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "font-display",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ auto | block | swap | fallback | optional ]",
                 "description": "The font-display descriptor determines how a font face is displayed based on whether and when it is downloaded and ready to use."
             },
@@ -8634,7 +8634,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "description": "Turns on paint containment for the element."
                     }
                 ],
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | strict | content | [ size || layout || style || paint ]",
                 "references": [
                     {
@@ -9234,7 +9234,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "text-decoration-skip",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | [ objects || [ spaces | [ leading-spaces || trailing-spaces ] ] || edges || box-decoration ]",
                 "browsers": [
                     "S12.1",
@@ -9905,7 +9905,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "overflow-anchor",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "auto | none",
                 "browsers": [
                     "FF66",
@@ -10100,7 +10100,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "backdrop-filter",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | <filter-function-list>",
                 "browsers": [
                     "E17",
@@ -10677,7 +10677,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "text-decoration-skip-ink",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "auto | none",
                 "browsers": [
                     "FF70",
@@ -11630,7 +11630,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "name": "stroke"
                     }
                 ],
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "normal | [ fill || stroke || markers ]",
                 "references": [
                     {
@@ -11774,7 +11774,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "offset-distance",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "<length-percentage>",
                 "browsers": [
                     "FF69",
@@ -11820,7 +11820,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "offset-path",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | ray( [ <angle> && <size>? && contain? ] ) | <path()> | <url> | [ <basic-shape> || <geometry-box> ]",
                 "browsers": [
                     "FF63",
@@ -11837,7 +11837,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "offset-rotate",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ auto | reverse ] || <angle>",
                 "browsers": [
                     "FF69",
@@ -11866,7 +11866,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "description": "No limit on the height of the box."
                     }
                 ],
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "<'max-width'>",
                 "references": [
                     {
@@ -11894,7 +11894,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "description": "No limit on the width of the box."
                     }
                 ],
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "<'max-width'>",
                 "references": [
                     {
@@ -12224,7 +12224,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "offset",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ <'offset-position'>? [ <'offset-path'> [ <'offset-distance'> || <'offset-rotate'> ]? ]? ]! [ / <'offset-anchor'> ]?",
                 "browsers": [
                     "FF71",
@@ -12597,7 +12597,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "offset-anchor",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "auto | <position>",
                 "browsers": [
                     "FF70",
@@ -12613,7 +12613,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "offset-position",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "auto | <position>",
                 "description": "Specifies the initial position of the offset path. If position is specified with static, offset-position would be ignored."
             },
@@ -12745,7 +12745,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "image-resolution",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ from-image || <resolution> ] && snap?",
                 "description": "The image-resolution property specifies the intrinsic resolution of all raster images used in or on the element. It affects both content images (e.g. replaced elements and generated content) and decorative images (such as background-image). The intrinsic resolution of an image is used to determine the image’s intrinsic dimensions."
             },
@@ -17711,7 +17711,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "description": "As for 'space-between' except that there exists an extra justification opportunities whose space is distributed half before and half after the ruby content."
                     }
                 ],
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "start | center | space-between | space-around",
                 "references": [
                     {
@@ -17776,7 +17776,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "description": "The ruby text appears on the right of the base. Unlike 'before' and 'after', this value is not relative to the text flow direction."
                     }
                 ],
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "over | under | inter-character",
                 "references": [
                     {
@@ -20100,7 +20100,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
                         "url": "https://developer.mozilla.org/docs/Web/CSS/-moz-context-properties"
                     }
                 ],
-                "description": "If you reference an SVG image in a webpage (such as with the <img> element or as a background image), the SVG image can coordinate with the embedding element (its context) to have the image adopt property values set on the embedding element. To do this the embedding element needs to list the properties that are to be made available to the image by listing them as values of the -moz-context-properties property, and the image needs to opt in to using those properties by using values such as the context-fill value.\n\nThis feature is available since Firefox 55, but is only currently supported with SVG images loaded via chrome:// or resource:// URLs. To experiment with the feature in SVG on the Web it is necessary to set the svg.context-properties.content.enabled pref to true."
+                "description": "If you reference an SVG image in a webpage (such as with the <img> element or as a background image), the SVG image can coordinate with the embedding element (its context) to have the image adopt property values set on the embedding element. To do this the embedding element needs to list the properties that are to be made available to the image by listing them as values of the -moz-context-properties property, and the image needs to opt in to using those properties by using values such as the context-fill value.\n\nThis feature is available since Firefox 55, but is only currently supported with SVG images loaded via chrome:// or resource:// URLs. To entry with the feature in SVG on the Web it is necessary to set the svg.context-properties.content.enabled pref to true."
             },
             {
                 "name": "-moz-float-edge",
@@ -20422,7 +20422,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "appearance",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | auto | button | textfield | <compat>",
                 "browsers": [
                     "E12",
@@ -20441,7 +20441,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "aspect-ratio",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "auto | <ratio>",
                 "description": ""
             },
@@ -20708,7 +20708,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "initial-letter",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "normal | [ <number> <integer>? ]",
                 "browsers": [
                     "S9"
@@ -20723,7 +20723,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "initial-letter-align",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ auto | alphabetic | hanging | ideographic ]",
                 "references": [
                     {
@@ -20735,13 +20735,13 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "line-clamp",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | <integer>",
                 "description": "The line-clamp property allows limiting the contents of a block container to the specified number of lines; remaining content is fragmented away and neither rendered nor measured. Optionally, it also allows inserting content into the last line box to indicate the continuity of truncated/interrupted content."
             },
             {
                 "name": "line-height-step",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "<length>",
                 "browsers": [
                     "C60",
@@ -20757,43 +20757,43 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "mask-border",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "<'mask-border-source'> || <'mask-border-slice'> [ / <'mask-border-width'>? [ / <'mask-border-outset'> ]? ]? || <'mask-border-repeat'> || <'mask-border-mode'>",
                 "description": "The mask-border CSS property lets you create a mask along the edge of an element's border.\n\nThis property is a shorthand for mask-border-source, mask-border-slice, mask-border-width, mask-border-outset, mask-border-repeat, and mask-border-mode. As with all shorthand properties, any omitted sub-values will be set to their initial value."
             },
             {
                 "name": "mask-border-mode",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "luminance | alpha",
                 "description": "The mask-border-mode CSS property specifies the blending mode used in a mask border."
             },
             {
                 "name": "mask-border-outset",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ <length> | <number> ]{1,4}",
                 "description": "The mask-border-outset CSS property specifies the distance by which an element's mask border is set out from its border box."
             },
             {
                 "name": "mask-border-repeat",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ stretch | repeat | round | space ]{1,2}",
                 "description": "The mask-border-repeat CSS property defines how the edge regions of a source image are adjusted to fit the dimensions of an element's mask border."
             },
             {
                 "name": "mask-border-slice",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "<number-percentage>{1,4} fill?",
                 "description": "The mask-border-slice CSS property divides the image specified by mask-border-source into regions. These regions are used to form the components of an element's mask border."
             },
             {
                 "name": "mask-border-source",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | <image>",
                 "description": "The mask-border-source CSS property specifies the source image used to create an element's mask border.\n\nThe mask-border-slice property is used to divide the source image into regions, which are then dynamically applied to the final mask border."
             },
             {
                 "name": "mask-border-width",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "[ <length-percentage> | <number> | auto ]{1,4}",
                 "description": "The mask-border-width CSS property specifies the width of an element's mask border."
             },
@@ -20831,13 +20831,13 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "max-lines",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | <integer>",
                 "description": "The max-liens property forces a break after a set number of lines"
             },
             {
                 "name": "overflow-block",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "visible | hidden | clip | scroll | auto",
                 "browsers": [
                     "FF69"
@@ -20867,7 +20867,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "overflow-inline",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "visible | hidden | clip | scroll | auto",
                 "browsers": [
                     "FF69"
@@ -20936,7 +20936,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "ruby-merge",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "separate | collapse | auto",
                 "description": "This property controls how ruby annotation boxes should be rendered when there are more than one in a ruby container box: whether each pair should be kept separate, the annotations should be collapsed and rendered as a group, or the separation should be determined based on the space available."
             },
@@ -21287,13 +21287,13 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "bleed",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "auto | <length>",
                 "description": "The bleed CSS at-rule descriptor, used with the @page at-rule, specifies the extent of the page bleed area outside the page box. This property only has effect if crop marks are enabled using the marks property."
             },
             {
                 "name": "marks",
-                "status": "experimental",
+                "status": "entryal",
                 "syntax": "none | [ crop || cross ]",
                 "description": "The marks CSS at-rule descriptor, used with the @page at-rule, adds crop and/or cross marks to the presentation of the document. Crop marks indicate where the page should be cut. Cross marks are used to align sheets."
             }
@@ -22276,7 +22276,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": ":blank",
-                "status": "experimental",
+                "status": "entryal",
                 "references": [
                     {
                         "name": "MDN Reference",
@@ -22287,7 +22287,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": ":defined",
-                "status": "experimental",
+                "status": "entryal",
                 "browsers": [
                     "FF63",
                     "S10",
@@ -22317,7 +22317,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": ":focus-visible",
-                "status": "experimental",
+                "status": "entryal",
                 "browsers": [
                     "FF4",
                     "C67",
@@ -22333,7 +22333,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": ":focus-within",
-                "status": "experimental",
+                "status": "entryal",
                 "browsers": [
                     "FF52",
                     "S10.1",
@@ -22350,7 +22350,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": ":has",
-                "status": "experimental",
+                "status": "entryal",
                 "references": [
                     {
                         "name": "MDN Reference",
@@ -22361,7 +22361,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": ":is",
-                "status": "experimental",
+                "status": "entryal",
                 "browsers": [
                     "FF4",
                     "S9",
@@ -22378,7 +22378,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": ":placeholder-shown",
-                "status": "experimental",
+                "status": "entryal",
                 "browsers": [
                     "FF51",
                     "S9",
@@ -22396,7 +22396,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": ":where",
-                "status": "experimental",
+                "status": "entryal",
                 "description": "The :where() CSS pseudo-class function takes a selector list as its argument, and selects any element that can be selected by one of the selectors in that list."
             }
         ],
@@ -23147,7 +23147,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "::grammar-error",
-                "status": "experimental",
+                "status": "entryal",
                 "references": [
                     {
                         "name": "MDN Reference",
@@ -23172,7 +23172,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "::part",
-                "status": "experimental",
+                "status": "entryal",
                 "browsers": [
                     "FF69",
                     "C73",
@@ -23221,7 +23221,7 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
             },
             {
                 "name": "::spelling-error",
-                "status": "experimental",
+                "status": "entryal",
                 "references": [
                     {
                         "name": "MDN Reference",
@@ -23436,8 +23436,8 @@ define('vscode-nls', ['vscode-nls/vscode-nls'], function (main) { return main; }
     };
     function getEntryStatus(status) {
         switch (status) {
-            case 'experimental':
-                return '⚠️ Property is experimental. Be cautious when using it.️\n\n';
+            case 'entryal':
+                return '⚠️ Property is entryal. Be cautious when using it.️\n\n';
             case 'nonstandard':
                 return '🚨️ Property is nonstandard. Avoid using it.\n\n';
             case 'obsolete':
@@ -25087,7 +25087,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
             return this.finish(node);
         };
         Parser.prototype._parseDocument = function () {
-            // -moz-document is experimental but has been pushed to css4
+            // -moz-document is entryal but has been pushed to css4
             if (!this.peekKeyword('@-moz-document')) {
                 return null;
             }

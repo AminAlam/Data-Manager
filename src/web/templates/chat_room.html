@@ -12,15 +12,15 @@
                 {%for user in users%}
                     {% if loop.index == 1 %}
                         {%if user['username'] == session['username']%}
-                            <button class="nav-link list-group-item list-group-item-action border-0 active" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="true">Saved Messages</button>
+                            <button class="nav-link active" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="true">Saved Messages</button>
                             {% else %}
-                            <button class="nav-link list-group-item list-group-item-action border-0 active" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="true">{{user['username']}}</button>
+                            <button class="nav-link active" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="true">{{user['username']}}</button>
                         {% endif %}
                     {% else %}
                         {%if user['username'] == session['username']%}
-                        <button class="nav-link list-group-item list-group-item-action border-0" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="false">Saved Messages</button>
+                        <button class="nav-link" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="false">Saved Messages</button>
                         {% else %}
-                        <button class="nav-link list-group-item list-group-item-action border-0" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="false">{{user['username']}}</button>
+                        <button class="nav-link" id="v-pills-{{loop.index}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{loop.index}}" type="button" role="tab" aria-controls="v-pills-{{loop.index}}" aria-selected="false">{{user['username']}}</button>
                         {% endif %}
                     {% endif %}
                 {%endfor%}

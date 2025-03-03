@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Add New Entry</h1>
+    <span class="badge badge-pill badge-primary px-3 py-2">New Entry</span>
+  </div>
+
+  <div class="row">
+    <!-- Main Content Column -->
+    <div class="col-lg-12">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+          <form action="/insert_entry_to_db" method="post" enctype="multipart/form-data">
+            
+            <!-- Basic Information Section -->
+            <div class="card mb-4 border-0 bg-light">
+              <div class="card-header bg-light border-bottom-0">
+                <h5 class="mb-0"><i class="fa fa-info-circle mr-2"></i>Basic Information</h5>
+              </div>
+              <div class="card-body pt-0">
+                <div class="row">
+                  <div class="col-md-12 mb-3">
+                    <label for="entry_name" class="form-label">Title</label>
+                    <input class="form-control form-control-lg" name="entry_name" required>
+                  </div>
+                  
+                  <div class="col-md-3 mb-3">
+                    <label for="Author" class="form-label">Author</label>
+                    <p class="form-control bg-white" name="Author">{{session['username']}}</p>
+                  </div>
+                  
+                  <div class="col-md-3 mb-3">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="date" name="date" 
+                           min="2000-01-01" max="2099-12-31" value="{{today_date}}">
+                  </div>
+                  
+                  <div class="col-md-3 mb-3">
+                    <label for="method" class="form-label">Method</label>
+                    <select class="form-select" name="method" id="method" required>
+                      {% for method in methods_list %}
+                        {% if loop.index == 0 %}
+                          <option selected value="{{method}}">{{method}}</option>
+                        {% else %}
+                          <option value="{{method}}">{{method}}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                  
+                  <div class="col-md-3 mb-3">
+                    <label for="template" class="form-label">Template</label>
+                    <select class="form-select" name="template" id="template" required>
+                      {% for condition_template in conditions_list %}
+                        <option value="{{condition_template[1]}}">{{condition_template[1]}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Tags & Classification Section -->
+            <div class="card mb-4 border-0 bg-light">
+              <div class="card-header bg-light border-bottom-0">
+                <h5 class="mb-0"><i class="fa fa-tags mr-2"></i>Tags & Classification</h5>
+              </div>
+              <div class="card-body pt-0">
+                <div class="row">
+                  <div class="col-md-12 mb-4">
+                    <label for="Tags" class="form-label">>Tags</label>
+                    <div class="position-relative">
+                      <input type="text" class="form-control" id="tags_search" name="Tags" 
+                             autocomplete="off" placeholder="Search for Tags or generate new ones (separated by commas)...">
+                      <div class="dropdown-menu w-100" id="tags_search_datalist" 
+                           style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                  </div>
+                  </div>
+
+                  <div class="col-md-12 mb-3"></div> <!-- Spacer -->
+                  
+                  <div class="col-md-12 mb-3">
+                    <div id="condition_selected">
+                      {% if conditions_list %}
+                        {{conditions_list[0][0]}}
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- References Section -->
+            <div class="card mb-4 border-0 bg-light">
+              <div class="card-header bg-light border-bottom-0">
+                <h5 class="mb-0"><i class="fa fa-link mr-2"></i>References</h5>
+              </div>
+              <div class="card-body pt-0">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="File_Path" class="form-label">File Path</label>
+                    <input class="form-control" name="File_Path">
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label for="parent_entry" class="form-label">Parent Entry</label>
+                    <input class="form-control" name="parent_entry">
+                  </div>
+                  
+                  <div class="col-md-12 mb-3">
+                    <label for="Notes" class="form-label">Notes</label>
+                    <textarea class="form-control" id="Notes" rows="4" name="Notes"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Data Files Section -->
+            <div class="card mb-4 border-0 bg-light">
+              <div class="card-header bg-light border-bottom-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-file me-2"></i>Data Files</h5>
+                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('Files_id').click()">
+                  <i class="bi bi-upload me-1"></i> Upload Files
+                </button>
+                <input type="file" class="d-none" id="Files_id" name="Files" multiple onchange="updateFileLabel(this)">
+              </div>
+              <div class="card-body pt-0">
+                <div id="file-alert" class="alert alert-info">
+                  <i class="bi bi-info-circle me-2"></i>No files selected
+                </div>
+                <div id="selected-files" class="mt-2"></div>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <div>
+                <button class="btn btn-primary me-2" type="submit">
+                  <i class="bi bi-save me-1"></i> Insert Entry
+                </button>
+                <button type="reset" class="btn btn-secondary me-2">
+                  <i class="bi bi-x-circle me-1"></i> Reset Form
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Function to update file label when files are selected
+  function updateFileLabel(input) {
+    const selectedFilesDiv = document.getElementById('selected-files');
+    const alertDiv = document.getElementById('file-alert');
+    
+    if (input.files && input.files.length > 0) {
+      alertDiv.style.display = 'none';
+      selectedFilesDiv.innerHTML = '';
+      
+      for (let i = 0; i < input.files.length; i++) {
+        const file = input.files[i];
+        const fileItem = document.createElement('div');
+        fileItem.className = 'alert alert-secondary d-flex justify-content-between align-items-center mb-2';
+        
+        // Format file size
+        let fileSize;
+        if (file.size > 1024 * 1024) {
+          fileSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+        } else {
+          fileSize = (file.size / 1024).toFixed(2) + ' KB';
+        }
+        
+        fileItem.innerHTML = `
+          <div>
+            <i class="bi bi-file-earmark me-2"></i>${file.name}
+            <span class="text-muted ms-2">(${fileSize})</span>
+          </div>
+        `;
+        selectedFilesDiv.appendChild(fileItem);
+      }
+      
+      console.log(`${input.files.length} files selected`);
+    } else {
+      alertDiv.style.display = 'block';
+      selectedFilesDiv.innerHTML = '';
+      console.log('No files selected');
+    }
+  }
+  
+  // Initialize template selection
+  document.addEventListener('DOMContentLoaded', function() {
+    const templateSelect = document.getElementById('template');
+    if (templateSelect) {
+      templateSelect.addEventListener('change', function() {
+        // This would need to be implemented to update the conditions based on template selection
+        console.log('Template changed to: ' + this.value);
+      });
+    }
+    
+    // Add event listener to file input to ensure it works
+    const fileInput = document.getElementById('Files_id');
+    if (fileInput) {
+      fileInput.addEventListener('change', function() {
+        updateFileLabel(this);
+      });
+    }
+  });
+</script>
+{% endblock %}

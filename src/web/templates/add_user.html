@@ -1,67 +1,68 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-<title>Add User</title>
-<h1>Add new user</h1>
-<div class="container border rounded addpage">
-<form action="/add_user_to_db" method=post enctype=multipart/form-data>
-   <div class="form-row uploadrows">
-       
-
-    <div class="form-group col-md-3 ">
-           <label for="username">*username: </label>
-           <input  class=" dropdown-header" id="username" name="username" autocomplete="off" required>
+<div class="container">
+    <h1 class="mb-4">Add new user</h1>
+    <div class="card shadow-sm mb-5">
+        <div class="card-body p-4">
+            <form action="/add_user_to_db" method="post" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <!-- Username field -->
+                    <div class="col-md-4 mb-3">
+                        <label for="username" class="form-label">Username*</label>
+                        <input type="text" class="form-control" id="username" name="username" autocomplete="off" required>
+                    </div>
+                    
+                    <!-- Password field -->
+                    <div class="col-md-4 mb-3">
+                        <label for="password" class="form-label">Password*</label>
+                        <input type="password" class="form-control" id="password" name="password" autocomplete="off" required>
+                    </div>
+                    
+                    <!-- Repeat password field -->
+                    <div class="col-md-4 mb-3">
+                        <label for="repeat_password" class="form-label">Repeat Password*</label>
+                        <input type="password" class="form-control" id="repeat_password" name="repeat_password" autocomplete="off" required>
+                    </div>
+                    
+                    <!-- Admin selection -->
+                    <div class="col-md-6 mb-3">
+                        <label for="admin" class="form-label">Admin*</label>
+                        <select class="form-select" name="admin" id="admin" required>
+                            <option value="False" selected>No</option>
+                            <option value="True">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Order manager selection -->
+                    <div class="col-md-6 mb-3">
+                        <label for="order_manager" class="form-label">Order Manager*</label>
+                        <select class="form-select" name="order_manager" id="order_manager" required>
+                            <option value="False" selected>No</option>
+                            <option value="True">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Name field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" autocomplete="off">
+                    </div>
+                    
+                    <!-- Email field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" autocomplete="off">
+                    </div>
+                </div>
+                
+                <!-- Submit button -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Add User</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-   
-    <div class="form-group col-md-3 ">
-        <label for="password">*password: </label>
-        <input  class=" dropdown-header" id="password" name="password" autocomplete="off" required type="password">
-    </div>
-    <div class="form-group col-md-3 ">
-        <label for="repeat_password">*repeat password: </label>
-        <input  class=" dropdown-header" id="repeat_password" name="repeat_password" autocomplete="off" required type="password">
-    </div>
-
-    <div class="form-group col-md-3">
-        <label for="emailed">*admin:</label>
-        <select class="form-select" name="admin" id="admin" aria-label="Default select example" required>
-                <option selected="False">No</option>
-                <option value="True">Yes</option>
-        </select>
-    </div>
-
-
-    <div class="form-group col-md-6 ">
-        <label for="password">name: </label>
-        <input  class=" dropdown-header" id="name" name="name" autocomplete="off">
-    </div>
-
-    <div class="form-group col-md-6">
-        <label for="password">email: </label>
-        <input  class=" dropdown-header" id="email" name="email" autocomplete="off">
-    </div>
-
-
-     
-
-
- 
-</div>
-<div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
-
- <div class="col-md-4">
-   <button class="btn btn-primary" type=submit Course> add user</button>
- </div>
-
-</div>
-</div>
-
-
-
-
-</form>
 </div>
 {% endblock %}
 

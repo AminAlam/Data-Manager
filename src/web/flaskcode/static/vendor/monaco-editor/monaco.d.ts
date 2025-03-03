@@ -6253,7 +6253,7 @@ declare namespace monaco.languages.typescript {
         downlevelIteration?: boolean;
         emitBOM?: boolean;
         emitDecoratorMetadata?: boolean;
-        experimentalDecorators?: boolean;
+        entryalDecorators?: boolean;
         forceConsistentCasingInFileNames?: boolean;
         importHelpers?: boolean;
         inlineSourceMap?: boolean;

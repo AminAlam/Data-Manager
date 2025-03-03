@@ -5,7 +5,7 @@ class database_configs():
         self.dbName = './src/database/db_main.db'
         self.make_conn()
         self.table_lists = [
-            """ CREATE TABLE IF NOT EXISTS experiments (
+            """ CREATE TABLE IF NOT EXISTS entries (
                                         id_hash text NOT NULL,
                                         tags text,
                                         extra_txt text,
@@ -13,8 +13,8 @@ class database_configs():
                                         date DATETIME NOT NULL,
                                         author text NOT NULL,
                                         conditions text,
-                                        experiment_name text,
-                                        experiment_parent text,
+                                        entry_name text,
+                                        entry_parent text,
                                         id integer primary key autoincrement
                                     ); """, 
         """ CREATE TABLE IF NOT EXISTS tags (
@@ -30,9 +30,10 @@ class database_configs():
                                         id integer primary key autoincrement
                                     ); """,
         """ CREATE TABLE IF NOT EXISTS users (
-                                        username text NOT NULL,
-                                        password text NOT NULL,
-                                        admin bool NOT NULL,
+                                        username text NOT NULL unique,
+                                        password text NOT NULL default 'admin',
+                                        admin bool NOT NULL default 0,
+                                        order_manager bool NOT NULL default 0,
                                         name text,
                                         email text,
                                         id integer primary key autoincrement
@@ -57,6 +58,17 @@ class database_configs():
                                         status text NOT NULL,   
                                         error text,
                                         id integer primary key autoincrement
+                                    ); """,
+        """ CREATE TABLE IF NOT EXISTS orders (
+                                        id integer primary key autoincrement,
+                                        order_name text NOT NULL,
+                                        link text,
+                                        quantity integer NOT NULL,
+                                        note text,
+                                        order_assignee text NOT NULL,
+                                        order_author text NOT NULL,
+                                        status text NOT NULL,
+                                        date DATETIME NOT NULL
                                     ); """
         ]
     def make_conn(self):

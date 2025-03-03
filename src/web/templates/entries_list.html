@@ -1,0 +1,188 @@
+<form action="{{ url_for('entries_actions')}}" method=post enctype=multipart/form-data>
+    {% if entries_list is not none %}
+        <div class="table-responsive p-3">
+            <table class="table table-hover table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col" width="5%" class="text-center"><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                        <th scope="col" width="20%" class="text-center">Title</th>
+                        <th scope="col" width="20%" class="text-center">Hash ID</th>
+                        <th scope="col" width="15%" class="text-center">Date</th>
+                        <th scope="col" width="15%" class="text-center">Author</th>
+                        <th scope="col" width="15%" class="text-center">Tags</th>
+                        <th scope="col" width="10%" class="text-center">Conditions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries_list %}
+                        <tr>
+                            <td class="text-center align-middle py-3">
+                                <input class="form-check-input entry-checkbox" type="checkbox" id="Select&{{entry.id}}" name="Select&{{entry.id}}">
+                            </td>
+                            <td class="align-middle py-3">
+                                <a href="{{ url_for('entry', id=entry.id) }}" class="text-decoration-none">
+                                    <span class="fw-bold">{{entry.title}}</span>
+                                </a>
+                            </td>
+                            <td class="align-middle py-3">
+                                <div class="d-flex align-items-center">
+                                    <span class="text-monospace font-monospace small" id="hash_id_{{entry.hash_id}}">{{entry.hash_id}}</span>
+                                </div>
+                            </td>
+                            <td class="align-middle py-3">{{ entry.date }}</td>
+                            <td class="align-middle py-3">{{ entry.author }}</td>
+                            <td class="align-middle py-3">
+                                {% for tag in entry.tags %}
+                                    <span class="badge bg-info text-dark me-1">{{ tag }}</span>
+                                {% endfor %}
+                            </td>
+                            <td class="align-middle py-3">
+                                {% for condition in entry.conditions %}
+                                    <span class="badge bg-warning text-dark me-1">{{ condition }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="input-group mb-3 row mx-1 p-4 bg-light rounded">
+            <div class="col-md-3">
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle w-100" type="button" id="actionDropdown" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-gear me-1"></i> Actions
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="actionDropdown">
+                        <li>
+                            <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#emailNotifyModal">
+                                <i class="bi bi-envelope me-2"></i> Notify by Email
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#setParentModal">
+                                <i class="bi bi-diagram-3 me-2"></i> Set Parent Entry
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" onclick="submitForm('bulk_report')">
+                                <i class="bi bi-file-earmark-text me-2"></i> Generate Reports
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i> Select entries and choose an action from the dropdown
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info m-3">
+            <i class="bi bi-info-circle me-2"></i> No entries found
+        </div>
+    {% endif %}
+    
+    <!-- Hidden action input for form submission -->
+    <input type="hidden" name="action" id="action_input" value="">
+    
+    <!-- Email Notification Modal -->
+    <div class="modal fade" id="emailNotifyModal" tabindex="-1" aria-labelledby="emailNotifyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emailNotifyModalLabel">Notify Users by Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="adress_for_notify_by_email" class="form-label">Recipients (comma-separated usernames)</label>
+                        <div class="position-relative">
+                            <input type="text" class="form-control" id="adress_for_notify_by_email" 
+                                   name="adress_for_notify_by_email" placeholder="Type usernames..." 
+                                   autocomplete="off">
+                            <div class="dropdown-menu w-100" id="username_suggestions" 
+                                 style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                        <div class="form-text">
+                            Selected users will receive an email with reports for the selected entries
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitForm('notify_by_email')">Send Notification</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Set Parent Entry Modal -->
+    <div class="modal fade" id="setParentModal" tabindex="-1" aria-labelledby="setParentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="setParentModalLabel">Set Parent Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="parent_entry_hash_id" class="form-label">Parent Entry Hash ID</label>
+                        <input type="text" class="form-control" id="parent_entry_hash_id" 
+                               name="parent_entry_hash_id" placeholder="Enter parent entry hash ID">
+                        <div class="form-text">
+                            All selected entries will be linked to this parent entry
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitForm('set_parent_entry')">Set Parent</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    function submitForm(action) {
+        document.getElementById('action_input').value = action;
+        document.querySelector('form').submit();
+    }
+    
+    function copy_2_clipboard(element) {
+        navigator.clipboard.writeText(element.textContent);
+        
+        // Show a temporary tooltip
+        const tooltip = document.createElement('div');
+        tooltip.textContent = 'Copied!';
+        tooltip.style.position = 'fixed';
+        tooltip.style.left = (event.clientX + 10) + 'px';
+        tooltip.style.top = (event.clientY - 10) + 'px';
+        tooltip.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        tooltip.style.color = 'white';
+        tooltip.style.padding = '5px 10px';
+        tooltip.style.borderRadius = '3px';
+        tooltip.style.zIndex = '1000';
+        document.body.appendChild(tooltip);
+        
+        setTimeout(() => {
+            tooltip.remove();
+        }, 1000);
+    }
+    
+    // Add select all functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.entry-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllCheckbox.checked;
+                });
+            });
+        }
+    });
+</script>

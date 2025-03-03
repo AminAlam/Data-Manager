@@ -26,8 +26,8 @@ def create_table(conn, create_table_sql):
     except Error as e:
         utils.error_log(e)
 
-### Experiments
-def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditions, experiment_name, parent_experiment):
+### entries
+def insert_entry_to_db(conn, Author, date, Tags, File_Path, Notes, conditions, entry_name, parent_entry):
     try:
         conditions_parsed = utils.parse_conditions(conditions)
         Tags_parsed = utils.parse_tags(Tags)
@@ -36,8 +36,8 @@ def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditio
         insert_author(conn, Author)
         cursor = conn.cursor()
         hash_id = utils.generate_hash(conn)
-        rows = [(hash_id, Tags, Notes, File_Path, date, Author, conditions, experiment_name, parent_experiment, None)]
-        cursor.executemany('insert into experiments values (?,?,?,?,?,?,?,?,?,?)', rows)
+        rows = [(hash_id, Tags, Notes, File_Path, date, Author, conditions, entry_name, parent_entry, None)]
+        cursor.executemany('insert into entries values (?,?,?,?,?,?,?,?,?,?)', rows)
         conn.commit()
         success_bool = 1
     except Error as e:
@@ -46,14 +46,14 @@ def insert_experiment_to_db(conn, Author, date, Tags, File_Path, Notes, conditio
         hash_id = None
     return success_bool, hash_id
 
-def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
+def update_entry_in_db(conn, id, post_form, app_config, hash_id, Files):
     try:
         date = post_form['date']
         Tags = post_form['Tags']
         File_Path = post_form['File_Path']
         Notes = post_form['Notes']
-        experiment_name = post_form['experiment_name']
-        parent_experiment = post_form['parent_experiment']
+        entry_name = post_form['entry_name']
+        parent_entry = post_form['parent_entry']
 
         Tags_parsed = utils.parse_tags(Tags)
         insert_tag(conn, Tags_parsed)
@@ -84,8 +84,8 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
                 
         conditions = ','.join(conditions)
         cursor = conn.cursor()
-        rows = [(Tags, Notes, File_Path, date, conditions, experiment_name, parent_experiment, id)]
-        cursor.executemany('update experiments set tags=?, extra_txt=?, file_path=?, date=?, conditions=?, experiment_name=?, experiment_parent=? where id=?', rows)
+        rows = [(Tags, Notes, File_Path, date, conditions, entry_name, parent_entry, id)]
+        cursor.executemany('update entries set tags=?, extra_txt=?, file_path=?, date=?, conditions=?, entry_name=?, entry_parent=? where id=?', rows)
         conn.commit()
         success_bool = 1
 
@@ -94,13 +94,13 @@ def update_experiment_in_db(conn, id, post_form, app_config, hash_id, Files):
         success_bool = 0
     return success_bool
 
-def delete_experiment_from_db(conn, id):
+def delete_entry_from_db(conn, id):
     try:
-        hash_id = utils.get_hash_id_by_experiment_id(conn, id)
+        hash_id = utils.get_hash_id_by_entry_id(conn, id)
         cursor = conn.cursor()
-        cursor.execute('delete from experiments where id=?', (id,))
+        cursor.execute('delete from entries where id=?', (id,))
         conn.commit()
-        remove_deleted_experiment_as_parent(conn, hash_id)
+        remove_deleted_entry_as_parent(conn, hash_id)
         delete_author(conn, id)
         success_bool = 1
     except Error as e:
@@ -109,17 +109,17 @@ def delete_experiment_from_db(conn, id):
     return success_bool
 
 
-def remove_deleted_experiment_as_parent(conn, hash_id):
+def remove_deleted_entry_as_parent(conn, hash_id):
     try:
         cursor = conn.cursor()
-        cursor.execute("update experiments set experiment_parent='' where experiment_parent=?", (hash_id,))
+        cursor.execute("update entries set entry_parent='' where entry_parent=?", (hash_id,))
         conn.commit()
         success_bool = 1
     except Error as e:
         utils.error_log(e)
         success_bool = 0
     return success_bool
-### Experiments
+### entries
 
 
 ### Tags
@@ -212,3 +212,47 @@ def update_conditions_templates(conn, post_form, username):
             
     return True
 ### Conditions
+
+def add_user(conn, username, password, admin, order_manager, name, email):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO users (username, password, admin, order_manager, name, email)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (username, password, admin, order_manager, name, email))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+def update_user(conn, form_data, user_id):
+    try:
+        cursor = conn.cursor()
+        update_fields = []
+        params = []
+        
+        if 'name' in form_data:
+            update_fields.append('name = ?')
+            params.append(form_data['name'])
+        
+        if 'email' in form_data:
+            update_fields.append('email = ?')
+            params.append(form_data['email'])
+            
+        if 'order_manager' in form_data:
+            update_fields.append('order_manager = ?')
+            params.append(form_data['order_manager'] == 'True')
+            
+        if update_fields:
+            params.append(user_id)
+            cursor.execute(f"""
+                UPDATE users 
+                SET {', '.join(update_fields)}
+                WHERE id = ?
+            """, params)
+            conn.commit()
+        return True
+    except Exception as e:
+        print(e)
+        return False

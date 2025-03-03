@@ -1,65 +1,75 @@
 <div class="container border rounded addpage">
-    <form action="{{ url_for('update_user_in_db', id=user['id']) }}" method=post enctype=multipart/form-data>
-       <div class="form-row uploadrows">
-           
-    
-            <div class="form-group col-md-3 ">
-                <label for="username">*username: </label>
-                <input  class=" dropdown-header" id="username" name="username" autocomplete="off" required value="{{user['username']}}" disabled>
+    <form action="{{ url_for('update_user_in_db', id=user['id']) }}" method="post" enctype="multipart/form-data">
+        <div class="row g-3">
+            <!-- Username field -->
+            <div class="col-md-6">
+                <label for="username" class="form-label">Username*</label>
+                <input type="text" class="form-control" id="username" name="username" 
+                       value="{{user['username']}}" disabled>
             </div>
-    
-       
-            <div class="form-group col-md-3 ">
-                <label for="password">*password: </label>
-                <input  class=" dropdown-header" id="password" name="password" autocomplete="off" required value="{{user['password']}}" type="password">
+
+            <!-- Password field -->
+            <div class="col-md-6">
+                <label for="password" class="form-label">Password*</label>
+                <input type="password" class="form-control" id="password" name="password" 
+                       value="{{user['password']}}" required>
             </div>
-            
-            <div class="form-group col-md-3 ">
-                <label for="repeat_password">*repeat password: </label>
-                <input  class=" dropdown-header" id="repeat_password" name="repeat_password" autocomplete="off" required value="{{user['password']}}" type="password">
+
+            <!-- Repeat password field -->
+            <div class="col-md-6">
+                <label for="repeat_password" class="form-label">Repeat Password*</label>
+                <input type="password" class="form-control" id="repeat_password" name="repeat_password" 
+                       value="{{user['password']}}" required>
             </div>
-    
-    
+
+            <!-- Name field -->
+            <div class="col-md-6">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" name="name" 
+                       value="{{user['name'] if user['name'] else ''}}" autocomplete="off">
+            </div>
+
+            <!-- Email field -->
+            <div class="col-md-6">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" 
+                       value="{{user['email'] if user['email'] else ''}}" autocomplete="off">
+            </div>
+
             {% if session['admin'] %}
-                <div class="form-group col-md-3">
-                    <label for="emailed">*admin:</label>
-                    <select class="form-select" name="admin" id="admin" aria-label="Default select example" required>
-                        {% if user['admin'] == True %}
-                            <option selected="True">Yes</option>
-                            <option value="False">No</option>
-                        {% else %}
-                            <option selected="False">No</option>
-                            <option value="True">Yes</option>
-                        {% endif %}
-                    </select>
-                </div>
+            <!-- Admin selection -->
+            <div class="col-md-6">
+                <label for="admin" class="form-label">Admin*</label>
+                <select class="form-select" name="admin" id="admin" required>
+                    <option value="True" {% if user['admin'] %}selected{% endif %}>Yes</option>
+                    <option value="False" {% if not user['admin'] %}selected{% endif %}>No</option>
+                </select>
+            </div>
+
+            <!-- Order Manager selection -->
+            <div class="col-md-6">
+                <label for="order_manager" class="form-label">Order Manager*</label>
+                <select class="form-select" name="order_manager" id="order_manager" required>
+                    <option value="True" {% if user['order_manager'] %}selected{% endif %}>Yes</option>
+                    <option value="False" {% if not user['order_manager'] %}selected{% endif %}>No</option>
+                </select>
+            </div>
             {% endif %}
-    
-    
-            <div class="form-group col-md-6 ">
-                <label for="password">name: </label>
-                <input  class=" dropdown-header" id="name" name="name" autocomplete="off" value="{{user['name']}}">
-            </div>
-        
-            <div class="form-group col-md-6">
-                <label for="password">email: </label>
-                <input  class=" dropdown-header" id="email" name="email" autocomplete="off" value="{{user['email']}}">
-            </div>
 
+            <!-- Action buttons -->
+            <div class="col-12 d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Update User
+                </button>
+                
+                {% if session['admin'] %}
+                <a href="{{ url_for('delete_user', id=user['id']) }}" 
+                   class="btn btn-danger" 
+                   onclick="return confirm('Are you sure you want to delete this user?');">
+                    <i class="bi bi-trash"></i> Delete User
+                </a>
+                {% endif %}
+            </div>
         </div>
-        <div class="input-group mb-3 row" style="padding-bottom: 2rem; padding-top: 2rem;">
-        
-            <div class="col-md-2">
-                <button class="btn btn-primary" type=submit Course> Update user</button>
-            </div>
-
-            {% if session['admin'] == True %}
-                <div class="col-md-2">
-                    <a href="{{ url_for('delete_user', id=user['id']) }}" class="btn btn-danger">Delete user</a>
-                </div>
-            {% endif %}
-        
-        </div>
-
     </form>
 </div>

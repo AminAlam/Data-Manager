@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Search Entries</h1>
+    <a href="{{ url_for('insert_entry') }}" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-1"></i> New Entry
+    </a>
+  </div>
+
+  <div class="row">
+    <!-- Main Content Column -->
+    <div class="col-lg-12">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+          <form action="/entries" method="post" enctype="multipart/form-data">
+            
+            <!-- Basic Search Section -->
+            <div class="card mb-4 border-0 bg-light">
+              <div class="card-header bg-light border-bottom-0">
+                <h5 class="mb-0"><i class="fa fa-search mr-2"></i>Basic Search</h5>
+              </div>
+              <div class="card-body pt-0">
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label for="Hash_ID" class="form-label">Hash ID</label>
+                    <input class="form-control" name="Hash_ID" autocomplete="off">
+                  </div>
+                  
+                  <div class="col-md-4 mb-3">
+                    <label for="Title" class="form-label">Title</label>
+                    <div class="position-relative">
+                      <input type="text" class="form-control" id="title_search" name="Title" 
+                             placeholder="Search titles..." autocomplete="off">
+                      <div class="dropdown-menu w-100" id="title_search_datalist" 
+                           style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 mb-3">
+                    <label for="date_bool" class="form-label d-block">
+                      Date Range
+                      <div class="form-check form-switch d-inline-block ms-2">
+                        <input class="form-check-input" type="checkbox" id="date_bool" name="date_bool" checked>
+                      </div>
+                    </label>
+                    <div class="input-group">
+                        <input type="date" class="form-control" id="date_start" name="date_start" 
+                        min="2000-01-01" max="2099-12-31" value="{{dates[0]}}">
+                      <div class="input-group-append input-group-prepend">
+                        <span class="input-group-text">to</span>
+                      </div>
+                      <input type="date" class="form-control" id="date_end" name="date_end" 
+                           min="2000-01-01" max="2099-12-31" value="{{dates[1]}}">
+                    </div>
+                  </div>
+
+
+
+
+                </div>
+              </div>
+            </div>
+            
+            <!-- Advanced Search Section -->
+            <div class="card mb-4 border-0 bg-light">
+              <div class="card-header bg-light border-bottom-0">
+                <h5 class="mb-0"><i class="fa fa-filter mr-2"></i>Advanced Search</h5>
+              </div>
+              <div class="card-body pt-0">
+                <div class="row">
+                  <div class="col-md-4 mb-4">
+                    <label for="Author" class="form-label">Author</label>
+                    <div class="position-relative">
+                      <input type="text" class="form-control" id="author_search" name="Author" 
+                             placeholder="Search authors..." autocomplete="off">
+                      <div class="dropdown-menu w-100" id="author_search_datalist" 
+                           style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 mb-4">
+                    <label for="Tags" class="form-label">Tags</label>
+                    <div class="position-relative">
+                      <input type="text" class="form-control" id="tags_search" name="Tags" 
+                             placeholder="Search tags..." autocomplete="off">
+                      <div class="dropdown-menu w-100" id="tags_search_datalist" 
+                           style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-4 mb-4">
+                    <label for="Text" class="form-label">Text</label>
+                    <div class="position-relative">
+                      <input type="text" class="form-control" id="text_search" name="Text" 
+                             placeholder="Search text..." autocomplete="off">
+                      <div class="dropdown-menu w-100" id="text_search_datalist" 
+                           style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Conditions Section -->
+            <div class="card mb-4 border-0 bg-light">
+              <div class="card-header bg-light border-bottom-0">
+                <h5 class="mb-0"><i class="fa fa-sliders-h mr-2"></i>Conditions</h5>
+              </div>
+              <div class="card-body pt-0">
+                <div class="row">
+                  <div class="col-md-12">
+                    {{conditions_html}}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <div>
+                <button class="btn btn-primary me-2" type="submit">
+                  <i class="bi bi-search me-1"></i> Search Entries
+                </button>
+                <button type="reset" class="btn btn-secondary me-2">
+                  <i class="bi bi-x-circle me-1"></i> Reset Form
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Results Section -->
+      {% if entries_html %}
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fa fa-list mr-2"></i>Search Results</h5>
+        </div>
+        <div class="card-body p-0">
+          {{entries_html}}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Date range toggle functionality
+    const dateCheckbox = document.getElementById('date_bool');
+    const dateStart = document.getElementById('date_start');
+    const dateEnd = document.getElementById('date_end');
+    
+    function updateDateFields() {
+      const isEnabled = dateCheckbox.checked;
+      dateStart.disabled = !isEnabled;
+      dateEnd.disabled = !isEnabled;
+    }
+    
+    if (dateCheckbox) {
+      dateCheckbox.addEventListener('change', updateDateFields);
+      // Initialize on page load
+      updateDateFields();
+    }
+  });
+</script>
+{% endblock %}

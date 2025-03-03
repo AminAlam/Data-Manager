@@ -925,7 +925,7 @@ var Parser = /** @class */ (function () {
         return this.finish(node);
     };
     Parser.prototype._parseDocument = function () {
-        // -moz-document is experimental but has been pushed to css4
+        // -moz-document is entryal but has been pushed to css4
         if (!this.peekKeyword('@-moz-document')) {
             return null;
         }

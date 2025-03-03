@@ -33,7 +33,7 @@ def text_search_in_db(conn, keyword):
     if keyword != '' and keyword != ' ':
         try:
             cursor = conn.cursor()
-            cursor.execute("select *  FROM experiments WHERE extra_txt LIKE ?", (f"%{keyword}%",))
+            cursor.execute("select *  FROM entries WHERE extra_txt LIKE ?", (f"%{keyword}%",))
             result = cursor.fetchall()
         except:
             result = None
@@ -47,7 +47,13 @@ def text_search_in_db(conn, keyword):
         result[i] = tuple(r)
     return jsonify(result)
 
-def filter_experiments(conn, post_request_form):
+def title_search_in_db(conn, keyword):
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT entry_name FROM entries WHERE entry_name LIKE ? LIMIT 10", (f'%{keyword}%',))
+    results = cursor.fetchall()
+    return flask.jsonify(results)
+
+def filter_entries(conn, post_request_form):
     Authors = post_request_form['Author']
     Hash_ID = post_request_form['Hash_ID']
     Text = post_request_form['Text']
@@ -75,10 +81,10 @@ def filter_experiments(conn, post_request_form):
 
     rows = []
     if Hash_ID != '':
-        sql_command = 'SELECT * FROM experiments WHERE id_hash like ? AND ' 
+        sql_command = 'SELECT * FROM entries WHERE id_hash like ? AND ' 
         rows.append(f'%{Hash_ID}%')
     else:
-        sql_command = 'SELECT * FROM experiments WHERE '
+        sql_command = 'SELECT * FROM entries WHERE '
         if Authors != '':
             sql_command += 'author == ? AND '
             rows.append(Authors)
@@ -109,17 +115,17 @@ def filter_experiments(conn, post_request_form):
     rows = tuple(rows)
     cursor = conn.cursor()
     cursor.execute(sql_command, rows)
-    experiments_list = cursor.fetchall()
-    experiments_list=  utils.experiment_list_maker(experiments_list)
-    return experiments_list
+    entries_list = cursor.fetchall()
+    entries_list=  utils.entry_list_maker(entries_list)
+    return entries_list
 
-def experiments_time_line(conn):
+def entries_time_line(conn):
     cursor = conn.cursor()
     if flask.session['admin']:
-        cursor.execute("SELECT * FROM experiments ORDER BY date DESC LIMIT 12")         
+        cursor.execute("SELECT * FROM entries ORDER BY date DESC LIMIT 12")         
     else:
-        cursor.execute("SELECT * FROM experiments WHERE author == ? ORDER BY date DESC LIMIT 12", (flask.session['username'],))                              
-    experiments_list = cursor.fetchall()
-    experiments_list=  utils.experiment_list_maker(experiments_list)
-    return experiments_list
+        cursor.execute("SELECT * FROM entries WHERE author == ? ORDER BY date DESC LIMIT 12", (flask.session['username'],))                              
+    entries_list = cursor.fetchall()
+    entries_list=  utils.entry_list_maker(entries_list)
+    return entries_list
     

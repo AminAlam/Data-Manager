@@ -13,8 +13,8 @@ export var browserNames = {
 };
 function getEntryStatus(status) {
     switch (status) {
-        case 'experimental':
-            return '⚠️ Property is experimental. Be cautious when using it.️\n\n';
+        case 'entryal':
+            return '⚠️ Property is entryal. Be cautious when using it.️\n\n';
         case 'nonstandard':
             return '🚨️ Property is nonstandard. Avoid using it.\n\n';
         case 'obsolete':

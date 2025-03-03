@@ -1,3 +1,17 @@
+.gap-2 {
+    gap: 0.5rem;
+  }
+  
+  .custom-file {
+    position: relative;
+  }
+  
+  .addpage {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+
 h1 {
     color: black;
     text-align: center;
@@ -150,69 +164,383 @@ div.PanelLogin{
 }
 
 
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 180px);
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
 
-/*======Responsive CSS=======*/
-@media (max-width: 767px){
-    .comments .commenter-name {
-        font-size: 13px;
-        top: -5px;
-    }
-    .comments .commenter-pic {
-        width: 40px;
-        height: 40px;
-    }
-    .comments .commenter-name a{
-      display: block;
-    }
-    .comments .commenter-name .comment-time{
-      display: block;
-      margin-left: 0px;
-    }
+.chat-header {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.chat-users-container {
+    display: flex;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+    overflow-x: auto;
+    gap: 0.5rem;
+}
+
+.chat-user {
+    padding: 0.5rem 1rem;
+    border-radius: 1.5rem;
+    background-color: #f1f3f5;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.chat-user.active {
+    background-color: #339af0;
+    color: white;
+}
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.chat-message {
+    max-width: 80%;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    position: relative;
+}
+
+.chat-message-left {
+    align-self: flex-start;
+    background-color: #e9ecef;
+    border-bottom-left-radius: 0.25rem;
+}
+
+.chat-message-right {
+    align-self: flex-end;
+    background-color: #339af0;
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.chat-message-author {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.chat-message-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+    text-align: right;
+}
+
+.chat-input-container {
+    display: flex;
+    padding: 1rem;
+    background-color: #fff;
+    border-top: 1px solid #e9ecef;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+.chat-send-btn {
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #339af0;
+    color: white;
+    border: none;
+}
+
+/* Responsive adaptations */
+@media (max-width: 768px) {
+    .chat-container {
+        height: calc(100vh - 120px);
     }
     
-    
-    .chat-online {
-        color: #34ce57
+    .chat-message {
+        max-width: 90%;
     }
     
-    .chat-offline {
-        color: #e4606d
+    .chat-users-container {
+        padding: 0.5rem;
     }
     
-    .chat-messages {
+    .chat-user {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Orders page modern styling */
+.orders-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.order-filters {
+    background-color: #f8f9fa;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.order-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.order-table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.order-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.order-item {
+    transition: background-color 0.2s;
+}
+
+.order-item:hover {
+    background-color: #f8f9fa;
+}
+
+.status-select {
+    width: 110px;
+    font-size: 0.875rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+}
+
+/* Status colors with modern styling */
+.status-pending {
+    background-color: #fff8e1;
+    color: #f57c00;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-ordered {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-rejected {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+/* Responsive table */
+@media (max-width: 992px) {
+    .order-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .order-actions {
         display: flex;
         flex-direction: column;
-        max-height: 800px;
-        overflow-y: scroll;
-        min-height: 30rem;
-        max-height: 50rem;    
     }
     
-    .chat-message-left,
-    .chat-message-right {
-        display: flex;
-        flex-shrink: 0
+    .order-actions .btn {
+        margin-bottom: 0.5rem;
     }
     
-    .chat-message-left {
-        margin-right: auto
+    .order-filters .form-group {
+        margin-bottom: 1rem;
     }
-    
-    .chat-message-right {
-        flex-direction: row-reverse;
-        margin-left: auto
-    }
-    .py-3 {
-        padding-top: 1rem!important;
-        padding-bottom: 1rem!important;
-    }
-    .px-4 {
-        padding-right: 1.5rem!important;
-        padding-left: 1.5rem!important;
-    }
-    .flex-grow-0 {
-        flex-grow: 0!important;
-    }
-    .border-top {
-        border-top: 1px solid #dee2e6!important;
-    }
+}
+
+/* Entry page styling */
+.entry-card {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.entry-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.entry-section {
+  margin-bottom: 1.5rem;
+}
+
+.entry-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.entry-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.entry-actions .btn {
+  margin-right: 0.5rem;
+}
+
+.entry-actions .btn:last-child {
+  margin-right: 0;
+}
+
+.file-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 1rem;
+}
+
+.file-table th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.file-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.custom-file {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 300px;
+}
+
+.custom-file-input {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: calc(1.5em + 0.75rem + 2px);
+  margin: 0;
+  opacity: 0;
+}
+
+.custom-file-label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: calc(1.5em + 0.75rem + 2px);
+  padding: 0.375rem 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile responsiveness fixes for search fields */
+@media (max-width: 767.98px) {
+  .SearchBarMain {
+    position: relative;
+    z-index: 1000;
+  }
+  
+  .SearchBarMainBox {
+    position: absolute !important;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1050;
+  }
+  
+  #title_search_datalist,
+  #author_search_datalist,
+  #tags_search_datalist,
+  #text_search_datalist {
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  
+  /* Create a stacking context for each search field */
+  .col-md-4 {
+    position: relative;
+  }
+  
+  /* Ensure proper z-index stacking order */
+  .col-md-4:nth-child(1) .SearchBarMain { z-index: 1004; }
+  .col-md-4:nth-child(2) .SearchBarMain { z-index: 1003; }
+  .col-md-4:nth-child(3) .SearchBarMain { z-index: 1002; }
+  .col-md-4:nth-child(4) .SearchBarMain { z-index: 1001; }
+  
+  /* Add more spacing between form groups on mobile */
+  .mb-3, .mb-4 {
+    margin-bottom: 3rem !important;
+  }
+  
+  /* Ensure dropdowns don't overlap with content below */
+  .dropdown-menu.show.SearchBarMainBox {
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+}
+
+
