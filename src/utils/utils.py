@@ -210,7 +210,14 @@ def apply_updates2db(db_configs):
     cursor.execute('SELECT * FROM messages')
     column_names = list(map(lambda x: x[0], cursor.description))
     if 'destination' not in column_names:
-        cursor.execute('ALTER TABLE messages ADD COLUMN destination text') 
+        cursor.execute('ALTER TABLE messages ADD COLUMN destination text')
+    
+    # Import migration functions
+    sys.path.append(os.path.join(parent_parent_path, 'database'))
+    from database.migrate import add_api_key_to_users_table
+    
+    # Apply api_key column migration
+    add_api_key_to_users_table(db_configs.conn)
 
 def read_json_file(json_file):
     with open(json_file) as f:
@@ -285,6 +292,7 @@ def upload_files(app_config, hash_id, Files):
         folder_path = os.path.join(app_config['UPLOAD_FOLDER'], hash_id)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path, exist_ok=True)
+            print(f"Folder created: {folder_path}")
         
         uploaded_files = []
         for file in Files:

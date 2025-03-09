@@ -1746,6 +1746,268 @@ class WebApp():
             
             return flask.render_template('reset_password.html', token=token)
 
+        @app.route('/api/browser_addon/insert_entry', methods=['POST'])
+        def browser_addon_insert_entry():
+            """
+            API endpoint for browser add-on to insert entries.
+            Requires API key authentication.
+            
+            Expected JSON payload:
+            {
+                "username": "username",
+                "api_key": "api_key",
+                "entry_name": "Document Title",
+                "url": "https://docs.google.com/...",
+                "notes": "Notes about the document",
+                "tags": "tag1,tag2,tag3",
+                "document_type": "Google Sheet/Google Doc/Google Slide",
+                "date": "YYYY-MM-DD HH:MM:SS" (optional, defaults to current datetime)
+            }
+            """
+            try:
+                data = flask.request.json
+                
+                # Validate required fields
+                required_fields = ['username', 'api_key', 'entry_name', 'url']
+                for field in required_fields:
+                    if field not in data or not data[field]:
+                        return flask.jsonify({
+                            'success': False,
+                            'message': f'Missing required field: {field}'
+                        }), 400
+                
+                # Authenticate user
+                user = operators.get_user_by_username(self.db_configs.conn, data['username'])
+                if not user:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'User not found'
+                    }), 401
+                
+                # Check API key from the dedicated api_key field
+                cursor = self.db_configs.conn.cursor()
+                cursor.execute('SELECT api_key FROM users WHERE username = ?', (data['username'],))
+                result = cursor.fetchone()
+                
+                if not result or not result[0]:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'API key not configured for user'
+                    }), 401
+                
+                stored_api_key = result[0]
+                if stored_api_key != data['api_key']:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'Invalid API key'
+                    }), 401
+                
+                # Process entry data
+                author = data['username']
+                
+                # Handle date - use provided date or current datetime
+                if 'date' in data and data['date']:
+                    # Validate date format
+                    try:
+                        # Parse the date to ensure it's valid
+                        dt.datetime.strptime(data['date'], "%Y-%m-%d")
+                        date = data['date']
+                    except ValueError:
+                        # If invalid format, use current datetime
+                        date = dt.datetime.now().strftime("%Y-%m-%d")
+                else:
+                    date = dt.datetime.now().strftime("%Y-%m-%d")
+                
+                tags = data.get('tags', '')
+                file_path = data.get('url', '')
+                notes = data.get('notes', '')
+                
+                # Add document type information to notes
+                doc_type = data.get('document_type', 'Google Document')
+                if notes:
+                    notes = f"Type: {doc_type}\n\n{notes}"
+                else:
+                    notes = f"Type: {doc_type}"
+                    
+                entry_name = data['entry_name']
+                parent_entry = data.get('parent_entry', '')
+                
+                # Process conditions (similar to insert_entry_to_db)
+                conditions = data.get('conditions', '')
+                
+                # Check if parent entry exists
+                if parent_entry and not utils.check_hash_id_existence(self.db_configs.conn, parent_entry):
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'Parent entry does not exist'
+                    }), 400
+                
+                # Insert entry
+                success_bool, hash_id = operators.insert_entry_to_db(
+                    conn=self.db_configs.conn,
+                    Author=author,
+                    date=date,
+                    Tags=tags,
+                    File_Path=file_path,
+                    Notes=notes,
+                    conditions=conditions,
+                    entry_name=entry_name,
+                    parent_entry=parent_entry
+                )
+                utils.upload_files(self.app.config, hash_id, []) # to make sure the folder exist
+                # Handle file uploads if provided (base64 encoded files)
+                if success_bool and 'files' in data and data['files']:
+                    try:
+                        import base64
+                        import tempfile
+                        import os
+                        from werkzeug.datastructures import FileStorage
+                        
+                        uploaded_files = []
+                        
+                        # Process each file in the files array
+                        for file_data in data['files']:
+                            if 'name' in file_data and 'content' in file_data and 'type' in file_data:
+                                # Decode base64 content
+                                file_content = base64.b64decode(file_data['content'])
+                                
+                                # Create a temporary file
+                                temp_file = tempfile.NamedTemporaryFile(delete=False)
+                                temp_file.write(file_content)
+                                temp_file.close()
+                                
+                                # Create a FileStorage object
+                                file_obj = FileStorage(
+                                    stream=open(temp_file.name, 'rb'),
+                                    filename=file_data['name'],
+                                    content_type=file_data['type']
+                                )
+                                
+                                uploaded_files.append(file_obj)
+                        
+                        # Upload files
+                        if uploaded_files:
+                            utils.upload_files(self.app.config, hash_id, uploaded_files)
+                            
+                            # Clean up temporary files
+                            for file_obj in uploaded_files:
+                                file_obj.stream.close()
+                                os.unlink(file_obj.stream.name)
+                    except Exception as e:
+                        utils.error_log(f"Error processing file uploads: {str(e)}")
+                
+                if success_bool:
+                    return flask.jsonify({
+                        'success': True,
+                        'message': f'Entry added successfully',
+                        'hash_id': hash_id
+                    })
+                else:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'Error adding entry'
+                    }), 500
+                
+            except Exception as e:
+                utils.error_log(str(e))
+                return flask.jsonify({
+                    'success': False,
+                    'message': f'Server error: {str(e)}'
+                }), 500
+
+        @app.route('/api/browser_addon/configure', methods=['GET', 'POST'])
+        @security.login_required
+        def browser_addon_configure():
+            """Page to configure the browser add-on for the current user"""
+            if flask.request.method == 'POST':
+                try:
+                    # Generate a new API key
+                    api_key = secrets.token_hex(16)
+                    
+                    # Update the user's api_key field
+                    cursor = self.db_configs.conn.cursor()
+                    
+                    # Store API key in the dedicated column
+                    cursor.execute('UPDATE users SET api_key = ? WHERE username = ?', 
+                                  (api_key, flask.session['username']))
+                    self.db_configs.conn.commit()
+                    
+                    flask.flash('API key generated successfully. Please save it securely.')
+                    return flask.render_template('browser_addon_config.html', 
+                                              api_key=api_key, 
+                                              username=flask.session['username'])
+                except Exception as e:
+                    utils.error_log(str(e))
+                    flask.flash(f'Error generating API key: {str(e)}')
+                    return flask.redirect(flask.url_for('profile'))
+            else:
+                # Check if user already has an API key
+                cursor = self.db_configs.conn.cursor()
+                cursor.execute('SELECT api_key FROM users WHERE username = ?', (flask.session['username'],))
+                result = cursor.fetchone()
+                has_api_key = result and result[0] is not None
+                
+                return flask.render_template('browser_addon_config.html',
+                                          api_key=None,
+                                          username=flask.session['username'],
+                                          has_api_key=has_api_key)
+
+        @app.route('/api/browser_addon/download', methods=['GET'])
+        @security.login_required
+        def download_browser_addon():
+            """
+            Endpoint to download the browser extension as a ZIP file.
+            Creates a ZIP file on-the-fly containing all the extension files.
+            """
+            try:
+                import io
+                import zipfile
+                import pathlib
+                import os
+                
+                # Create an in-memory ZIP file
+                memory_file = io.BytesIO()
+                extension_zip = zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED)
+                
+                # Get the path to the browser-extension directory
+                # Assuming the browser-extension directory is at the project root
+                project_root = str(pathlib.Path(__file__).parent.parent.parent.absolute())
+                extension_dir = os.path.join(project_root, 'browser-extension')
+                
+                # Check if the directory exists
+                if not os.path.exists(extension_dir):
+                    flask.flash('Browser extension files not found.')
+                    return flask.redirect(flask.url_for('browser_addon_configure'))
+                
+                # Add all files in the browser-extension directory to the ZIP
+                for root, dirs, files in os.walk(extension_dir):
+                    for file in files:
+                        # Skip any temporary or hidden files
+                        if file.startswith('.') or file.startswith('~'):
+                            continue
+                            
+                        file_path = os.path.join(root, file)
+                        # Get the relative path to maintain directory structure in ZIP
+                        relative_path = os.path.relpath(file_path, extension_dir)
+                        extension_zip.write(file_path, arcname=relative_path)
+                
+                # Finalize the ZIP file
+                extension_zip.close()
+                memory_file.seek(0)
+                
+                # Return the ZIP file as a download
+                return flask.send_file(
+                    memory_file,
+                    download_name='data-manager-browser-extension.zip',
+                    as_attachment=True,
+                    mimetype='application/zip'
+                )
+                
+            except Exception as e:
+                utils.error_log(str(e))
+                flask.flash(f'Error creating extension package: {str(e)}')
+                return flask.redirect(flask.url_for('browser_addon_configure'))
+
         # Check if we're in testing mode
         if not self.app.config.get('TESTING', False):
             # Only start the waitress server if not in testing mode

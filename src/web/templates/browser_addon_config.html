@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Browser Add-on Configuration</h2>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Configure Google Drive Integration</h5>
+            <p>This configuration allows you to use the browser add-on to directly add Google Drive documents to your Data Manager without visiting the website.</p>
+            
+            {% if api_key %}
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">API Key Generated!</h4>
+                <p>Your API key has been successfully generated. You will need this key to configure the browser add-on.</p>
+                <p class="mb-0"><strong>Please copy and save this API key as it will not be shown again:</strong></p>
+                <div class="input-group mb-3 mt-2">
+                    <input type="text" class="form-control" value="{{ api_key }}" id="apiKeyField" readonly>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyApiKey()">Copy</button>
+                    </div>
+                </div>
+                <p class="mb-0"><strong>Username:</strong> {{ username }}</p>
+                <hr>
+                <p class="mb-0">
+                    <a href="{{ url_for('download_browser_addon') }}" class="btn btn-primary">
+                        <i class="fas fa-download"></i> Download Browser Extension
+                    </a>
+                </p>
+            </div>
+            
+            <div class="alert alert-warning mt-3">
+                <strong>Note:</strong> Generating a new API key will invalidate any previous key. You'll need to update your browser add-on with the new key.
+            </div>
+            {% else %}
+            <form method="POST">
+                {% if has_api_key %}
+                <div class="alert alert-info mb-3">
+                    <p><strong>You already have an API key configured.</strong></p>
+                    <p class="mb-0">For security reasons, we don't display your existing API key. If you've lost your API key or need to generate a new one, use the button below.</p>
+                </div>
+                <p class="text-danger"><strong>Warning:</strong> Generating a new API key will invalidate your existing key. You'll need to update your browser add-on with the new key.</p>
+                <button type="submit" class="btn btn-warning">Generate New API Key</button>
+                <a href="{{ url_for('download_browser_addon') }}" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download Browser Extension
+                </a>
+                {% else %}
+                <p class="text-danger"><strong>Warning:</strong> Generating a new API key will invalidate any existing API key for this account.</p>
+                <button type="submit" class="btn btn-primary">Generate API Key</button>
+                {% endif %}
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Installation Instructions</h5>
+            <ol class="mb-0">
+                <li>Download the browser extension using the button above</li>
+                <li>Unzip the downloaded file</li>
+                <li>In Chrome, go to <code>chrome://extensions/</code></li>
+                <li>Enable "Developer mode" (toggle in the upper right)</li>
+                <li>Click "Load unpacked" and select the unzipped extension folder</li>
+                <li>Click on the extension icon in your browser toolbar</li>
+                <li>Enter your username and API key</li>
+                <li>Click Save to complete the setup</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyApiKey() {
+    var copyText = document.getElementById("apiKeyField");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    
+    // Show feedback
+    var button = document.querySelector('.input-group-append button');
+    var originalText = button.innerHTML;
+    button.innerHTML = "Copied!";
+    setTimeout(function() {
+        button.innerHTML = originalText;
+    }, 2000);
+}
+</script>
+{% endblock %} 

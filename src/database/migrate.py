@@ -92,5 +92,27 @@ def migrate_database():
         print(f"Error during database migration: {str(e)}")
         return False
 
+def add_api_key_to_users_table(conn):
+    """Add api_key column to users table for browser extension authentication"""
+    try:
+        cursor = conn.cursor()
+        
+        # Check if the column already exists
+        cursor.execute("PRAGMA table_info(users)")
+        columns = cursor.fetchall()
+        column_names = [column[1] for column in columns]
+        
+        if 'api_key' not in column_names:
+            cursor.execute("ALTER TABLE users ADD COLUMN api_key TEXT")
+            conn.commit()
+            print("Added api_key column to users table")
+            return True
+        else:
+            print("api_key column already exists in users table")
+            return False
+    except Exception as e:
+        print(f"Error adding api_key column to users table: {str(e)}")
+        return False
+
 if __name__ == "__main__":
     migrate_database() 
