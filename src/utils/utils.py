@@ -292,7 +292,6 @@ def upload_files(app_config, hash_id, Files):
         folder_path = os.path.join(app_config['UPLOAD_FOLDER'], hash_id)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path, exist_ok=True)
-            print(f"Folder created: {folder_path}")
         
         uploaded_files = []
         for file in Files:

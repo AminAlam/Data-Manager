@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #response {
+      border: 1px solid #ddd;
+      padding: 10px;
+      background-color: #f9f9f9;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow: auto;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Connection Test</h1>
+  <p>Use this page to test if you can connect to your Data Manager API endpoint from your browser.</p>
+  
+  <div class="card">
+    <h2>Test Configuration</h2>
+    <form id="testForm">
+      <label for="serverUrl">Server URL:</label>
+      <input type="text" id="serverUrl" placeholder="https://your-server.com" required>
+      
+      <label for="username">Username:</label>
+      <input type="text" id="username" required>
+      
+      <label for="apiKey">API Key:</label>
+      <input type="password" id="apiKey" required>
+      
+      <label for="testEntry">Test Entry Name:</label>
+      <input type="text" id="testEntry" value="Test Entry" required>
+      
+      <button type="submit">Test Connection</button>
+    </form>
+  </div>
+  
+  <div class="card">
+    <h2>Request & Response</h2>
+    <div>
+      <h3>Request:</h3>
+      <pre id="request">No request sent yet.</pre>
+    </div>
+    <div>
+      <h3>Response:</h3>
+      <div id="responseStatus"></div>
+      <pre id="response">No response received yet.</pre>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById('testForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Get values
+      const serverUrl = document.getElementById('serverUrl').value.trim();
+      const username = document.getElementById('username').value.trim();
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const testEntry = document.getElementById('testEntry').value.trim();
+      
+      // Format server URL
+      let apiUrl = serverUrl;
+      const isLocalhost = apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1');
+      
+      // Use HTTP for localhost, HTTPS for everything else
+      if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+        apiUrl = isLocalhost ? 'http://' + apiUrl : 'https://' + apiUrl;
+      } else if (isLocalhost && apiUrl.startsWith('https://')) {
+        // Convert https://localhost to http://localhost
+        apiUrl = 'http://' + apiUrl.substring(8);
+      }
+      
+      apiUrl = apiUrl.replace(/\/$/, '') + '/api/browser_addon/insert_entry';
+      
+      // Create test data
+      const data = {
+        username: username,
+        api_key: apiKey,
+        entry_name: testEntry,
+        url: "https://docs.google.com/test",
+        notes: "Test from API test page",
+        tags: "test,api",
+        document_type: "Test Document"
+      };
+      
+      // Display request
+      document.getElementById('request').textContent = 
+        `URL: ${apiUrl}\n\nData: ${JSON.stringify(data, null, 2)}`;
+      
+      // Show status
+      const responseStatus = document.getElementById('responseStatus');
+      responseStatus.textContent = "Connecting...";
+      responseStatus.className = "";
+      
+      // Try with XMLHttpRequest
+      const xhr = new XMLHttpRequest();
+      
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            document.getElementById('response').textContent = JSON.stringify(response, null, 2);
+            
+            if (response && response.success) {
+              responseStatus.textContent = "Success! Connection works.";
+              responseStatus.className = "success";
+            } else {
+              responseStatus.textContent = "Error from server: " + (response.message || "Unknown error");
+              responseStatus.className = "error";
+            }
+          } catch (e) {
+            document.getElementById('response').textContent = xhr.responseText;
+            responseStatus.textContent = "Error parsing JSON response";
+            responseStatus.className = "error";
+          }
+        } else {
+          document.getElementById('response').textContent = xhr.responseText || "No response text";
+          responseStatus.textContent = `HTTP Error: ${xhr.status} ${xhr.statusText || ''}`;
+          responseStatus.className = "error";
+        }
+      };
+      
+      xhr.onerror = function() {
+        document.getElementById('response').textContent = "Could not connect to server";
+        responseStatus.textContent = "Network Error: Cannot connect to server";
+        responseStatus.className = "error";
+      };
+      
+      xhr.ontimeout = function() {
+        document.getElementById('response').textContent = "Request timed out";
+        responseStatus.textContent = "Error: Request timed out";
+        responseStatus.className = "error";
+      };
+      
+      xhr.open('POST', apiUrl);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 15000; // 15 seconds
+      
+      try {
+        xhr.send(JSON.stringify(data));
+      } catch (e) {
+        document.getElementById('response').textContent = "Error sending request: " + e.message;
+        responseStatus.textContent = "Error: " + e.message;
+        responseStatus.className = "error";
+      }
+    });
+  </script>
+</body>
+</html> 

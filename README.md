@@ -51,6 +51,35 @@ The default username and password are *admin* and *admin* (You can change this p
 
 For comprehensive documentation, visit the [wiki](https://github.com/AminAlam/Data-Manager/wiki).
 
+## 🌐 Browser Add-on for Google Drive Integration
+
+Data Manager now includes a browser add-on that allows you to easily add Google Drive documents (Docs, Sheets, Slides) directly to your Data Manager without visiting the website.
+
+### Features
+- One-click addition of Google Drive documents to Data Manager
+- Automatic extraction of document title and URL
+- Seamless integration with your existing Data Manager account
+- Secure API key-based authentication
+
+### Installation
+1. Log in to your Data Manager
+2. Go to your profile page
+3. Click "Configure Browser Add-on"
+4. Generate an API key
+5. Download and install the browser extension
+6. Configure the extension with your server URL, username, and API key
+
+### Usage
+1. Navigate to any Google Doc, Sheet, or Slide
+2. Click the Data Manager extension icon in your browser toolbar
+3. Add tags and notes as needed
+4. Click "Add to Data Manager"
+
+### API Key Management
+Data Manager uses a secure API key system that doesn't interfere with your regular password. API keys are stored separately in the database and can be regenerated at any time without affecting your normal login credentials.
+
+For more details, see the [Browser Add-on Documentation](browser-extension/README.md).
+
 ## Environment Variables
 
 The application uses environment variables for configuration. To set up your environment:
