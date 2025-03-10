@@ -723,7 +723,7 @@ def add_log(conn, username, action, status='pass', error=None):
 def get_recent_logs(conn, days=7):
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM logs WHERE date > date('now', '-? days')", (days,))
+        cursor.execute("SELECT * FROM logs WHERE date > date('now', '-' || ? || ' days')", (days,))
         logs = cursor.fetchall()
         
         # Get column names

@@ -13,6 +13,7 @@ import operators
 import mailing
 from dictianory import slef_made_codes, slef_made_codes_inv_map
 import flask
+from flask import request  # Add explicit import for request
 from threading import Thread
 from markupsafe import Markup
 
@@ -37,6 +38,7 @@ from llm_search import ExternalLLMSearch, execute_llm_search
 
 import requests
 import secrets
+import time
 
 
 def add_admin(db_configs, app_configs):
@@ -51,12 +53,7 @@ def add_admin(db_configs, app_configs):
 
 class WebApp():
     def __init__(self, db_configs, ip, port, static_folder, recaptcha_bool, num_threads, mailing_bool, host_url): 
-        self.ip = ip
-        self.port = port
-        self.num_threads = num_threads
         self.db_configs = db_configs
-        self.mailing_bool = mailing_bool
-        self.host_url = host_url
         self.app = flask.Flask(__name__, static_folder=static_folder)
         self.parent_path = str(pathlib.Path(__file__).parent.absolute())
         self.parent_parent_path = str(pathlib.Path(__file__).parent.parent.absolute())
@@ -73,13 +70,22 @@ class WebApp():
         self.app.config['SECRET_KEY'] = self.app.config['CREDS_FILE']['SECRET_KEY']
         self.app.config['RECAPTCHA_PUBLIC_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PUBLIC_KEY']
         self.app.config['RECAPTCHA_PRIVATE_KEY'] = self.app.config['CREDS_FILE']['RECAPTCHA_PRIVATE_KEY']
+        self.ip = ip
+        self.port = port
+        self.num_threads = num_threads
+        self.mailing_bool = mailing_bool
+        self.host_url = host_url
 
+        # Initialize cache storage
+        self._cache = {}
+        self._cache_expiry = {}
+ 
         self.app.config.from_object(flaskcode.default_config)
         self.app.config['FLASKCODE_RESOURCE_BASEPATH'] = os.path.join(self.app.config['DATABASE_FOLDER'], 'conditions')
         self.app.register_blueprint(flaskcode.blueprint, url_prefix='/editor')
-
+ 
         self.ChatRoom = chatroom.ChatRoom(self.db_configs)
-
+ 
         add_admin(self.db_configs, self.app.config)
         
         # Initialize LLM search with API key from environment variables
@@ -89,13 +95,26 @@ class WebApp():
             print("Claude API service initialized successfully.")
         else:
             print("WARNING: Claude API key not set. Set the CLAUDE_API_KEY environment variable.")
-
+ 
         # Import and run database migrations
         from database.migrate import migrate_database
         migrate_database()
-
+ 
         print(f'App initialized. Server running on http://{self.ip}:{self.port}')
     
+    # Helper method for caching
+    def get_from_cache(self, key):
+        # This is a simple in-memory cache implementation
+        # In a production environment, you would use Redis or another cache solution
+        if key in self._cache and self._cache_expiry.get(key, 0) > time.time():
+            return self._cache[key]
+        
+        return None
+        
+    def set_in_cache(self, key, value, ttl_seconds=300):
+        self._cache[key] = value
+        self._cache_expiry[key] = time.time() + ttl_seconds
+
     class RecaptchaForm(FlaskForm):
         username = StringField("username", validators=[DataRequired()])
         password = PasswordField("password", validators=[DataRequired()])
@@ -105,28 +124,13 @@ class WebApp():
     def logger(self, f):
         @wraps(f)
         def wrap(*args, **kwargs):
-            time_now = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Convert to string format
-            conn = self.db_configs.conn
-            cursor = conn.cursor()
-            try:
-                action = f.__name__
-                # Check if user is logged in before accessing username
-                username = flask.session.get('username', 'anonymous')
-                cursor.execute('insert into logs values (?,?,?,?,?,?)', (username, action, time_now, 'pass', None, None))
-                conn.commit()
-                return f(*args, **kwargs)
-            except Exception as e:
-                # Use the username from above or default to 'anonymous' if not set
-                username = flask.session.get('username', 'anonymous')
-                try:
-                    cursor.execute('update logs set status=?, error=? where username=? and action=? and date=?', 
-                                ('fail', str(e), username, action, time_now))
-                    conn.commit()
-                except Exception as db_error:
-                    print(f"Error updating logs: {db_error}")
-                print(e)
-                flask.flash('An error occurred. Please try again later.')
-                return flask.redirect(flask.url_for('index'))
+            user = flask.session.get('username', 'ANONYMOUS')
+            self.db_configs.conn.execute(
+                "INSERT INTO logs (username, action, date, status) VALUES (?, ?, ?, ?)",
+                (user, f.__name__, dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'success')
+            )
+            self.db_configs.conn.commit()
+            return f(*args, **kwargs)
         return wrap
 
     def run(self):
@@ -752,7 +756,7 @@ class WebApp():
                 success_count = 0
                 for id in entries_ids:
                     entry_report = utils.entry_report_maker(self.db_configs.conn, id)
-                    host_url = self.host_url
+                    host_url = self.app_configs['host_url']
                     link2entry = f"{host_url}/entry/{id}"
                     sender_email_address = self.app.config['CREDS_FILE']['SENDER_EMAIL_ADDRESS']
                     sender_username = flask.session['username']
@@ -839,7 +843,7 @@ class WebApp():
         @app.route('/logs', methods=["GET", "POST"])
         @security.admin_required
         def logs():
-            logs = operators.get_recent_logs(self.db_configs.conn, 7)
+            logs = operators.get_recent_logs(self.db_configs.conn, 2)
             return flask.render_template('logs.html', logs=logs)
 
         @app.route('/backup', methods=["GET", "POST"])
@@ -1308,7 +1312,7 @@ class WebApp():
                     'subject': f'Entry Report: {entry[7]}',
                     'txt': f"""<p>Here is the report for entry {entry[0]}</p>
                         <pre>{entry_report}</pre>""",
-                    'link2entry': f"{self.host_url}/entry/{id}",
+                    'link2entry': f"{self.app_configs['host_url']}/entry/{id}",
                     'sender_username': 'System'
                 }
                 
@@ -1452,22 +1456,23 @@ class WebApp():
         def notifications():
             limit = 10  # Initial number of notifications to show
             cursor = self.db_configs.conn.cursor()
+            
+            # Combined query to get both notifications and count in one operation
             cursor.execute("""
-                SELECT id, author, message, date, read, type, reference_id 
+                SELECT id, author, message, date, read, type, reference_id,
+                       (SELECT COUNT(*) FROM notifications WHERE destination = ?) as total_count
                 FROM notifications 
                 WHERE destination = ? 
                 ORDER BY date DESC
                 LIMIT ?
-            """, (flask.session['username'], limit))
-            notifications_raw = cursor.fetchall()
+            """, (flask.session['username'], flask.session['username'], limit))
             
-            # Get total count for checking if more exist
-            cursor.execute("""
-                SELECT COUNT(*) 
-                FROM notifications 
-                WHERE destination = ?
-            """, (flask.session['username'],))
-            total_count = cursor.fetchone()[0]
+            notifications_raw = cursor.fetchall()
+            total_count = 0
+            
+            if notifications_raw:
+                # The last column is our count from the subquery
+                total_count = notifications_raw[0][7] if len(notifications_raw[0]) > 7 else 0
             
             notifications = [
                 {
@@ -1483,9 +1488,14 @@ class WebApp():
             
             has_more = total_count > limit
             
-            return flask.render_template('notifications.html', 
+            response = flask.make_response(flask.render_template('notifications.html', 
                                        notifications=notifications,
-                                       has_more=has_more)
+                                       has_more=has_more))
+            
+            # Add cache control headers
+            response.headers['Cache-Control'] = 'private, max-age=0, must-revalidate'
+            
+            return response
 
         @app.route('/api/notifications/load-more', methods=['GET'])
         @security.login_required
@@ -1494,22 +1504,23 @@ class WebApp():
             limit = 10
             
             cursor = self.db_configs.conn.cursor()
+            
+            # Combined query to get both notifications and count in one operation
             cursor.execute("""
-                SELECT id, author, message, date, read, type, reference_id 
+                SELECT id, author, message, date, read, type, reference_id,
+                       (SELECT COUNT(*) FROM notifications WHERE destination = ?) as total_count
                 FROM notifications 
                 WHERE destination = ? 
                 ORDER BY date DESC
                 LIMIT ? OFFSET ?
-            """, (flask.session['username'], limit, offset))
-            notifications_raw = cursor.fetchall()
+            """, (flask.session['username'], flask.session['username'], limit, offset))
             
-            # Get total count for checking if more exist
-            cursor.execute("""
-                SELECT COUNT(*) 
-                FROM notifications 
-                WHERE destination = ?
-            """, (flask.session['username'],))
-            total_count = cursor.fetchone()[0]
+            notifications_raw = cursor.fetchall()
+            total_count = 0
+            
+            if notifications_raw:
+                # The last column is our count from the subquery
+                total_count = notifications_raw[0][7] if len(notifications_raw[0]) > 7 else 0
             
             notifications = [
                 {
@@ -1523,10 +1534,15 @@ class WebApp():
                 } for row in notifications_raw
             ]
             
-            return flask.jsonify({
+            response = flask.make_response(flask.jsonify({
                 'notifications': notifications,
                 'has_more': total_count > (offset + limit)
-            })
+            }))
+            
+            # Add cache control headers
+            response.headers['Cache-Control'] = 'private, max-age=0, must-revalidate'
+            
+            return response
 
         @app.route('/api/notifications/unread', methods=['GET'])
         @security.login_required
@@ -1536,14 +1552,40 @@ class WebApp():
                 if not username:
                     return flask.jsonify({'error': 'User not authenticated properly', 'notifications': []}), 401
 
+                # Generate an ETag based on username and a timestamp of the latest notification
                 cursor = self.db_configs.conn.cursor()
-                cursor.execute(""" SELECT * FROM notifications WHERE destination = ? AND read = 0 """, (username,))
+                cursor.execute("""
+                    SELECT MAX(id), MAX(date) FROM notifications WHERE destination = ? AND read = 0
+                """, (username,))
+                etag_data = cursor.fetchone()
+                
+                # Create an ETag from the max ID and date (or default if no notifications)
+                etag_value = f'W/"{username}-{etag_data[0] or 0}-{etag_data[1] or 0}"'
+                
+                # Check if client sent If-None-Match header
+                if_none_match = flask.request.headers.get('If-None-Match')
+                if if_none_match and if_none_match == etag_value:
+                    # Return 304 Not Modified if ETag matches
+                    return flask.Response(status=304)
+                
+                # Fetch unread notifications
+                cursor.execute("""
+                    SELECT id, author, message, date, type, reference_id
+                    FROM notifications 
+                    WHERE destination = ? AND read = 0
+                    ORDER BY date DESC
+                """, (username,))
 
                 notifications = cursor.fetchall()
-                columns = [column[0] for column in cursor.description]
+                columns = ['id', 'author', 'message', 'date', 'type', 'reference_id']
                 notifications_dict = [dict(zip(columns, row)) for row in notifications]
-
-                return flask.jsonify({'notifications': notifications_dict})
+                
+                # Create response with proper headers
+                response = flask.make_response(flask.jsonify({'notifications': notifications_dict}))
+                response.headers['ETag'] = etag_value
+                response.headers['Cache-Control'] = 'private, max-age=0, must-revalidate'
+                
+                return response
             except Exception as e:
                 app.logger.error(f"Error fetching unread notifications: {str(e)}")
                 return flask.jsonify({'error': 'Failed to fetch notifications', 'notifications': []}), 500
@@ -1571,14 +1613,41 @@ class WebApp():
             if cursor.rowcount == 0:
                 return flask.jsonify({'error': 'No notification found with given id'}), 404
             
-            return flask.jsonify({'success': True})
+            # Return response with no-cache header since this modifies data
+            response = flask.make_response(flask.jsonify({'success': True}))
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            
+            return response
 
         @app.route("/keyword_search", methods=["POST", "GET"])
         @security.login_required
         def keyword_search():
             searchbox = flask.request.form.get("text")
-
-            return search_engine.keyword_search_in_db(conn=self.db_configs.conn, keyword=searchbox)
+            
+            # Don't perform empty searches
+            if not searchbox or len(searchbox.strip()) == 0:
+                return flask.jsonify([])
+            
+            # Add caching for search results
+            cache_key = f'keyword_search_{flask.session["username"]}_{searchbox}'
+            cached_result = self.get_from_cache(cache_key)
+            if cached_result is not None:
+                return flask.jsonify(cached_result)
+            
+            # Continue with normal search if no cache hit
+            cursor = self.db_configs.conn.cursor()
+            
+            # Optimize the query to limit results and use LIKE once
+            query = "SELECT DISTINCT title FROM table_entries WHERE title LIKE ? LIMIT 20"
+            cursor.execute(query, (f'%{searchbox}%',))
+            
+            table_entries = cursor.fetchall()
+            results = [{"entry_name": entry[0]} for entry in table_entries]
+            
+            # Cache the results for 5 minutes
+            self.set_in_cache(cache_key, results, 300)
+            
+            return flask.jsonify(results)
             
         @app.route("/realtime_search", methods=["POST"])
         @security.login_required
@@ -1590,46 +1659,132 @@ class WebApp():
             offset = int(search_params.get('offset', 0))
             limit = int(search_params.get('limit', 10))
             
-            # Perform the search
-            entries_list = search_engine.realtime_filter_entries(
-                self.db_configs.conn, 
-                search_params,
-                offset=offset,
-                limit=limit
-            )
+            # Check cache before performing search
+            cache_key = f"realtime_search_{flask.session['username']}_{hash(frozenset(search_params.items()))}"
+            cached_result = self.get_from_cache(cache_key)
             
-            # Count total results for pagination
-            total_count = search_engine.count_matching_entries(
-                self.db_configs.conn,
-                search_params
-            )
+            if cached_result is not None:
+                return flask.jsonify(cached_result)
             
-            # Format entries for display
-            entries_dict_list = []
-            for entry in entries_list:
-                entries_dict_list.append({
-                    'hash_id': entry[0],
-                    'tags': entry[1],
-                    'author': entry[5],
-                    'date': entry[4],
-                    'conditions': entry[6],
-                    'title': entry[7],
-                    'id': entry[9]
-                })
-            
-            # Return the results as JSON
-            return flask.jsonify({
-                'entries': entries_dict_list,
-                'total_count': total_count,
-                'has_more': total_count > (offset + limit)
-            })
-
+            try:
+                # Perform the search
+                entries_list = search_engine.realtime_filter_entries(
+                    self.db_configs.conn, 
+                    search_params,
+                    offset=offset,
+                    limit=limit
+                )
+                
+                # Count total results for pagination
+                total_count = search_engine.count_matching_entries(
+                    self.db_configs.conn,
+                    search_params
+                )
+                
+                # Format entries for display
+                entries_dict_list = []
+                for entry in entries_list:
+                    # Handle tags - check if it's a string or list to avoid errors
+                    if isinstance(entry[1], str):
+                        tags = entry[1].split(',') if entry[1] else []
+                    else:
+                        tags = entry[1] if entry[1] else []
+                    
+                    # Handle conditions - check if it's a string or list to avoid errors
+                    if isinstance(entry[6], str):
+                        conditions = entry[6].split(',') if entry[6] else []
+                    else:
+                        conditions = entry[6] if entry[6] else []
+                    
+                    entries_dict_list.append({
+                        'hash_id': entry[0],
+                        'tags': tags,
+                        'author': entry[5],
+                        'date': entry[4],
+                        'conditions': conditions,
+                        'title': entry[7],
+                        'id': entry[9]
+                    })
+                
+                # Prepare response
+                result = {
+                    'entries': entries_dict_list,
+                    'total_count': total_count,
+                    'has_more': total_count > (offset + limit)
+                }
+                
+                # Cache results for a short time (10 seconds)
+                self.set_in_cache(cache_key, result, 10)
+                
+                # Return the results as JSON with cache headers
+                response = flask.make_response(flask.jsonify(result))
+                response.headers['Cache-Control'] = 'private, max-age=10'
+                
+                return response
+            except Exception as e:
+                app.logger.error(f"Error in realtime_search: {str(e)}")
+                return flask.jsonify({
+                    'error': 'An error occurred during search',
+                    'entries': [],
+                    'total_count': 0,
+                    'has_more': False
+                }), 500
+        
         @app.route('/forgot_password', methods=['GET', 'POST'])
-        # @self.logger
         def forgot_password():
             if flask.request.method == 'GET':
                 return flask.render_template('forgot_password.html')
-            return flask.redirect(flask.url_for('login'))
+            
+            # For POST requests, handle password reset request
+            email = flask.request.form.get('email')
+            if not email:
+                flask.flash('Email is required', 'danger')
+                return flask.render_template('forgot_password.html')
+                
+            # Check if email exists in database
+            cursor = self.db_configs.conn.cursor()
+            cursor.execute('SELECT id FROM users WHERE email=?', (email,))
+            user = cursor.fetchone()
+            
+            if not user:
+                # Don't reveal if email exists
+                flask.flash('If your email is registered, you will receive password reset instructions shortly.', 'info')
+                return flask.render_template('forgot_password.html')
+                
+            # Generate reset token
+            reset_token = secrets.token_urlsafe(32)
+            expiry = dt.datetime.now() + dt.timedelta(hours=24)
+            
+            # Store token in database
+            cursor.execute('UPDATE users SET reset_token=?, reset_token_expiry=? WHERE email=?',
+                          (reset_token, expiry, email))
+            self.db_configs.conn.commit()
+            
+            # Send email with reset link
+            reset_link = f"{flask.request.host_url}reset_password/{reset_token}"
+            email_body = f"""
+            Hello,
+            
+            You have requested to reset your password. Please click the link below to reset your password:
+            
+            {reset_link}
+            
+            This link will expire in 24 hours.
+            
+            If you did not request a password reset, please ignore this email.
+            
+            Regards,
+            Data Manager Team
+            """
+            
+            try:
+                mailing.send_email(recipient=email, subject="Password Reset Request", message=email_body)
+                flask.flash('Password reset instructions have been sent to your email.', 'success')
+            except Exception as e:
+                app.logger.error(f"Error sending password reset email: {str(e)}")
+                flask.flash('Error sending email. Please try again later.', 'danger')
+                
+            return flask.render_template('forgot_password.html')
 
         @app.route('/request_password_reset', methods=['POST'])
         # @self.logger
@@ -1672,7 +1827,7 @@ class WebApp():
                 self.db_configs.conn.commit()
                 
                 # Send email with reset link
-                reset_link = f"{self.host_url}/reset_password/{token}"
+                reset_link = f"{self.app_configs['host_url']}/reset_password/{token}"
                 mail_args = {
                     'receiver_email': email,
                     'sender_email': self.app.config['CREDS_FILE']['SENDER_EMAIL_ADDRESS'],

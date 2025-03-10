@@ -8,6 +8,18 @@ function debounce(func, wait) {
   };
 }
 
+// Add throttle function for operations that need rate limiting but should execute immediately first
+function throttle(func, wait) {
+  let lastCall = 0;
+  return function(...args) {
+    const now = Date.now();
+    if (now - lastCall >= wait) {
+      lastCall = now;
+      return func.apply(this, args);
+    }
+  };
+}
+
 function put_text(id_parent, id, txt) {     
   document.getElementById(id).value = txt;
   document.getElementById(id_parent).style.display = "none";
@@ -519,137 +531,223 @@ $(document).ready(function(){
   }
 });
 
+// Optimized notification handling system
+// Global notification state
+const notificationState = {
+  etag: null,
+  lastCount: 0,
+  interval: null,
+  isPollingActive: true,
+  isVisible: !document.hidden,
+  pendingRequest: false
+};
+
 function loadNotifications() {
-    $.get('/api/notifications/unread')
-        .done(function(response) {
-            const notifications = response.notifications || [];
-            const $notificationList = $('#notificationList');
-            const $badge = $('.notification-badge');
-            
-            $notificationList.empty();
-            
-            if (notifications.length > 0) {
-                $badge.text(notifications.length).show();
-                
-                notifications.forEach(function(notification) {
-                    const notificationHtml = `
-                        <li>
-                            <a href="#" class="dropdown-item notification-item" 
-                              data-notification-id="${notification.id}"
-                              onclick="event.preventDefault();">
-                                <div class="notification-message">${notification.message}</div>
-                                <div class="notification-time">
-                                    <small class="text-muted">From: ${notification.author}</small>
-                                    <small class="text-muted float-end">${new Date(notification.date).toLocaleString()}</small>
-                                </div>
-                            </a>
-                        </li>
-                    `;
-                    $notificationList.append(notificationHtml);
-                });
-            } else {
-                $badge.hide();
-                $notificationList.html('<li><span class="dropdown-item text-muted">No new notifications</span></li>');
-            }
-        })
-        .fail(function(error) {
-            console.error('Error loading notifications:', error);
-        });
+  // Skip if another request is in progress or tab is hidden
+  if (notificationState.pendingRequest || !notificationState.isVisible) {
+    return;
+  }
+  
+  notificationState.pendingRequest = true;
+  
+  // Prepare fetch options with conditional header if we have an ETag
+  const fetchOptions = {
+    method: 'GET',
+    headers: {}
+  };
+  
+  if (notificationState.etag) {
+    fetchOptions.headers['If-None-Match'] = notificationState.etag;
+  }
+  
+  fetch('/api/notifications/unread', fetchOptions)
+    .then(response => {
+      // Store the new ETag if provided
+      const newEtag = response.headers.get('ETag');
+      if (newEtag) {
+        notificationState.etag = newEtag;
+      }
+      
+      // If response is 304 Not Modified, no need to process data
+      if (response.status === 304) {
+        return { notifications: [] };
+      }
+      
+      return response.json();
+    })
+    .then(data => {
+      const notifications = data.notifications || [];
+      const $notificationList = $('#notificationList');
+      const $badge = $('.notification-badge');
+      
+      // Only update DOM if notification count has changed
+      if (notificationState.lastCount !== notifications.length || $notificationList.children().length === 0) {
+        notificationState.lastCount = notifications.length;
+        
+        // Use document fragment for efficient DOM operations
+        const fragment = document.createDocumentFragment();
+        
+        if (notifications.length > 0) {
+          $badge.text(notifications.length).show();
+          
+          notifications.forEach(function(notification) {
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <a href="#" class="dropdown-item notification-item" 
+                data-notification-id="${notification.id}"
+                onclick="event.preventDefault();">
+                  <div class="notification-message">${notification.message}</div>
+                  <div class="notification-time">
+                      <small class="text-muted">From: ${notification.author}</small>
+                      <small class="text-muted float-end">${new Date(notification.date).toLocaleString()}</small>
+                  </div>
+              </a>
+            `;
+            fragment.appendChild(li);
+          });
+          
+          // Clear and append in one operation
+          $notificationList.empty()[0].appendChild(fragment);
+        } else {
+          $badge.hide();
+          $notificationList.html('<li><span class="dropdown-item text-muted">No new notifications</span></li>');
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error loading notifications:', error);
+    })
+    .finally(() => {
+      notificationState.pendingRequest = false;
+    });
 }
 
-// Mark notification as read when clicked
-$(document).on('click', '.notification-item', function(e) {
-    e.preventDefault();
-    const $this = $(this);
-    const notificationId = $this.data('notification-id');
-    
-    // Debug log to check the ID
-    console.log('Marking notification as read:', notificationId);
-    
-    $.ajax({
-        url: '/api/notifications/mark-read',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ id: notificationId }),
-        error: function(xhr, status, error) {
-            console.error('Error marking notification as read:', error);
-            console.error('Response:', xhr.responseText);
-        },
-        success: function() {
-            $this.removeClass('unread');
-            loadNotifications();
-        }
-    });
-});
-
-// Load notifications periodically
-$(document).ready(function() {
-    loadNotifications();
-    setInterval(loadNotifications, 30000); // Refresh every 30 seconds
-});
-
-// Keyword search autocomplete
-$(document).ready(function(){
-  if ($("#keyword_search").length) {
-    $("#keyword_search").on("input", function(e){
-      $("#keyword_search_datalist").css("display", "block");
-      $("#keyword_search_datalist").empty();
-      
-      $.ajax({
-          method: "post",
-          url: "/keyword_search",
-          data: {text: $("#keyword_search").val()},
-          success: function(res){
-              var data = "";
-              $.each(res, function(index, value){
-                  data += "<a class='search dropdown-item' onclick='put_text(`keyword_search_datalist`, `keyword_search`, `"+value['entry_name']+"`)'>";
-                  data += value['entry_name']+"</a>";
-              });
-              data += "</ul>";
-              $("#keyword_search_datalist").html(data);
-          }
-      });
-    });
-    
-    $(document).click(function(e) {
-      if (!$(e.target).is('#keyword_search') && $("#keyword_search_datalist").length) {
-        $("#keyword_search_datalist").css("display", "none");
-      }
-    });
+// Update visibility state when tab visibility changes
+document.addEventListener('visibilitychange', function() {
+  notificationState.isVisible = !document.hidden;
+  
+  if (document.hidden) {
+    // Tab is hidden, clear interval to save resources
+    if (notificationState.interval) {
+      clearInterval(notificationState.interval);
+      notificationState.interval = null;
+    }
+    notificationState.isPollingActive = false;
+  } else {
+    // Tab is visible again, check for notifications immediately
+    // and restart polling
+    if (!notificationState.isPollingActive) {
+      loadNotifications();
+      notificationState.interval = setInterval(loadNotifications, 30000);
+      notificationState.isPollingActive = true;
+    }
   }
 });
 
-// Load more search results
+// Optimized notification click handler using event delegation
+$(document).on('click', '.notification-item', function(e) {
+  e.preventDefault();
+  const $this = $(this);
+  const notificationId = $this.data('notification-id');
+  
+  // Prevent duplicate clicks
+  if ($this.hasClass('processing')) {
+    return;
+  }
+  
+  $this.addClass('processing');
+  
+  fetch('/api/notifications/mark-read', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ id: notificationId })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to mark notification as read');
+    }
+    return response.json();
+  })
+  .then(() => {
+    $this.removeClass('unread');
+    loadNotifications();
+  })
+  .catch(error => {
+    console.error('Error marking notification as read:', error);
+  })
+  .finally(() => {
+    $this.removeClass('processing');
+  });
+});
+
+// Initialize notification system
+$(document).ready(function() {
+  // Load notifications immediately
+  loadNotifications();
+  
+  // Set up interval for polling
+  notificationState.interval = setInterval(loadNotifications, 30000); // Refresh every 30 seconds
+  
+  // Pause polling when dropdown is open (user is viewing notifications)
+  $('.notification-dropdown').parent().on('shown.bs.dropdown', function() {
+    if (notificationState.interval) {
+      clearInterval(notificationState.interval);
+      notificationState.interval = null;
+    }
+  });
+  
+  // Resume polling when dropdown is closed
+  $('.notification-dropdown').parent().on('hidden.bs.dropdown', function() {
+    if (!notificationState.interval && notificationState.isVisible) {
+      notificationState.interval = setInterval(loadNotifications, 30000);
+    }
+  });
+});
+
+// Optimized load more results functionality
 $(document).ready(function() {
   let currentOffset = 10; // Start after the first 10 entries
+  let isLoadingMore = false;
   
   $("#loadMoreResults").on("click", function() {
+    // Prevent multiple simultaneous requests
+    if (isLoadingMore) return;
+    
     const button = $(this);
     button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...');
+    isLoadingMore = true;
     
-    $.ajax({
-      url: '/load_more_entries',
-      method: 'GET',
-      data: { offset: currentOffset },
-      success: function(response) {
+    fetch('/load_more_entries?offset=' + currentOffset)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(response => {
         if (response.entries && response.entries.length > 0) {
-          // Add the new entries to the table
-          const tableBody = $('table tbody');
+          // Use document fragment for better performance
+          const tableBody = document.querySelector('table tbody');
+          const fragment = document.createDocumentFragment();
           
           response.entries.forEach(function(entry) {
-            const row = `
-              <tr>
-                <td class="text-center"><input type="checkbox" name="selected_entries" value="${entry.id}" class="form-check-input entry-checkbox"></td>
-                <td><a href="/entry/${entry.id}">${entry.title || 'Untitled'}</a></td>
-                <td>${entry.hash_id || ''}</td>
-                <td>${entry.date || ''}</td>
-                <td>${entry.author || ''}</td>
-                <td>${entry.tags || ''}</td>
-                <td>${entry.conditions || ''}</td>
-              </tr>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td class="text-center"><input type="checkbox" name="selected_entries" value="${entry.id}" class="form-check-input entry-checkbox"></td>
+              <td><a href="/entry/${entry.id}">${entry.title || 'Untitled'}</a></td>
+              <td>${entry.hash_id || ''}</td>
+              <td>${entry.date || ''}</td>
+              <td>${entry.author || ''}</td>
+              <td>${entry.tags || ''}</td>
+              <td>${entry.conditions || ''}</td>
             `;
-            tableBody.append(row);
+            fragment.appendChild(row);
           });
+          
+          // Append all rows in one operation
+          tableBody.appendChild(fragment);
           
           // Update the offset for the next load
           currentOffset = response.next_offset;
@@ -661,13 +759,14 @@ $(document).ready(function() {
         } else {
           button.hide();
         }
-        
-        button.prop('disabled', false).html('<i class="bi bi-arrow-down-circle me-1"></i> Show More Results');
-      },
-      error: function() {
-        button.prop('disabled', false).html('<i class="bi bi-arrow-down-circle me-1"></i> Show More Results');
+      })
+      .catch(error => {
+        console.error('Error loading more results:', error);
         alert('Error loading more results. Please try again.');
-      }
-    });
+      })
+      .finally(() => {
+        button.prop('disabled', false).html('<i class="bi bi-arrow-down-circle me-1"></i> Show More Results');
+        isLoadingMore = false;
+      });
   });
 });

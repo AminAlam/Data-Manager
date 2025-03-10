@@ -5,6 +5,7 @@
 
 // Cache DOM queries for performance
 let resultsContainer, resultsForm, formAction;
+let tableCache = new Map(); // Cache for table HTML to avoid rebuilding
 
 /**
  * Performance optimized version - Submits the form with the specified action
@@ -71,16 +72,18 @@ function submitForm(action) {
             })
             .then(html => {
                 if (html) {
-                    // Update the page with the response
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = html;
+                    // Use DOM Parser instead of creating a div
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
                     
                     // Find the results container in the response
-                    const newResults = tempDiv.querySelector('#resultsContainer');
+                    const newResults = doc.querySelector('#resultsContainer');
                     if (newResults && resultsContainer) {
                         resultsContainer.innerHTML = newResults.innerHTML;
                         // Reinitialize any event handlers for the new content
                         initializeTableSorting();
+                        // Clear the table cache
+                        tableCache.clear();
                     } else {
                         // Fallback - reload the page
                         window.location.reload();
@@ -111,7 +114,26 @@ function submitForm(action) {
             if (actionInput && form) {
                 // Use optimized approach for the fallback case
                 actionInput.value = action;
-                form.submit();
+                
+                // Use fetch API for better performance here too
+                const formData = new FormData(form);
+                
+                fetch(form.action, {
+                    method: form.method || 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        window.location.reload();
+                    }
+                })
+                .catch(() => {
+                    // Fallback on error
+                    form.submit();
+                });
+                
                 return;
             }
             
@@ -123,7 +145,39 @@ function submitForm(action) {
         
         if (resultsForm && actionInput) {
             actionInput.value = action;
-            resultsForm.submit();
+            
+            // Use FormData and fetch here as well
+            const formData = new FormData(resultsForm);
+            
+            fetch(resultsForm.action, {
+                method: resultsForm.method || 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    return response.text();
+                }
+            })
+            .then(html => {
+                if (html) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const newResults = doc.querySelector('#resultsContainer');
+                    if (newResults && resultsContainer) {
+                        resultsContainer.innerHTML = newResults.innerHTML;
+                        initializeTableSorting();
+                        tableCache.clear();
+                    } else {
+                        window.location.reload();
+                    }
+                }
+            })
+            .catch(() => {
+                resultsForm.submit();
+            });
         } else {
             console.error('Results form or action input element not found');
         }
@@ -148,10 +202,16 @@ function copy_2_clipboard(element) {
     tooltip.style.padding = '5px 10px';
     tooltip.style.borderRadius = '3px';
     tooltip.style.zIndex = '1000';
+    
     document.body.appendChild(tooltip);
     
+    // Fade out and remove the tooltip after 1 second
     setTimeout(() => {
-        tooltip.remove();
+        tooltip.style.transition = 'opacity 0.5s';
+        tooltip.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(tooltip);
+        }, 500);
     }, 1000);
 }
 
@@ -210,6 +270,48 @@ function initializeTableSorting() {
   } else {
     console.warn('Table sorting function not available. Make sure table_sorting.js is loaded.');
   }
+}
+
+/**
+ * Updates the count of selected items and enables/disables bulk action buttons
+ */
+function updateSelectedCount() {
+    const selectedCount = document.querySelectorAll('.entry-checkbox:checked').length;
+    const countElement = document.getElementById('selectedCount');
+    const bulkActionButtons = document.querySelectorAll('.bulk-action-btn');
+    
+    // Update the count display
+    if (countElement) {
+        countElement.textContent = selectedCount;
+    }
+    
+    // Enable or disable bulk action buttons based on selection
+    bulkActionButtons.forEach(button => {
+        button.disabled = selectedCount === 0;
+    });
+}
+
+/**
+ * Initializes all table-related event handlers
+ */
+function initializeTableEvents() {
+    // Set up event listeners for table interactions
+    document.querySelectorAll('.entry-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Setup any click handlers on table rows
+    document.querySelectorAll('tr[data-entry-id]').forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Only handle clicks on the row itself, not on checkboxes or buttons
+            if (e.target.type !== 'checkbox' && !e.target.closest('button')) {
+                const entryId = this.getAttribute('data-entry-id');
+                if (entryId) {
+                    window.location.href = `/entry/${entryId}`;
+                }
+            }
+        });
+    });
 }
 
 // Use passive event listeners for better scroll performance
