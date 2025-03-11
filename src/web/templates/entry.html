@@ -159,7 +159,7 @@
                         </td>
                         <td class="align-middle">{{ file[2] }}</td>
                         <td class="text-center">
-                          <a href="{{ url_for('send_entry_file', entry_id=entry['id'], path=file[1]) }}" 
+                          <a href="{{ url_for('send_entry_file', entry_id=entry['id'], path=file[2]) }}" 
                              class="btn btn-sm btn-outline-primary" title="Download file">
                             <i class="bi bi-download"></i>
                           </a>
@@ -182,7 +182,7 @@
             <!-- Action Buttons -->
             <div class="d-flex justify-content-between align-items-center mt-4">
               <div>
-                {% if entry[5]==session['username'] or session['admin'] %}
+                {% if entry['author']==session['username'] or session['admin'] %}
                 <button class="btn btn-primary me-2" type="submit">
                   <i class="bi bi-save me-1"></i> Update Entry
                 </button>

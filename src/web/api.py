@@ -478,7 +478,7 @@ class WebApp():
 
             for count, filename in enumerate(List):
                 List[count] = [os.path.join(app.config['UPLOAD_FOLDER'], hash_id, filename), f"{slef_made_codes_inv_map['remove']}&{filename}", filename]
-
+                print(List[count])
             Files = List
             conditions = utils.read_json_file(self.app.config['CONDITIONS_JSON'])
             conditions = utils.modify_conditions_json(conditions, target_conditions)
@@ -668,10 +668,10 @@ class WebApp():
         @security.login_required
         def send_entry_file(entry_id, path):
             if '/' not in path:
-                cwd = os.getcwd()
-                cwd = os.path.join(cwd, app.config['UPLOAD_FOLDER'])
+                cwd = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'])
                 hash_id = utils.get_hash_id_by_entry_id(self.db_configs.conn, entry_id)
                 path = os.path.join(hash_id, path)
+                print(path)
                 return flask.send_from_directory(cwd, path, as_attachment=True)
 
         @app.route('/send_protocol_file/<path:path>')
@@ -2061,6 +2061,285 @@ class WebApp():
                     return flask.jsonify({
                         'success': False,
                         'message': 'Error adding entry'
+                    }), 500
+                
+            except Exception as e:
+                utils.error_log(str(e))
+                return flask.jsonify({
+                    'success': False,
+                    'message': f'Server error: {str(e)}'
+                }), 500
+
+        @app.route('/api/browser_addon/get_entries_by_url', methods=['POST'])
+        def browser_addon_get_entries_by_url():
+            """
+            API endpoint for browser add-on to get entries by URL.
+            Requires API key authentication.
+            
+            Expected JSON payload:
+            {
+                "username": "username",
+                "api_key": "api_key",
+                "url": "https://docs.google.com/..."
+            }
+            
+            Returns:
+            {
+                "success": true,
+                "entries": [
+                    {
+                        "id": 123,
+                        "hash_id": "abcdef1234567890",
+                        "entry_name": "Document Title",
+                        "author": "username",
+                        "date": "YYYY-MM-DD HH:MM:SS",
+                        "tags": "tag1, tag2, tag3",
+                        "notes": "Notes about the document",
+                        "file_path": "https://docs.google.com/..."
+                    },
+                    ...
+                ]
+            }
+            """
+            try:
+                data = flask.request.json
+                
+                # Validate required fields
+                required_fields = ['username', 'api_key', 'url']
+                for field in required_fields:
+                    if field not in data or not data[field]:
+                        return flask.jsonify({
+                            'success': False,
+                            'message': f'Missing required field: {field}'
+                        }), 400
+                
+                # Authenticate user
+                user = operators.get_user_by_username(self.db_configs.conn, data['username'])
+                if not user:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'User not found'
+                    }), 401
+                
+                # Check API key
+                cursor = self.db_configs.conn.cursor()
+                cursor.execute('SELECT api_key FROM users WHERE username = ?', (data['username'],))
+                result = cursor.fetchone()
+                
+                if not result or not result[0]:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'API key not configured for user'
+                    }), 401
+                
+                stored_api_key = result[0]
+                if stored_api_key != data['api_key']:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'Invalid API key'
+                    }), 401
+                
+                # Get URL from request
+                url = data['url']
+                
+                # Query the database for entries with the given URL
+                cursor = self.db_configs.conn.cursor()
+                
+                # Search for entries with the exact URL in the File_Path field
+                query = """
+                SELECT 
+                    id, id_hash, entry_name, author, date, tags, extra_txt, file_path 
+                FROM 
+                    entries 
+                WHERE 
+                    file_path = ? AND 
+                    author = ?
+                ORDER BY 
+                    date DESC
+                """
+                
+                cursor.execute(query, (url, data['username']))
+                entries = cursor.fetchall()
+                columns = [column[0] for column in cursor.description]
+                entries = [dict(zip(columns, entry)) for entry in entries]
+                
+                # Format entries for response
+                formatted_entries = []
+                for entry in entries:
+                    formatted_entries.append({
+                        'id': entry['id'],
+                        'hash_id': entry['id_hash'],
+                        'entry_name': entry['entry_name'],
+                        'author': entry['author'],
+                        'date': entry['date'],
+                        'tags': entry['tags'],
+                        'notes': entry['extra_txt'],
+                        'file_path': entry['file_path']
+                    })
+                
+                return flask.jsonify({
+                    'success': True,
+                    'entries': formatted_entries
+                })
+                
+            except Exception as e:
+                utils.error_log(str(e))
+                return flask.jsonify({
+                    'success': False,
+                    'message': f'Server error: {str(e)}'
+                }), 500
+
+        @app.route('/api/browser_addon/update_entry', methods=['POST'])
+        def browser_addon_update_entry():
+            """
+            API endpoint for browser add-on to update an existing entry.
+            Requires API key authentication.
+            
+            Expected JSON payload:
+            {
+                "username": "username",
+                "api_key": "api_key",
+                "id": 123,             # Entry ID or hash_id to update
+                "entry_name": "Updated Document Title",
+                "url": "https://docs.google.com/...",
+                "notes": "Updated notes about the document",
+                "tags": "tag1,tag2,tag3",
+                "document_type": "Google Sheet/Google Doc/Google Slide",
+                "date": "YYYY-MM-DD HH:MM:SS" (optional, defaults to current datetime)
+            }
+            """
+            try:
+                data = flask.request.json
+                
+                # Validate required fields
+                required_fields = ['username', 'api_key', 'id', 'entry_name', 'url']
+                for field in required_fields:
+                    if field not in data or not data[field]:
+                        return flask.jsonify({
+                            'success': False,
+                            'message': f'Missing required field: {field}'
+                        }), 400
+                
+                # Authenticate user
+                user = operators.get_user_by_username(self.db_configs.conn, data['username'])
+                if not user:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'User not found'
+                    }), 401
+                
+                # Check API key
+                cursor = self.db_configs.conn.cursor()
+                cursor.execute('SELECT api_key FROM users WHERE username = ?', (data['username'],))
+                result = cursor.fetchone()
+                
+                if not result or not result[0]:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'API key not configured for user'
+                    }), 401
+                
+                stored_api_key = result[0]
+                if stored_api_key != data['api_key']:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'Invalid API key'
+                    }), 401
+                
+                # Check if entry exists and belongs to the user
+                cursor = self.db_configs.conn.cursor()
+                
+                # Determine if id is a numeric ID or a hash_id
+                entry_id = data['id']
+                if isinstance(entry_id, str) and not entry_id.isdigit():
+                    # It's a hash_id
+                    cursor.execute('SELECT id, Author FROM entries WHERE hash_id = ?', (entry_id,))
+                else:
+                    # It's a numeric ID
+                    cursor.execute('SELECT id, Author FROM entries WHERE id = ?', (entry_id,))
+                
+                entry = cursor.fetchone()
+                
+                if not entry:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'Entry not found'
+                    }), 404
+                
+                # Ensure user owns the entry
+                if entry[1] != data['username']:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'You do not have permission to update this entry'
+                    }), 403
+                
+                # Get the actual numeric ID
+                numeric_id = entry[0]
+                
+                # Process entry data
+                author = data['username']
+                
+                # Handle date - use provided date or current datetime
+                if 'date' in data and data['date']:
+                    # Validate date format
+                    try:
+                        # Parse the date to ensure it's valid
+                        dt.datetime.strptime(data['date'], "%Y-%m-%d")
+                        date = data['date']
+                    except ValueError:
+                        # If invalid format, use current datetime
+                        date = dt.datetime.now().strftime("%Y-%m-%d")
+                else:
+                    date = dt.datetime.now().strftime("%Y-%m-%d")
+                
+                tags = data.get('tags', '')
+                file_path = data.get('url', '')
+                notes = data.get('notes', '')
+                    
+                entry_name = data.get('entry_name', '')
+                
+                # Update entry in the database
+                try:
+                    cursor = self.db_configs.conn.cursor()
+                    update_query = """
+                    UPDATE entries 
+                    SET 
+                        entry_name = ?, 
+                        date = ?, 
+                        tags = ?, 
+                        file_path = ?,
+                        extra_txt = ?
+                    WHERE 
+                        id = ?
+                    """
+                    cursor.execute(update_query, (
+                        entry_name,
+                        date,
+                        tags,
+                        file_path,
+                        notes,
+                        numeric_id
+                    ))
+                    self.db_configs.conn.commit()
+                    
+                    # Get the hash_id for the response
+                    cursor.execute('SELECT id_hash FROM entries WHERE id = ?', (numeric_id,))
+                    hash_id_result = cursor.fetchone()
+                    hash_id = hash_id_result[0] if hash_id_result else None
+                    
+                    return flask.jsonify({
+                        'success': True,
+                        'message': 'Entry updated successfully',
+                        'id': numeric_id,
+                        'hash_id': hash_id
+                    })
+                    
+                except Exception as e:
+                    self.db_configs.conn.rollback()
+                    utils.error_log(f"Error updating entry: {str(e)}")
+                    return flask.jsonify({
+                        'success': False,
+                        'message': f'Error updating entry: {str(e)}'
                     }), 500
                 
             except Exception as e:
