@@ -1,7 +1,7 @@
 {
-  "name": "Data Manager - Google Drive Integration",
-  "version": "1.0",
-  "description": "Add Google Drive documents directly to your Data Manager",
+  "name": "Data Manager",
+  "version": "1.1",
+  "description": "Easily save and manage web documents in your Data Manager system",
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html"

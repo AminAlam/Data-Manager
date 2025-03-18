@@ -75,6 +75,7 @@ class WebApp():
         self.num_threads = num_threads
         self.mailing_bool = mailing_bool
         self.host_url = host_url
+        self.app.config['host_url'] = host_url
 
         # Initialize cache storage
         self._cache = {}
@@ -756,7 +757,7 @@ class WebApp():
                 success_count = 0
                 for id in entries_ids:
                     entry_report = utils.entry_report_maker(self.db_configs.conn, id)
-                    host_url = self.app_configs['host_url']
+                    host_url = self.app.config['host_url']
                     link2entry = f"{host_url}/entry/{id}"
                     sender_email_address = self.app.config['CREDS_FILE']['SENDER_EMAIL_ADDRESS']
                     sender_username = flask.session['username']
@@ -1976,13 +1977,6 @@ class WebApp():
                 tags = data.get('tags', '')
                 file_path = data.get('url', '')
                 notes = data.get('notes', '')
-                
-                # Add document type information to notes
-                doc_type = data.get('document_type', 'Google Document')
-                if notes:
-                    notes = f"Type: {doc_type}\n\n{notes}"
-                else:
-                    notes = f"Type: {doc_type}"
                     
                 entry_name = data['entry_name']
                 parent_entry = data.get('parent_entry', '')
@@ -2279,18 +2273,7 @@ class WebApp():
                 # Process entry data
                 author = data['username']
                 
-                # Handle date - use provided date or current datetime
-                if 'date' in data and data['date']:
-                    # Validate date format
-                    try:
-                        # Parse the date to ensure it's valid
-                        dt.datetime.strptime(data['date'], "%Y-%m-%d")
-                        date = data['date']
-                    except ValueError:
-                        # If invalid format, use current datetime
-                        date = dt.datetime.now().strftime("%Y-%m-%d")
-                else:
-                    date = dt.datetime.now().strftime("%Y-%m-%d")
+
                 
                 tags = data.get('tags', '')
                 file_path = data.get('url', '')
@@ -2305,7 +2288,6 @@ class WebApp():
                     UPDATE entries 
                     SET 
                         entry_name = ?, 
-                        date = ?, 
                         tags = ?, 
                         file_path = ?,
                         extra_txt = ?
@@ -2314,7 +2296,6 @@ class WebApp():
                     """
                     cursor.execute(update_query, (
                         entry_name,
-                        date,
                         tags,
                         file_path,
                         notes,

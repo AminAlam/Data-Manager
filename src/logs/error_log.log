@@ -19739,3 +19739,6 @@
 2025-03-10 13:08:04,839 - error_log - ERROR - <class 'sqlite3.IntegrityError'> in operators.py at line 36: UNIQUE constraint failed: users.username
 2025-03-10 13:08:04,839 - error_log - ERROR - <class 'sqlite3.IntegrityError'> in operators.py at line 36: UNIQUE constraint failed: users.username
 2025-03-10 13:08:04,839 - error_log - ERROR - <class 'sqlite3.IntegrityError'> in operators.py at line 36: UNIQUE constraint failed: users.username
+2025-03-10 13:40:38,400 - error_log - ERROR - <class 'sqlite3.OperationalError'> in api.py at line 2161: no such column: hash_id
+2025-03-10 18:56:10,421 - error_log - ERROR - <class 'sqlite3.OperationalError'> in api.py at line 2322: Error updating entry: no such column: Notes
+2025-03-10 18:57:00,808 - error_log - ERROR - <class 'sqlite3.OperationalError'> in api.py at line 2333: Error updating entry: no such column: hash_id

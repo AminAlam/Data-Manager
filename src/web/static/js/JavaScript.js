@@ -539,7 +539,9 @@ const notificationState = {
   interval: null,
   isPollingActive: true,
   isVisible: !document.hidden,
-  pendingRequest: false
+  pendingRequest: false,
+  errorCount: 0,   // Add an error counter
+  maxErrors: 5     // Maximum consecutive errors before disabling auto-refresh
 };
 
 function loadNotifications() {
@@ -548,12 +550,24 @@ function loadNotifications() {
     return;
   }
   
+  // Skip if we've had too many consecutive errors
+  if (notificationState.errorCount >= notificationState.maxErrors) {
+    console.warn('Notification polling disabled due to consecutive errors');
+    if (notificationState.interval) {
+      clearInterval(notificationState.interval);
+      notificationState.interval = null;
+    }
+    return;
+  }
+  
   notificationState.pendingRequest = true;
   
   // Prepare fetch options with conditional header if we have an ETag
   const fetchOptions = {
     method: 'GET',
-    headers: {}
+    headers: {},
+    // Add timeout to prevent hanging requests
+    signal: AbortSignal.timeout(10000) // 10 seconds timeout
   };
   
   if (notificationState.etag) {
@@ -562,6 +576,9 @@ function loadNotifications() {
   
   fetch('/api/notifications/unread', fetchOptions)
     .then(response => {
+      // Reset error counter on successful response
+      notificationState.errorCount = 0;
+      
       // Store the new ETag if provided
       const newEtag = response.headers.get('ETag');
       if (newEtag) {
@@ -571,6 +588,10 @@ function loadNotifications() {
       // If response is 304 Not Modified, no need to process data
       if (response.status === 304) {
         return { notifications: [] };
+      }
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
       
       return response.json();
@@ -616,11 +637,22 @@ function loadNotifications() {
     })
     .catch(error => {
       console.error('Error loading notifications:', error);
+      // Increment error counter
+      notificationState.errorCount++;
+      
+      // If we've had multiple errors, slow down the polling
+      if (notificationState.errorCount > 2 && notificationState.interval) {
+        clearInterval(notificationState.interval);
+        notificationState.interval = setInterval(loadNotifications, 60000); // Increase to 60 seconds
+      }
     })
     .finally(() => {
       notificationState.pendingRequest = false;
     });
 }
+
+// Use a throttled version for initialization to prevent excessive calls
+const throttledLoadNotifications = throttle(loadNotifications, 2000);
 
 // Update visibility state when tab visibility changes
 document.addEventListener('visibilitychange', function() {
@@ -684,26 +716,34 @@ $(document).on('click', '.notification-item', function(e) {
 
 // Initialize notification system
 $(document).ready(function() {
-  // Load notifications immediately
-  loadNotifications();
-  
-  // Set up interval for polling
-  notificationState.interval = setInterval(loadNotifications, 30000); // Refresh every 30 seconds
-  
-  // Pause polling when dropdown is open (user is viewing notifications)
-  $('.notification-dropdown').parent().on('shown.bs.dropdown', function() {
-    if (notificationState.interval) {
-      clearInterval(notificationState.interval);
-      notificationState.interval = null;
-    }
-  });
-  
-  // Resume polling when dropdown is closed
-  $('.notification-dropdown').parent().on('hidden.bs.dropdown', function() {
-    if (!notificationState.interval && notificationState.isVisible) {
-      notificationState.interval = setInterval(loadNotifications, 30000);
-    }
-  });
+  try {
+    // Load notifications after a slight delay to ensure page is fully loaded
+    setTimeout(() => {
+      throttledLoadNotifications();
+      
+      // Set up interval for polling with a more conservative interval
+      if (!notificationState.interval && notificationState.isVisible) {
+        notificationState.interval = setInterval(loadNotifications, 30000); // Refresh every 30 seconds
+      }
+    }, 1000);
+    
+    // Pause polling when dropdown is open (user is viewing notifications)
+    $('.notification-dropdown').parent().on('shown.bs.dropdown', function() {
+      if (notificationState.interval) {
+        clearInterval(notificationState.interval);
+        notificationState.interval = null;
+      }
+    });
+    
+    // Resume polling when dropdown is closed
+    $('.notification-dropdown').parent().on('hidden.bs.dropdown', function() {
+      if (!notificationState.interval && notificationState.isVisible) {
+        notificationState.interval = setInterval(loadNotifications, 30000);
+      }
+    });
+  } catch (e) {
+    console.error('Error initializing notification system:', e);
+  }
 });
 
 // Optimized load more results functionality
