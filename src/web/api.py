@@ -2146,13 +2146,12 @@ class WebApp():
                 FROM 
                     entries 
                 WHERE 
-                    file_path = ? AND 
-                    author = ?
+                    file_path = ?
                 ORDER BY 
                     date DESC
                 """
                 
-                cursor.execute(query, (url, data['username']))
+                cursor.execute(query, (url))
                 entries = cursor.fetchall()
                 columns = [column[0] for column in cursor.description]
                 entries = [dict(zip(columns, entry)) for entry in entries]
@@ -2252,6 +2251,8 @@ class WebApp():
                     cursor.execute('SELECT id, Author FROM entries WHERE id = ?', (entry_id,))
                 
                 entry = cursor.fetchone()
+                columns = [column[0] for column in cursor.description]
+                entry = dict(zip(columns, entry))
                 
                 if not entry:
                     return flask.jsonify({
@@ -2260,17 +2261,23 @@ class WebApp():
                     }), 404
                 
                 # Ensure user owns the entry
-                if entry[1] != data['username']:
+                if entry['Author'] != data['username']:
                     return flask.jsonify({
                         'success': False,
                         'message': 'You do not have permission to update this entry'
                     }), 403
                 
                 # Get the actual numeric ID
-                numeric_id = entry[0]
-                
+                numeric_id = entry['id']
+                entry_author = entry['Author']
                 # Process entry data
-                author = data['username']
+                username = data['username']
+
+                if username != entry_author:
+                    return flask.jsonify({
+                        'success': False,
+                        'message': 'You do not have permission to update this entry'
+                    }), 403
                 
 
                 

@@ -514,8 +514,8 @@ $(document).ready(function(){
           success: function(res){
               var data = "";
               $.each(res, function(index, value){
-                  data += "<a class='search dropdown-item' onclick='put_text(`title_search_datalist`, `title_search`, `"+value[0]+"`)'>";
-                  data += value[0]+"</a>";
+                  data += "<a class='search dropdown-item' onclick='put_text(`title_search_datalist`, `title_search`, `"+value['entry_name']+"`)'>";
+                  data += value['entry_name']+"</a>";
               });
               data += "</ul>";
               $("#title_search_datalist").html(data);
