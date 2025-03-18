@@ -379,6 +379,15 @@
           <label for="tags" class="form-label">Tags (comma separated)</label>
           <input type="text" class="form-control" id="tags" placeholder="tag1, tag2, tag3">
         </div>
+        <div id="hashIdContainer" class="mb-3 hidden">
+          <label for="hashId" class="form-label">ID Hash</label>
+          <div class="input-group">
+            <input type="text" class="form-control bg-light text-monospace" id="hashId" readonly>
+            <a href="#" id="viewEntryLink" class="btn btn-outline-primary" target="_blank" title="View entry on website">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </div>
+        </div>
         <div class="mb-3">
           <label for="notes" class="form-label">Notes</label>
           <textarea class="form-control" id="notes" rows="3"></textarea>

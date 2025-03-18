@@ -31,6 +31,13 @@ let allEntriesForUrl = [];
 // Security token for sensitive operations
 let csrfToken = null;
 
+// Hash ID elements
+let hashIdContainer = document.getElementById('hashIdContainer');
+let hashIdField = document.getElementById('hashId');
+
+// Entry link elements
+let viewEntryLink = document.getElementById('viewEntryLink');
+
 // Add CSS for loading animations
 const styleElement = document.createElement('style');
 styleElement.textContent = `
@@ -75,6 +82,16 @@ styleElement.textContent = `
   
   @keyframes spinner-border {
     to { transform: rotate(360deg); }
+  }
+
+  .form-control[readonly] {
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+  }
+
+  .text-monospace {
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   }
 `;
 document.head.appendChild(styleElement);
@@ -211,6 +228,13 @@ function initializeDOMReferences() {
     serverUrl = document.getElementById('serverUrl') || serverUrl;
     username = document.getElementById('username') || username;
     apiKey = document.getElementById('apiKey') || apiKey;
+    
+    // Hash ID elements
+    hashIdContainer = document.getElementById('hashIdContainer') || hashIdContainer;
+    hashIdField = document.getElementById('hashId') || hashIdField;
+    
+    // Entry link elements
+    viewEntryLink = document.getElementById('viewEntryLink') || viewEntryLink;
     
     // Check if we have the critical elements
     let missingElements = [];
@@ -373,6 +397,12 @@ function switchToNewEntryMode() {
   document.getElementById('notes').value = '';
   document.getElementById('tags').value = '';
   
+  // Hide the hash ID field and reset links
+  if (hashIdContainer) {
+    hashIdContainer.classList.add('hidden');
+    if (viewEntryLink) viewEntryLink.href = '#';
+  }
+  
   // Update button text
   submitButton.textContent = 'Add to Data Manager';
   
@@ -388,7 +418,6 @@ function switchToNewEntryMode() {
     entriesListContainer.classList.add('hidden');
   }
 
-  
   // Show message
   showMessage('Ready to create a new entry.', 'info');
   
@@ -801,6 +830,18 @@ function populateFormWithExistingEntry(entry) {
       const tagsElem = document.getElementById('tags');
       if (tagsElem) tagsElem.value = entry.tags || '';
       
+      // Show and populate hash ID field
+      if (hashIdContainer && hashIdField) {
+        const hashId = entry.id_hash || entry.hash_id;
+        if (hashId) {
+          hashIdField.value = hashId;
+          hashIdContainer.classList.remove('hidden');
+          
+          // Update entry link with the hash ID
+          updateEntryLink(entry.id);
+        }
+      }
+      
       // Add a temporary highlight class to form fields
       if (entryName) {
         entryName.classList.add('highlight-field');
@@ -963,6 +1004,18 @@ async function submitEntry() {
           if (result.id || result.hash_id || result.entry_id) {
             currentEntryId = result.id || result.hash_id || result.entry_id;
             
+            // Show and populate hash ID field if available
+            if (hashIdContainer && hashIdField) {
+              const hashId = result.id_hash || result.hash_id;
+              if (hashId) {
+                hashIdField.value = hashId;
+                hashIdContainer.classList.remove('hidden');
+                
+                // Update entry link with the hash ID
+                updateEntryLink(result.id);
+              }
+            }
+            
             // Switch to update mode if we weren't already
             if (!isUpdateMode) {
               isUpdateMode = true;
@@ -995,7 +1048,7 @@ async function submitEntry() {
       } catch (error) {
         console.error('Error submitting entry:', error);
         showMessage(`Error: ${error.message || 'Unknown error occurred'}`, 'error');
-      } finally {
+        
         // Re-enable submit button
         try {
           if (submitButton) {
@@ -1216,4 +1269,38 @@ window.onerror = function(message, source, lineno, colno, error) {
   }
   
   return false; // Let the default error handler run as well
-}; 
+};
+
+// Update the entry link with the correct URL
+function updateEntryLink(entryId) {
+  try {
+    if (!viewEntryLink || !entryId) {
+      return;
+    }
+    
+    const config = getStoredConfiguration();
+    if (!config.isComplete) {
+      return;
+    }
+    
+    // Format the base URL properly
+    let baseUrl = config.serverUrl;
+    if (!baseUrl.startsWith('http')) {
+      baseUrl = (baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1')) ? 
+        'http://' + baseUrl : 'https://' + baseUrl;
+    }
+    
+    // Remove trailing slash if present
+    baseUrl = baseUrl.replace(/\/$/, '');
+    
+    // Create the entry URL
+    const entryUrl = `${baseUrl}/entry/${entryId}`;
+    
+    // Update the link elements
+    viewEntryLink.href = entryUrl;
+    
+    console.log('Entry link updated:', entryUrl);
+  } catch (error) {
+    console.error('Error updating entry link:', error);
+  }
+} 

@@ -2204,7 +2204,6 @@ class WebApp():
             """
             try:
                 data = flask.request.json
-                
                 # Validate required fields
                 required_fields = ['username', 'api_key', 'id', 'entry_name', 'url']
                 for field in required_fields:

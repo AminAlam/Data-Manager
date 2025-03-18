@@ -51,6 +51,42 @@
             font-weight: bold;
             color: #007bff;
         }
+        
+        /* Navbar hover effects */
+        .navbar .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar .nav-link:hover {
+            color: #0d6efd !important;
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        
+        .navbar .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #0d6efd;
+            transition: width 0.3s ease;
+        }
+        
+        .navbar .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Apply same effect to dropdown items */
+        .navbar .dropdown-item {
+            transition: all 0.3s ease;
+        }
+        
+        .navbar .dropdown-item:hover {
+            color: #0d6efd;
+            background-color: rgba(13, 110, 253, 0.05);
+        }
     </style>
 </head>
 <body>
@@ -79,35 +115,7 @@
                             <i class="bi bi-search"></i> Search Entries
                         </a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-collection"></i> Resources
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" href="{{url_for('protocols')}}">
-                                    <i class="bi bi-file-earmark-text"></i> Protocols
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{url_for('conditions_templates')}}">
-                                    <i class="bi bi-file-earmark-ruled"></i> Conditions Templates
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{url_for('orders')}}">
-                                    <i class="bi bi-cart"></i> Orders
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <!-- <li class="nav-item">
-                        <a class="nav-link" href="{{url_for('chatroom')}}">
-                            <i class="bi bi-chat-dots"></i> Chat Room
-                        </a>
-                    </li> -->
                     
-                    <!-- Add this right after the Resources dropdown, before the Admin section -->
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-bell"></i>
@@ -133,6 +141,37 @@
                             </li>
                         </ul>
                     </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-collection"></i> Resources
+                        </a>
+                        <ul class="dropdown-menu">
+                            <!-- <li>
+                                <a class="dropdown-item" href="{{url_for('protocols')}}">
+                                    <i class="bi bi-file-earmark-text"></i> Protocols
+                                </a>
+                            </li> -->
+                            <li>
+                                <a class="dropdown-item" href="{{url_for('orders')}}">
+                                    <i class="bi bi-cart"></i> Orders
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{url_for('conditions_templates')}}">
+                                    <i class="bi bi-file-earmark-ruled"></i> Conditions Templates
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('chatroom')}}">
+                            <i class="bi bi-chat-dots"></i> Chat Room
+                        </a>
+                    </li> -->
+                    
+                    <!-- Add this right after the Resources dropdown, before the Admin section -->
+                    
                     
                     {% if session['admin'] %}
                     <li class="nav-item dropdown">
