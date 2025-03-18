@@ -2151,7 +2151,7 @@ class WebApp():
                     date DESC
                 """
                 
-                cursor.execute(query, (url))
+                cursor.execute(query, (url,))
                 entries = cursor.fetchall()
                 columns = [column[0] for column in cursor.description]
                 entries = [dict(zip(columns, entry)) for entry in entries]
